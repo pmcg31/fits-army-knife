@@ -5,6 +5,7 @@
 #include <QString>
 #include <fitsio.h>
 
+#include "fits.h"
 #include "fitsimage.h"
 
 class FITSWidget : public QWidget
@@ -46,17 +47,17 @@ protected:
     void convertU16ColorImage(QImage *qi,
                               int width,
                               int height,
-                              ELS::FITSImage::PixelFormat pf,
+                              ELS::FITS::PixelFormat pf,
                               const uint16_t *pixels) const;
     void convertFloatColorImage(QImage *qi,
                                 int width,
                                 int height,
-                                ELS::FITSImage::PixelFormat pf,
+                                ELS::FITS::PixelFormat pf,
                                 const float *pixels) const;
     void convertDoubleColorImage(QImage *qi,
                                  int width,
                                  int height,
-                                 ELS::FITSImage::PixelFormat pf,
+                                 ELS::FITS::PixelFormat pf,
                                  const double *pixels) const;
 
 private:

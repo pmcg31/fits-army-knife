@@ -1,6 +1,8 @@
 #pragma once
 
 #include <inttypes.h>
+#include "fits.h"
+#include "fitsvariant.h"
 
 namespace ELS
 {
@@ -9,42 +11,6 @@ namespace ELS
 
     class FITSImage
     {
-    public:
-        enum BitDepth
-        {
-            BD_INT_8,
-            BD_INT_16,
-            BD_INT_32,
-            BD_FLOAT,
-            BD_DOUBLE
-        };
-
-    public:
-        enum PixelFormat
-        {
-            PF_INTERLEAVED,
-            PF_STRIDED
-        };
-
-    public:
-        class Info
-        {
-        public:
-            int bitDepthEnum;
-            char imageType[100];
-            int numAxis;
-            long axLengths[3];
-            int chanAx;
-            int width;
-            int height;
-            int64_t numPixels;
-            char sizeAndColor[200];
-            long fpixel[3];
-            double *imageArray;
-            double maxPixelVal;
-            double minPixelVal;
-        };
-
     public:
         static FITSImage *load(const char *filename);
 
@@ -56,23 +22,25 @@ namespace ELS
 
         int getWidth() const;
         int getHeight() const;
-        PixelFormat getPixelFormat() const;
+        FITS::PixelFormat getPixelFormat() const;
         bool isColor() const;
 
-        BitDepth getBitDepth() const;
+        FITS::BitDepth getBitDepth() const;
+        const FITSVariant getMinPixelVal() const;
+        const FITSVariant getMaxPixelVal() const;
         const void *getPixels() const;
 
     private:
-        FITSImage(BitDepth bitDepth,
-                  PixelFormat format,
+        FITSImage(FITS::BitDepth bitDepth,
+                  FITS::PixelFormat format,
                   bool isColor,
                   int width,
                   int height,
                   FITSRaster *raster);
 
     private:
-        BitDepth _bitDepth;
-        PixelFormat _format;
+        FITS::BitDepth _bitDepth;
+        FITS::PixelFormat _format;
         bool _isColor;
         int _width;
         int _height;

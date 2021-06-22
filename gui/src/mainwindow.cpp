@@ -1,13 +1,24 @@
 #include <QApplication>
 
 #include "mainwindow.h"
+#include "fits.h"
 #include "fitsimage.h"
+#include "fitsvariant.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), mainPane(), layout(&mainPane), label(tr("Whale shit!")), fitsWidget()
+    : QMainWindow(parent),
+      mainPane(),
+      layout(&mainPane),
+      fitsWidget(),
+      bottomLayout(),
+      minLabel("min: --"),
+      maxLabel("max: --")
 {
-    layout.addWidget(&label);
+    bottomLayout.addWidget(&minLabel);
+    bottomLayout.addWidget(&maxLabel);
+
     layout.addWidget(&fitsWidget);
+    layout.addLayout(&bottomLayout);
 
     setCentralWidget(&mainPane);
 
@@ -48,6 +59,43 @@ void MainWindow::fitsFileChanged(const char *filename)
     printf("File loaded: %s\n", filename);
 
     const ELS::FITSImage *image = fitsWidget.getImage();
+    ELS::FITSVariant minPixelVal = image->getMinPixelVal();
+    ELS::FITSVariant maxPixelVal = image->getMaxPixelVal();
+    char tmp[20];
+    switch (image->getBitDepth())
+    {
+    case ELS::FITS::BD_INT_8:
+        sprintf(tmp, "min: %d", minPixelVal.i8);
+        minLabel.setText(tmp);
+        sprintf(tmp, "max: %d", maxPixelVal.i8);
+        maxLabel.setText(tmp);
+        break;
+    case ELS::FITS::BD_INT_16:
+        sprintf(tmp, "min: %d", minPixelVal.i16);
+        minLabel.setText(tmp);
+        sprintf(tmp, "max: %d", maxPixelVal.i16);
+        maxLabel.setText(tmp);
+        break;
+    case ELS::FITS::BD_INT_32:
+        sprintf(tmp, "min: %d", minPixelVal.i32);
+        minLabel.setText(tmp);
+        sprintf(tmp, "max: %d", maxPixelVal.i32);
+        maxLabel.setText(tmp);
+        break;
+    case ELS::FITS::BD_FLOAT:
+        sprintf(tmp, "min: %0.4f", minPixelVal.f32);
+        minLabel.setText(tmp);
+        sprintf(tmp, "max: %0.4f", maxPixelVal.f32);
+        maxLabel.setText(tmp);
+        break;
+    case ELS::FITS::BD_DOUBLE:
+        sprintf(tmp, "min: %0.4lf", minPixelVal.f64);
+        minLabel.setText(tmp);
+        sprintf(tmp, "max: %0.4lf", maxPixelVal.f64);
+        maxLabel.setText(tmp);
+        break;
+    }
+
     printf("%s\n", image->getImageType());
     printf("%s\n", image->getSizeAndColor());
     fflush(stdout);

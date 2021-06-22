@@ -20,10 +20,12 @@ SOURCES += \
     gui/src/fitswidget.cpp
 
 HEADERS += \
+    fits/include/fits.h \
     fits/include/fitsexception.h \
     fits/include/fitsimage.h \
     fits/include/fitsraster.h \
     fits/include/fitstantrum.h \
+    fits/include/fitsvariant.h \
     gui/include/mainwindow.h \
     gui/include/fitswidget.h
 

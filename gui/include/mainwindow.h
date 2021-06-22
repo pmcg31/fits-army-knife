@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 
 #include "fitswidget.h"
@@ -30,7 +31,9 @@ private:
 private:
     QWidget mainPane;
     QVBoxLayout layout;
-    QLabel label;
     FITSWidget fitsWidget;
+    QHBoxLayout bottomLayout;
+    QLabel minLabel;
+    QLabel maxLabel;
 };
 #endif // MAINWINDOW_H

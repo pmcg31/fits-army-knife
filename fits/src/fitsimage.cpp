@@ -47,13 +47,13 @@ namespace ELS
 
         /* Find the color axis if it exists.. */
         bool isColor;
-        PixelFormat format;
+        FITS::PixelFormat format;
         int width;
         int height;
         if (numAxis == 2)
         {
             isColor = false;
-            format = PF_STRIDED;
+            format = FITS::PF_STRIDED;
             width = axLengths[1 - 1];
             height = axLengths[2 - 1];
         }
@@ -62,13 +62,13 @@ namespace ELS
             isColor = true;
             if (axLengths[3 - 1] == 3)
             {
-                format = PF_STRIDED;
+                format = FITS::PF_STRIDED;
                 width = axLengths[1 - 1];
                 height = axLengths[2 - 1];
             }
             else if (axLengths[1 - 1] == 3)
             {
-                format = PF_INTERLEAVED;
+                format = FITS::PF_INTERLEAVED;
                 width = axLengths[2 - 1];
                 height = axLengths[3 - 1];
             }
@@ -92,26 +92,26 @@ namespace ELS
             throw new FITSTantrum(status);
         }
 
-        FITSImage::BitDepth bitDepth;
+        FITS::BitDepth bitDepth;
         switch (fitsIOBitDepth)
         {
         case BYTE_IMG:
         case SBYTE_IMG:
-            bitDepth = FITSImage::BD_INT_8;
+            bitDepth = FITS::BD_INT_8;
             break;
         case SHORT_IMG:
         case USHORT_IMG:
-            bitDepth = FITSImage::BD_INT_16;
+            bitDepth = FITS::BD_INT_16;
             break;
         case LONG_IMG:
         case ULONG_IMG:
-            bitDepth = FITSImage::BD_INT_32;
+            bitDepth = FITS::BD_INT_32;
             break;
         case FLOAT_IMG:
-            bitDepth = FITSImage::BD_FLOAT;
+            bitDepth = FITS::BD_FLOAT;
             break;
         case DOUBLE_IMG:
-            bitDepth = FITSImage::BD_DOUBLE;
+            bitDepth = FITS::BD_DOUBLE;
             break;
         default:
             throw new FITSException("Unknown bit depth");
@@ -142,8 +142,8 @@ namespace ELS
                              raster);
     }
 
-    FITSImage::FITSImage(BitDepth bitDepth,
-                         PixelFormat format,
+    FITSImage::FITSImage(FITS::BitDepth bitDepth,
+                         FITS::PixelFormat format,
                          bool isColor,
                          int width,
                          int height,
@@ -169,15 +169,15 @@ namespace ELS
     {
         switch (_bitDepth)
         {
-        case BD_INT_8:
+        case FITS::BD_INT_8:
             return "8-bit integer pixels";
-        case BD_INT_16:
+        case FITS::BD_INT_16:
             return "16-bit integer pixels";
-        case BD_INT_32:
+        case FITS::BD_INT_32:
             return "32-bit integer pixels";
-        case BD_FLOAT:
+        case FITS::BD_FLOAT:
             return "32-bit floating point pixels";
-        case BD_DOUBLE:
+        case FITS::BD_DOUBLE:
             return "64-bit floating point pixels";
         }
 
@@ -203,7 +203,7 @@ namespace ELS
         return _height;
     }
 
-    FITSImage::PixelFormat FITSImage::getPixelFormat() const
+    FITS::PixelFormat FITSImage::getPixelFormat() const
     {
         return _format;
     }
@@ -213,9 +213,19 @@ namespace ELS
         return _isColor;
     }
 
-    FITSImage::BitDepth FITSImage::getBitDepth() const
+    FITS::BitDepth FITSImage::getBitDepth() const
     {
         return _bitDepth;
+    }
+
+    const FITSVariant FITSImage::getMinPixelVal() const
+    {
+        return _raster->getMinPixelVal();
+    }
+
+    const FITSVariant FITSImage::getMaxPixelVal() const
+    {
+        return _raster->getMaxPixelVal();
     }
 
     const void *FITSImage::getPixels() const
