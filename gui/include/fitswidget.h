@@ -2,6 +2,7 @@
 #define FITSWIDGET_H
 
 #include <QWidget>
+#include <QWheelEvent>
 #include <QString>
 #include <fitsio.h>
 
@@ -20,16 +21,23 @@ public:
 
     const ELS::FITSImage *getImage() const;
 
+    const char *getFilename() const;
+    float getZoom() const;
+
 public slots:
     void setFile(const char *filename);
+    void setZoom(float zoom);
 
 signals:
     void fileChanged(const char *filename);
     void fileFailed(const char *filename,
                     const char *errText);
+    void zoomChanged(float zoom);
+    void actualZoomChanged(float zoom);
 
 protected:
-    void paintEvent(QPaintEvent *event) override;
+    virtual void wheelEvent(QWheelEvent *event) override;
+    virtual void paintEvent(QPaintEvent *event) override;
 
     QImage *convertImage() const;
     void convertU16MonoImage(QImage *qi,
@@ -60,11 +68,29 @@ protected:
                                  ELS::FITS::PixelFormat pf,
                                  const double *pixels) const;
 
+protected:
+    enum ZoomAdjustStrategy
+    {
+        ZAS_CLOSEST,
+        ZAS_HIGHER,
+        ZAS_LOWER
+    };
+
+    void _internalSetZoom(float zoom);
+
+    static float adjustZoom(float desiredZoom,
+                            ZoomAdjustStrategy strategy = ZAS_CLOSEST);
+
 private:
     QSizePolicy _sizePolicy;
     const char *_filename;
     ELS::FITSImage *_fits;
     QImage *_cacheImage;
+    float _zoom;
+    float _actualZoom;
+
+private:
+    static const float g_validZooms[];
 };
 
 #endif // FITSWIDGET_H

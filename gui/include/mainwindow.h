@@ -5,6 +5,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QPushButton>
 
 #include "fitswidget.h"
 
@@ -27,6 +28,10 @@ private:
     void fitsFileChanged(const char *filename);
     void fitsFileFailed(const char *filename,
                         const char *errText);
+    void fitsZoomChanged(float zoom);
+
+    void zoomFitClicked(bool isChecked);
+    void zoom100Clicked(bool isChecked);
 
 private:
     QWidget mainPane;
@@ -35,5 +40,8 @@ private:
     QHBoxLayout bottomLayout;
     QLabel minLabel;
     QLabel maxLabel;
+    QLabel currentZoom;
+    QPushButton zoomFitBtn;
+    QPushButton zoom100Btn;
 };
 #endif // MAINWINDOW_H
