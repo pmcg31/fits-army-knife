@@ -95,7 +95,7 @@ namespace ELS
         }
 
         int fitsIOBitDepth;
-        fits_get_img_type(tmpFits, &fitsIOBitDepth, &status);
+        fits_get_img_equivtype(tmpFits, &fitsIOBitDepth, &status);
         if (status)
         {
             throw new FITSTantrum(status);
@@ -105,14 +105,17 @@ namespace ELS
         switch (fitsIOBitDepth)
         {
         case BYTE_IMG:
+        case SBYTE_IMG:
             bitDepth = FITSImage::BD_INT_8;
             sprintf(tmpInfo->imageType, "8-bit byte pixels");
             break;
         case SHORT_IMG:
+        case USHORT_IMG:
             bitDepth = FITSImage::BD_INT_16;
-            sprintf(tmpInfo->imageType, "16 bit integer pixels");
+            sprintf(tmpInfo->imageType, "16-bit integer pixels");
             break;
         case LONG_IMG:
+        case ULONG_IMG:
             bitDepth = FITSImage::BD_INT_32;
             sprintf(tmpInfo->imageType, "32-bit integer pixels");
             break;
