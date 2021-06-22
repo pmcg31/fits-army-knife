@@ -20,6 +20,13 @@ namespace ELS
         };
 
     public:
+        enum PixelFormat
+        {
+            PF_INTERLEAVED,
+            PF_STRIDED
+        };
+
+    public:
         class Info
         {
         public:
@@ -49,7 +56,7 @@ namespace ELS
 
         int getWidth() const;
         int getHeight() const;
-        int getChanAx() const;
+        PixelFormat getPixelFormat() const;
         bool isColor() const;
 
         BitDepth getBitDepth() const;
@@ -57,13 +64,19 @@ namespace ELS
 
     private:
         FITSImage(BitDepth bitDepth,
-                  FITSRaster *raster,
-                  Info *info);
+                  PixelFormat format,
+                  bool isColor,
+                  int width,
+                  int height,
+                  FITSRaster *raster);
 
     private:
         BitDepth _bitDepth;
+        PixelFormat _format;
+        bool _isColor;
+        int _width;
+        int _height;
         FITSRaster *_raster;
-        Info *_info;
     };
 
 }

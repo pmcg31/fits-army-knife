@@ -15,8 +15,7 @@ namespace ELS
                    int64_t pixelCount);
         ~FITSRaster();
 
-        void readPix(fitsfile *fits,
-                     long *fpixel);
+        void readPix(fitsfile *fits);
 
         const void *getPixels() const;
 

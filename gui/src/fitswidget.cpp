@@ -114,7 +114,7 @@ QImage *FITSWidget::convertImage() const
 
     int width = _fits->getWidth();
     int height = _fits->getHeight();
-    int chanAx = _fits->getChanAx();
+    ELS::FITSImage::PixelFormat pf = _fits->getPixelFormat();
     bool isColor = _fits->isColor();
 
     QImage *qi = new QImage(width,
@@ -133,7 +133,7 @@ QImage *FITSWidget::convertImage() const
             convertU16ColorImage(qi,
                                  width,
                                  height,
-                                 chanAx,
+                                 pf,
                                  (const uint16_t *)pixels);
         }
         else
@@ -152,7 +152,7 @@ QImage *FITSWidget::convertImage() const
             convertFloatColorImage(qi,
                                    width,
                                    height,
-                                   chanAx,
+                                   pf,
                                    (const float *)pixels);
         }
         else
@@ -169,7 +169,7 @@ QImage *FITSWidget::convertImage() const
             convertDoubleColorImage(qi,
                                     width,
                                     height,
-                                    chanAx,
+                                    pf,
                                     (const double *)pixels);
         }
         else
@@ -233,7 +233,7 @@ void FITSWidget::convertDoubleMonoImage(QImage *qi,
 void FITSWidget::convertU16ColorImage(QImage *qi,
                                       int width,
                                       int height,
-                                      int chanAx,
+                                      ELS::FITSImage::PixelFormat pf,
                                       const uint16_t *pixels) const
 {
     uint8_t valR = 0;
@@ -244,14 +244,14 @@ void FITSWidget::convertU16ColorImage(QImage *qi,
     {
         for (int x = 0; x < width; x++)
         {
-            switch (chanAx)
+            switch (pf)
             {
-            case 1:
+            case ELS::FITSImage::PF_INTERLEAVED:
                 valR = (uint8_t)((double)pixels[3 * (x + width * y) + 2] / 257);
                 valG = (uint8_t)((double)pixels[3 * (x + width * y) + 1] / 257);
                 valB = (uint8_t)((double)pixels[3 * (x + width * y) + 0] / 257);
                 break;
-            case 3:
+            case ELS::FITSImage::PF_STRIDED:
                 valR = (uint8_t)((double)pixels[x + width * y + 2 * width * height] / 257);
                 valG = (uint8_t)((double)pixels[x + width * y + 1 * width * height] / 257);
                 valB = (uint8_t)((double)pixels[x + width * y + 0 * width * height] / 257);
@@ -266,7 +266,7 @@ void FITSWidget::convertU16ColorImage(QImage *qi,
 void FITSWidget::convertFloatColorImage(QImage *qi,
                                         int width,
                                         int height,
-                                        int chanAx,
+                                        ELS::FITSImage::PixelFormat pf,
                                         const float *pixels) const
 {
     uint8_t valR = 0;
@@ -277,14 +277,14 @@ void FITSWidget::convertFloatColorImage(QImage *qi,
     {
         for (int x = 0; x < width; x++)
         {
-            switch (chanAx)
+            switch (pf)
             {
-            case 1:
+            case ELS::FITSImage::PF_INTERLEAVED:
                 valR = 255 * pixels[3 * (x + width * y) + 2];
                 valG = 255 * pixels[3 * (x + width * y) + 1];
                 valB = 255 * pixels[3 * (x + width * y) + 0];
                 break;
-            case 3:
+            case ELS::FITSImage::PF_STRIDED:
                 valR = 255 * pixels[x + width * y + 2 * width * height];
                 valG = 255 * pixels[x + width * y + 1 * width * height];
                 valB = 255 * pixels[x + width * y + 0 * width * height];
@@ -299,7 +299,7 @@ void FITSWidget::convertFloatColorImage(QImage *qi,
 void FITSWidget::convertDoubleColorImage(QImage *qi,
                                          int width,
                                          int height,
-                                         int chanAx,
+                                         ELS::FITSImage::PixelFormat pf,
                                          const double *pixels) const
 {
     uint8_t valR = 0;
@@ -310,14 +310,14 @@ void FITSWidget::convertDoubleColorImage(QImage *qi,
     {
         for (int x = 0; x < width; x++)
         {
-            switch (chanAx)
+            switch (pf)
             {
-            case 1:
+            case ELS::FITSImage::PF_INTERLEAVED:
                 valR = 255 * pixels[3 * (x + width * y) + 2];
                 valG = 255 * pixels[3 * (x + width * y) + 1];
                 valB = 255 * pixels[3 * (x + width * y) + 0];
                 break;
-            case 3:
+            case ELS::FITSImage::PF_STRIDED:
                 valR = 255 * pixels[x + width * y + 2 * width * height];
                 valG = 255 * pixels[x + width * y + 1 * width * height];
                 valB = 255 * pixels[x + width * y + 0 * width * height];

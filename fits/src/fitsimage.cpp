@@ -12,7 +12,6 @@ namespace ELS
     {
         int status = 0;
         fitsfile *tmpFits;
-        Info *tmpInfo = new Info();
 
         fits_open_file(&tmpFits, filename, READONLY, &status);
         if (status)
@@ -21,49 +20,57 @@ namespace ELS
         }
 
         /* Get the axis count for the image */
-        fits_get_img_dim(tmpFits, &tmpInfo->numAxis, &status);
+        int numAxis;
+        fits_get_img_dim(tmpFits, &numAxis, &status);
         if (status)
         {
             throw new FITSTantrum(status);
         }
 
         /* Find the x/y-axis dimensions and the color dimension if it exists. */
-        if (tmpInfo->numAxis < 2)
+        if (numAxis < 2)
         {
             throw new FITSException("Too few axes to be a real image!");
         }
-        else if (tmpInfo->numAxis > 3)
+        else if (numAxis > 3)
         {
             throw new FITSException("Too many axes to be a real image!");
         }
 
         /* Get the size of each axis */
-        fits_get_img_size(tmpFits, 3, tmpInfo->axLengths, &status);
+        long axLengths[3];
+        fits_get_img_size(tmpFits, 3, axLengths, &status);
         if (status)
         {
             throw new FITSTantrum(status);
         }
 
         /* Find the color axis if it exists.. */
-        if (tmpInfo->numAxis == 2)
+        bool isColor;
+        PixelFormat format;
+        int width;
+        int height;
+        if (numAxis == 2)
         {
-            tmpInfo->chanAx = 0;
-            tmpInfo->width = tmpInfo->axLengths[1 - 1];
-            tmpInfo->height = tmpInfo->axLengths[2 - 1];
+            isColor = false;
+            format = PF_STRIDED;
+            width = axLengths[1 - 1];
+            height = axLengths[2 - 1];
         }
         else
-        { // (numAxis == 3)
-            if (tmpInfo->axLengths[3 - 1] == 3)
+        {
+            isColor = true;
+            if (axLengths[3 - 1] == 3)
             {
-                tmpInfo->chanAx = 3;
-                tmpInfo->width = tmpInfo->axLengths[1 - 1];
-                tmpInfo->height = tmpInfo->axLengths[2 - 1];
+                format = PF_STRIDED;
+                width = axLengths[1 - 1];
+                height = axLengths[2 - 1];
             }
-            else if (tmpInfo->axLengths[1 - 1] == 3)
+            else if (axLengths[1 - 1] == 3)
             {
-                tmpInfo->chanAx = 1;
-                tmpInfo->width = tmpInfo->axLengths[2 - 1];
-                tmpInfo->height = tmpInfo->axLengths[3 - 1];
+                format = PF_INTERLEAVED;
+                width = axLengths[2 - 1];
+                height = axLengths[3 - 1];
             }
             else
             {
@@ -72,26 +79,10 @@ namespace ELS
         }
 
         /* Compute the number of pixels */
-        tmpInfo->numPixels = tmpInfo->width * tmpInfo->height;
-        if (tmpInfo->chanAx != 0)
+        int numPixels = width * height;
+        if (isColor)
         {
-            tmpInfo->numPixels *= 3;
-        }
-
-        /* Report on image size and color axis location */
-        if (tmpInfo->chanAx)
-        {
-            sprintf(tmpInfo->sizeAndColor, "%dx%d Color FITS image; RGB is ax %d", tmpInfo->width, tmpInfo->height, tmpInfo->chanAx);
-        }
-        else
-        {
-            sprintf(tmpInfo->sizeAndColor, "%dx%d FITS image", tmpInfo->width, tmpInfo->height);
-        }
-
-        /* Set up fpixel for a full image read. */
-        for (int i = 1; i <= tmpInfo->numAxis; i++)
-        {
-            tmpInfo->fpixel[i - 1] = 1;
+            numPixels *= 3;
         }
 
         int fitsIOBitDepth;
@@ -107,33 +98,28 @@ namespace ELS
         case BYTE_IMG:
         case SBYTE_IMG:
             bitDepth = FITSImage::BD_INT_8;
-            sprintf(tmpInfo->imageType, "8-bit byte pixels");
             break;
         case SHORT_IMG:
         case USHORT_IMG:
             bitDepth = FITSImage::BD_INT_16;
-            sprintf(tmpInfo->imageType, "16-bit integer pixels");
             break;
         case LONG_IMG:
         case ULONG_IMG:
             bitDepth = FITSImage::BD_INT_32;
-            sprintf(tmpInfo->imageType, "32-bit integer pixels");
             break;
         case FLOAT_IMG:
             bitDepth = FITSImage::BD_FLOAT;
-            sprintf(tmpInfo->imageType, "32-bit floating point pixels");
             break;
         case DOUBLE_IMG:
             bitDepth = FITSImage::BD_DOUBLE;
-            sprintf(tmpInfo->imageType, "64-bit floating point pixels");
             break;
         default:
             throw new FITSException("Unknown bit depth");
         }
 
         // Create a raster for the data and read it
-        FITSRaster *raster = new FITSRaster(bitDepth, tmpInfo->numPixels);
-        raster->readPix(tmpFits, tmpInfo->fpixel);
+        FITSRaster *raster = new FITSRaster(bitDepth, numPixels);
+        raster->readPix(tmpFits);
 
         //    /* Compute maximum pixel value */
         //    tmpInfo->maxPixelVal =  tmpInfo->imageArray[0];
@@ -148,13 +134,26 @@ namespace ELS
         //        }
         //    }
 
-        return new FITSImage(bitDepth, raster, tmpInfo);
+        return new FITSImage(bitDepth,
+                             format,
+                             isColor,
+                             width,
+                             height,
+                             raster);
     }
 
     FITSImage::FITSImage(BitDepth bitDepth,
-                         FITSRaster *raster,
-                         Info *info)
-        : _bitDepth(bitDepth), _raster(raster), _info(info)
+                         PixelFormat format,
+                         bool isColor,
+                         int width,
+                         int height,
+                         FITSRaster *raster)
+        : _bitDepth(bitDepth),
+          _format(format),
+          _isColor(isColor),
+          _width(width),
+          _height(height),
+          _raster(raster)
     {
     }
 
@@ -168,32 +167,50 @@ namespace ELS
 
     const char *FITSImage::getImageType() const
     {
-        return _info->imageType;
+        switch (_bitDepth)
+        {
+        case BD_INT_8:
+            return "8-bit integer pixels";
+        case BD_INT_16:
+            return "16-bit integer pixels";
+        case BD_INT_32:
+            return "32-bit integer pixels";
+        case BD_FLOAT:
+            return "32-bit floating point pixels";
+        case BD_DOUBLE:
+            return "64-bit floating point pixels";
+        }
+
+        return "Unknown";
     }
 
     const char *FITSImage::getSizeAndColor() const
     {
-        return _info->sizeAndColor;
+        static char tmp[50];
+
+        sprintf(tmp, "%dx%d %s image", _width, _height, _isColor ? "Color" : "Grayscale");
+
+        return tmp;
     }
 
     int FITSImage::getWidth() const
     {
-        return _info->width;
+        return _width;
     }
 
     int FITSImage::getHeight() const
     {
-        return _info->height;
+        return _height;
     }
 
-    int FITSImage::getChanAx() const
+    FITSImage::PixelFormat FITSImage::getPixelFormat() const
     {
-        return _info->chanAx;
+        return _format;
     }
 
     bool FITSImage::isColor() const
     {
-        return _info->chanAx != 0;
+        return _isColor;
     }
 
     FITSImage::BitDepth FITSImage::getBitDepth() const

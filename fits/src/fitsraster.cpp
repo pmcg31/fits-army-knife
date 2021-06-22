@@ -6,7 +6,9 @@ namespace ELS
 
     FITSRaster::FITSRaster(FITSImage::BitDepth bitDepth,
                            int64_t pixelCount)
-        : _bitDepth(bitDepth), _pixelCount(pixelCount), _pixels(0)
+        : _bitDepth(bitDepth),
+          _pixelCount(pixelCount),
+          _pixels(0)
     {
     }
 
@@ -37,9 +39,10 @@ namespace ELS
         }
     }
 
-    void FITSRaster::readPix(fitsfile *fits,
-                             long *fpixel)
+    void FITSRaster::readPix(fitsfile *fits)
     {
+        long fpixel[3] = {1, 1, 1};
+
         // Allocate space for the pixels
         int fitsIOType = 0;
         switch (_bitDepth)

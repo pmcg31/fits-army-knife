@@ -12,25 +12,6 @@ class FITSWidget : public QWidget
     Q_OBJECT
 
 public:
-    class Info
-    {
-    public:
-        int bitDepthEnum;
-        char imageType[100];
-        int numAxis;
-        long axLengths[3];
-        int chanAx;
-        int width;
-        int height;
-        long numPixels;
-        char sizeAndColor[200];
-        long fpixel[3];
-        double *imageArray;
-        double maxPixelVal;
-        double minPixelVal;
-    };
-
-public:
     explicit FITSWidget(QWidget *parent = nullptr);
 
     QSize sizeHint() const override;
@@ -65,17 +46,17 @@ protected:
     void convertU16ColorImage(QImage *qi,
                               int width,
                               int height,
-                              int chanAx,
+                              ELS::FITSImage::PixelFormat pf,
                               const uint16_t *pixels) const;
     void convertFloatColorImage(QImage *qi,
                                 int width,
                                 int height,
-                                int chanAx,
+                                ELS::FITSImage::PixelFormat pf,
                                 const float *pixels) const;
     void convertDoubleColorImage(QImage *qi,
                                  int width,
                                  int height,
-                                 int chanAx,
+                                 ELS::FITSImage::PixelFormat pf,
                                  const double *pixels) const;
 
 private:
