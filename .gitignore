@@ -79,3 +79,4 @@ sample-files/M_106_Light_L_60_secs_2021-06-13T22-29-26_113_s.fits
 sample-files/M_106_Light_L_60_secs_2021-06-13T22-29-26_113.fits
 build/.qmake.stash
 build/FitsArmyKnife
+build/fits-army-knife

@@ -43,4 +43,4 @@ You will now have a Makefile. Run `make`
 
 You should now have an executable, unless you are missing a dependency somewhere. To run:
 
-`./FitsArmyKnife <path-to-fits-file>`
+`./fits-army-knife <path-to-fits-file>`
