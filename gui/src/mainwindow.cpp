@@ -44,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
         }
         else
         {
-            fprintf(stderr, "Whoa, buddy, file or no file and that's it. What's all this extra shit?\n");
+            fprintf(stderr, "Your plethora of arguments has confused me\n");
             fflush(stderr);
         }
     }

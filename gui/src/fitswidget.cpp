@@ -62,6 +62,9 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
     int w = width();
     int h = height();
 
+    painter.setRenderHints(QPainter::SmoothPixmapTransform |
+                           QPainter::Antialiasing);
+
     painter.drawRect(0, 0, w, h);
 
     if (_cacheImage == 0)
