@@ -182,15 +182,6 @@ QImage *FITSWidget::convertImage() const
         break;
     }
 
-    //    const uint16_t* u16pix = (const uint16_t*)pixels;
-
-    //    for (int y = 0; y < height; y++) {
-    //        for (int x = 0; x < width; x++) {
-    //            uint16_t val = u16pix[y * width + x];
-    //            qi->setPixelColor(x, y, QColor::fromRgba64(val, val, val));
-    //        }
-    //    }
-
     return qi;
 }
 
@@ -245,9 +236,9 @@ void FITSWidget::convertU16ColorImage(QImage *qi,
                                       int chanAx,
                                       const uint16_t *pixels) const
 {
-    uint8_t valR;
-    uint8_t valG;
-    uint8_t valB;
+    uint8_t valR = 0;
+    uint8_t valG = 0;
+    uint8_t valB = 0;
 
     for (int y = 0; y < height; y++)
     {
@@ -278,9 +269,9 @@ void FITSWidget::convertFloatColorImage(QImage *qi,
                                         int chanAx,
                                         const float *pixels) const
 {
-    uint8_t valR;
-    uint8_t valG;
-    uint8_t valB;
+    uint8_t valR = 0;
+    uint8_t valG = 0;
+    uint8_t valB = 0;
 
     for (int y = 0; y < height; y++)
     {
@@ -311,9 +302,9 @@ void FITSWidget::convertDoubleColorImage(QImage *qi,
                                          int chanAx,
                                          const double *pixels) const
 {
-    uint8_t valR;
-    uint8_t valG;
-    uint8_t valB;
+    uint8_t valR = 0;
+    uint8_t valG = 0;
+    uint8_t valB = 0;
 
     for (int y = 0; y < height; y++)
     {
