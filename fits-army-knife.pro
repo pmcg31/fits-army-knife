@@ -13,7 +13,6 @@ INCLUDEPATH += \
 SOURCES += \
     fits/src/fitsexception.cpp \
     fits/src/fitsimage.cpp \
-    fits/src/fitsraster.cpp \
     fits/src/fitstantrum.cpp \
     gui/src/main.cpp \
     gui/src/mainwindow.cpp \
@@ -22,12 +21,12 @@ SOURCES += \
 HEADERS += \
     fits/include/fits.h \
     fits/include/fitsexception.h \
-    fits/include/fitsimage.h \
-    fits/include/fitsraster.h \
     fits/include/fitstantrum.h \
-    fits/include/fitsvariant.h \
+    fits/include/fitsimage.h \
+    fits/include/fitspixelvisitor.h \
     gui/include/mainwindow.h \
-    gui/include/fitswidget.h
+    gui/include/fitswidget.h \
+    gui/include/statisticsvisitor.h 
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

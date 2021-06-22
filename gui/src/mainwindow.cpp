@@ -3,7 +3,7 @@
 #include "mainwindow.h"
 #include "fits.h"
 #include "fitsimage.h"
-#include "fitsvariant.h"
+#include "statisticsvisitor.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -93,41 +93,132 @@ void MainWindow::fitsFileChanged(const char *filename)
     printf("File loaded: %s\n", filename);
 
     const ELS::FITSImage *image = fitsWidget.getImage();
-    ELS::FITSVariant minPixelVal = image->getMinPixelVal();
-    ELS::FITSVariant maxPixelVal = image->getMaxPixelVal();
-    char tmp[20];
+    bool isColor = image->isColor();
+
+    char tmp[100];
+    char tmp2[100];
     switch (image->getBitDepth())
     {
     case ELS::FITS::BD_INT_8:
-        sprintf(tmp, " min: %d ", minPixelVal.i8);
+    {
+        StatisticsVisitor<uint8_t> visitor;
+        image->visitPixels(&visitor);
+        if (!isColor)
+        {
+            sprintf(tmp, " min: %d ", visitor.getMinVal());
+            sprintf(tmp2, " max: %d ", visitor.getMaxVal());
+        }
+        else
+        {
+            sprintf(tmp, " min: %d/%d/%d ",
+                    visitor.getMinVal(0),
+                    visitor.getMinVal(1),
+                    visitor.getMinVal(2));
+            sprintf(tmp2, " max: %d/%d/%d ",
+                    visitor.getMaxVal(0),
+                    visitor.getMaxVal(1),
+                    visitor.getMaxVal(2));
+        }
         minLabel.setText(tmp);
-        sprintf(tmp, " max: %d ", maxPixelVal.i8);
-        maxLabel.setText(tmp);
-        break;
+        maxLabel.setText(tmp2);
+    }
+    break;
     case ELS::FITS::BD_INT_16:
-        sprintf(tmp, " min: %d ", minPixelVal.i16);
+    {
+        StatisticsVisitor<uint16_t> visitor;
+        image->visitPixels(&visitor);
+        if (!isColor)
+        {
+            sprintf(tmp, " min: %d ", visitor.getMinVal());
+            sprintf(tmp2, " max: %d ", visitor.getMaxVal());
+        }
+        else
+        {
+            sprintf(tmp, " min: %d/%d/%d ",
+                    visitor.getMinVal(0),
+                    visitor.getMinVal(1),
+                    visitor.getMinVal(2));
+            sprintf(tmp2, " max: %d/%d/%d ",
+                    visitor.getMaxVal(0),
+                    visitor.getMaxVal(1),
+                    visitor.getMaxVal(2));
+        }
         minLabel.setText(tmp);
-        sprintf(tmp, " max: %d ", maxPixelVal.i16);
-        maxLabel.setText(tmp);
-        break;
+        maxLabel.setText(tmp2);
+    }
+    break;
     case ELS::FITS::BD_INT_32:
-        sprintf(tmp, " min: %d ", minPixelVal.i32);
+    {
+        StatisticsVisitor<uint32_t> visitor;
+        image->visitPixels(&visitor);
+        if (!isColor)
+        {
+            sprintf(tmp, " min: %d ", visitor.getMinVal());
+            sprintf(tmp2, " max: %d ", visitor.getMaxVal());
+        }
+        else
+        {
+            sprintf(tmp, " min: %d/%d/%d ",
+                    visitor.getMinVal(0),
+                    visitor.getMinVal(1),
+                    visitor.getMinVal(2));
+            sprintf(tmp2, " max: %d/%d/%d ",
+                    visitor.getMaxVal(0),
+                    visitor.getMaxVal(1),
+                    visitor.getMaxVal(2));
+        }
         minLabel.setText(tmp);
-        sprintf(tmp, " max: %d ", maxPixelVal.i32);
-        maxLabel.setText(tmp);
-        break;
+        maxLabel.setText(tmp2);
+    }
+    break;
     case ELS::FITS::BD_FLOAT:
-        sprintf(tmp, " min: %0.4f ", minPixelVal.f32);
+    {
+        StatisticsVisitor<float> visitor;
+        image->visitPixels(&visitor);
+        if (!isColor)
+        {
+            sprintf(tmp, " min: %0.4f ", visitor.getMinVal());
+            sprintf(tmp2, " max: %0.4f ", visitor.getMaxVal());
+        }
+        else
+        {
+            sprintf(tmp, " min: %0.4f/%0.4f/%0.4f ",
+                    visitor.getMinVal(0),
+                    visitor.getMinVal(1),
+                    visitor.getMinVal(2));
+            sprintf(tmp2, " max: %0.4f/%0.4f/%0.4f ",
+                    visitor.getMaxVal(0),
+                    visitor.getMaxVal(1),
+                    visitor.getMaxVal(2));
+        }
         minLabel.setText(tmp);
-        sprintf(tmp, " max: %0.4f ", maxPixelVal.f32);
-        maxLabel.setText(tmp);
-        break;
+        maxLabel.setText(tmp2);
+    }
+    break;
     case ELS::FITS::BD_DOUBLE:
-        sprintf(tmp, " min: %0.4lf ", minPixelVal.f64);
+    {
+        StatisticsVisitor<double> visitor;
+        image->visitPixels(&visitor);
+        if (!isColor)
+        {
+            sprintf(tmp, " min: %0.4lf ", visitor.getMinVal());
+            sprintf(tmp2, " max: %0.4lf ", visitor.getMaxVal());
+        }
+        else
+        {
+            sprintf(tmp, " min: %0.4lf/%0.4lf/%0.4lf ",
+                    visitor.getMinVal(0),
+                    visitor.getMinVal(1),
+                    visitor.getMinVal(2));
+            sprintf(tmp2, " max: %0.4lf/%0.4lf/%0.4lf ",
+                    visitor.getMaxVal(0),
+                    visitor.getMaxVal(1),
+                    visitor.getMaxVal(2));
+        }
         minLabel.setText(tmp);
-        sprintf(tmp, " max: %0.4lf ", maxPixelVal.f64);
-        maxLabel.setText(tmp);
-        break;
+        maxLabel.setText(tmp2);
+    }
+    break;
     }
 
     printf("%s\n", image->getImageType());

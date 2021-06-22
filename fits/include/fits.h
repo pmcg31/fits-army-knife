@@ -15,10 +15,17 @@ namespace ELS
             BD_DOUBLE
         };
 
+        enum RasterFormat
+        {
+            RF_INTERLEAVED,
+            RF_STRIDED
+        };
+
         enum PixelFormat
         {
-            PF_INTERLEAVED,
-            PF_STRIDED
+            PF_GRAY,
+            PF_BGR,
+            PF_RGB
         };
 
     }

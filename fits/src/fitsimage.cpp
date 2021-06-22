@@ -1,7 +1,6 @@
 #include <fitsio.h>
 
 #include "fitstantrum.h"
-#include "fitsraster.h"
 #include "fitsimage.h"
 
 namespace ELS
@@ -19,7 +18,6 @@ namespace ELS
             throw new FITSTantrum(status);
         }
 
-        /* Get the axis count for the image */
         int numAxis;
         fits_get_img_dim(tmpFits, &numAxis, &status);
         if (status)
@@ -27,17 +25,11 @@ namespace ELS
             throw new FITSTantrum(status);
         }
 
-        /* Find the x/y-axis dimensions and the color dimension if it exists. */
-        if (numAxis < 2)
+        if ((numAxis < 2) || (numAxis > 3))
         {
-            throw new FITSException("Too few axes to be a real image!");
-        }
-        else if (numAxis > 3)
-        {
-            throw new FITSException("Too many axes to be a real image!");
+            throw new FITSException("Unknown FITS format: unrecognized number of image axes");
         }
 
-        /* Get the size of each axis */
         long axLengths[3];
         fits_get_img_size(tmpFits, 3, axLengths, &status);
         if (status)
@@ -45,44 +37,42 @@ namespace ELS
             throw new FITSTantrum(status);
         }
 
-        /* Find the color axis if it exists.. */
         bool isColor;
-        FITS::PixelFormat format;
+        FITS::RasterFormat format;
         int width;
         int height;
         if (numAxis == 2)
         {
             isColor = false;
-            format = FITS::PF_STRIDED;
-            width = axLengths[1 - 1];
-            height = axLengths[2 - 1];
+            format = FITS::RF_STRIDED;
+            width = axLengths[0];
+            height = axLengths[1];
         }
         else
         {
             isColor = true;
-            if (axLengths[3 - 1] == 3)
+            if (axLengths[2] == 3)
             {
-                format = FITS::PF_STRIDED;
-                width = axLengths[1 - 1];
-                height = axLengths[2 - 1];
+                format = FITS::RF_STRIDED;
+                width = axLengths[0];
+                height = axLengths[1];
             }
-            else if (axLengths[1 - 1] == 3)
+            else if (axLengths[0] == 3)
             {
-                format = FITS::PF_INTERLEAVED;
-                width = axLengths[2 - 1];
-                height = axLengths[3 - 1];
+                format = FITS::RF_INTERLEAVED;
+                width = axLengths[1];
+                height = axLengths[2];
             }
             else
             {
-                throw new FITSException("Found 3 axis, but can't figure out RGB dimension!");
+                throw new FITSException("Unknown FITS format: unrecognized axis layout");
             }
         }
 
-        /* Compute the number of pixels */
-        int numPixels = width * height;
+        int64_t pixelCount = width * height;
         if (isColor)
         {
-            numPixels *= 3;
+            pixelCount *= 3;
         }
 
         int fitsIOBitDepth;
@@ -117,51 +107,58 @@ namespace ELS
             throw new FITSException("Unknown bit depth");
         }
 
-        // Create a raster for the data and read it
-        FITSRaster *raster = new FITSRaster(bitDepth, numPixels);
-        raster->readPix(tmpFits);
-
-        //    /* Compute maximum pixel value */
-        //    tmpInfo->maxPixelVal =  tmpInfo->imageArray[0];
-        //    tmpInfo->minPixelVal =  tmpInfo->imageArray[0];
-        //    for (int i = 1; i < tmpInfo->numPixels; i++) {
-        //        if (tmpInfo->imageArray[i] > tmpInfo->maxPixelVal) {
-        //            tmpInfo->maxPixelVal = tmpInfo->imageArray[i];
-        //        }
-
-        //        if (tmpInfo->imageArray[i] < tmpInfo->minPixelVal) {
-        //            tmpInfo->minPixelVal = tmpInfo->imageArray[i];
-        //        }
-        //    }
+        void *pixels = readPix(tmpFits, bitDepth, pixelCount);
 
         return new FITSImage(bitDepth,
                              format,
                              isColor,
                              width,
                              height,
-                             raster);
+                             pixelCount,
+                             pixels);
     }
 
     FITSImage::FITSImage(FITS::BitDepth bitDepth,
-                         FITS::PixelFormat format,
+                         FITS::RasterFormat format,
                          bool isColor,
                          int width,
                          int height,
-                         FITSRaster *raster)
+                         int64_t pixelCount,
+                         void *pixels)
         : _bitDepth(bitDepth),
           _format(format),
           _isColor(isColor),
           _width(width),
           _height(height),
-          _raster(raster)
+          _pixelCount(pixelCount),
+          _pixels(pixels)
     {
     }
 
     FITSImage::~FITSImage()
     {
-        if (_raster != 0)
+        if (_pixels != 0)
         {
-            delete _raster;
+            switch (_bitDepth)
+            {
+            case FITS::BD_INT_8:
+                delete[](uint8_t *) _pixels;
+                break;
+            case FITS::BD_INT_16:
+                delete[](uint16_t *) _pixels;
+                break;
+            case FITS::BD_INT_32:
+                delete[](uint32_t *) _pixels;
+                break;
+            case FITS::BD_FLOAT:
+                delete[](float *) _pixels;
+                break;
+            case FITS::BD_DOUBLE:
+                delete[](double *) _pixels;
+                break;
+            default:
+                break;
+            }
         }
     }
 
@@ -203,7 +200,7 @@ namespace ELS
         return _height;
     }
 
-    FITS::PixelFormat FITSImage::getPixelFormat() const
+    FITS::RasterFormat FITSImage::getRasterFormat() const
     {
         return _format;
     }
@@ -218,19 +215,63 @@ namespace ELS
         return _bitDepth;
     }
 
-    const FITSVariant FITSImage::getMinPixelVal() const
-    {
-        return _raster->getMinPixelVal();
-    }
-
-    const FITSVariant FITSImage::getMaxPixelVal() const
-    {
-        return _raster->getMaxPixelVal();
-    }
-
     const void *FITSImage::getPixels() const
     {
-        return _raster->getPixels();
+        return _pixels;
+    }
+
+    /* static */
+    void *FITSImage::readPix(fitsfile *fits,
+                             FITS::BitDepth bitDepth,
+                             int64_t pixelCount)
+    {
+        long fpixel[3] = {1, 1, 1};
+
+        // Allocate space for the pixels
+        int fitsIOType = 0;
+        void *pixels;
+        switch (bitDepth)
+        {
+        case FITS::BD_INT_8:
+            fitsIOType = TBYTE;
+            pixels = new uint8_t[pixelCount];
+            break;
+        case FITS::BD_INT_16:
+            fitsIOType = TUSHORT;
+            pixels = new uint16_t[pixelCount];
+            break;
+        case FITS::BD_INT_32:
+            fitsIOType = TUINT;
+            pixels = new uint32_t[pixelCount];
+            break;
+        case FITS::BD_FLOAT:
+            fitsIOType = TFLOAT;
+            pixels = new float[pixelCount];
+            break;
+        case FITS::BD_DOUBLE:
+            fitsIOType = TDOUBLE;
+            pixels = new double[pixelCount];
+            break;
+        default:
+            throw new FITSException("Unknown bit depth");
+        }
+
+        // Read in the data in one big gulp
+        int status = 0;
+        fits_read_pix(fits,
+                      fitsIOType,
+                      fpixel,
+                      pixelCount,
+                      NULL,
+                      pixels,
+                      NULL,
+                      &status);
+        if (status)
+        {
+            throw new FITSTantrum(status);
+        }
+
+        return pixels;
     }
 
 }

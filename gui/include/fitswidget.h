@@ -2,6 +2,7 @@
 #define FITSWIDGET_H
 
 #include <QWidget>
+#include <QSizePolicy>
 #include <QWheelEvent>
 #include <QString>
 #include <fitsio.h>
@@ -55,17 +56,17 @@ protected:
     void convertU16ColorImage(QImage *qi,
                               int width,
                               int height,
-                              ELS::FITS::PixelFormat pf,
+                              ELS::FITS::RasterFormat rf,
                               const uint16_t *pixels) const;
     void convertFloatColorImage(QImage *qi,
                                 int width,
                                 int height,
-                                ELS::FITS::PixelFormat pf,
+                                ELS::FITS::RasterFormat rf,
                                 const float *pixels) const;
     void convertDoubleColorImage(QImage *qi,
                                  int width,
                                  int height,
-                                 ELS::FITS::PixelFormat pf,
+                                 ELS::FITS::RasterFormat rf,
                                  const double *pixels) const;
 
 protected:
@@ -83,7 +84,7 @@ protected:
 
 private:
     QSizePolicy _sizePolicy;
-    const char *_filename;
+    char _filename[500];
     ELS::FITSImage *_fits;
     QImage *_cacheImage;
     float _zoom;
