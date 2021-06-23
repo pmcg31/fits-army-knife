@@ -16,7 +16,8 @@ SOURCES += \
     fits/src/fitstantrum.cpp \
     gui/src/main.cpp \
     gui/src/mainwindow.cpp \
-    gui/src/fitswidget.cpp
+    gui/src/fitswidget.cpp \
+    gui/src/histogramwidget.cpp
 
 HEADERS += \
     fits/include/fits.h \
@@ -26,6 +27,7 @@ HEADERS += \
     fits/include/fitspixelvisitor.h \
     gui/include/mainwindow.h \
     gui/include/fitswidget.h \
+    gui/include/histogramwidget.h \
     gui/include/statisticsvisitor.h 
 
 # Default rules for deployment.

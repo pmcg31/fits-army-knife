@@ -8,6 +8,7 @@
 #include <QPushButton>
 
 #include "fitswidget.h"
+#include "histogramwidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -37,8 +38,10 @@ private:
     QWidget mainPane;
     QVBoxLayout layout;
     FITSWidget fitsWidget;
+    HistogramWidget histWidget;
     QHBoxLayout bottomLayout;
     QLabel minLabel;
+    QLabel meanLabel;
     QLabel maxLabel;
     QLabel currentZoom;
     QPushButton zoomFitBtn;

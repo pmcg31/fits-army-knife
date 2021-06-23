@@ -10,9 +10,11 @@ MainWindow::MainWindow(QWidget *parent)
       mainPane(),
       layout(&mainPane),
       fitsWidget(),
+      histWidget(),
       bottomLayout(),
-      minLabel("min: --"),
-      maxLabel("max: --"),
+      minLabel(" min: -- "),
+      meanLabel(" mean: -- "),
+      maxLabel(" max: -- "),
       currentZoom("--"),
       zoomFitBtn("fit"),
       zoom100Btn("1:1")
@@ -35,10 +37,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     minLabel.setStyleSheet(lblStyle);
     minLabel.setAlignment(Qt::AlignCenter);
+    meanLabel.setStyleSheet(lblStyle);
+    meanLabel.setAlignment(Qt::AlignCenter);
     maxLabel.setStyleSheet(lblStyle);
     maxLabel.setAlignment(Qt::AlignCenter);
 
     bottomLayout.addWidget(&minLabel);
+    bottomLayout.addWidget(&meanLabel);
     bottomLayout.addWidget(&maxLabel);
     bottomLayout.addStretch(1);
     bottomLayout.addWidget(&zoomFitBtn);
@@ -46,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
     bottomLayout.addWidget(&currentZoom);
 
     layout.addWidget(&fitsWidget);
+    layout.addWidget(&histWidget);
     layout.addLayout(&bottomLayout);
 
     setCentralWidget(&mainPane);
@@ -71,7 +77,15 @@ MainWindow::MainWindow(QWidget *parent)
     {
         if (args.length() == 2)
         {
-            const char *filename = args.at(1).toLocal8Bit().constData();
+            QString qfname = args.at(1);
+            QByteArray qfnameBytes = qfname.toLocal8Bit();
+            int size = qfnameBytes.size();
+            char *filename = new char[1000];
+            for (int i = 0; i < size; i++)
+            {
+                filename[i] = qfnameBytes.at(i);
+            }
+            filename[size] = 0;
             printf("Setting file %s\n", filename);
             fflush(stdout);
             fitsWidget.setFile(filename);
@@ -95,8 +109,11 @@ void MainWindow::fitsFileChanged(const char *filename)
     const ELS::FITSImage *image = fitsWidget.getImage();
     bool isColor = image->isColor();
 
-    char tmp[100];
-    char tmp2[100];
+    char tmp[500];
+    char tmp2[500];
+    char tmp3[500];
+    int numPoints = 0;
+    uint32_t *histogram = 0;
     switch (image->getBitDepth())
     {
     case ELS::FITS::BD_INT_8:
@@ -106,7 +123,8 @@ void MainWindow::fitsFileChanged(const char *filename)
         if (!isColor)
         {
             sprintf(tmp, " min: %d ", visitor.getMinVal());
-            sprintf(tmp2, " max: %d ", visitor.getMaxVal());
+            sprintf(tmp2, " mean: %d ", visitor.getMeanVal());
+            sprintf(tmp3, " max: %d ", visitor.getMaxVal());
         }
         else
         {
@@ -114,13 +132,20 @@ void MainWindow::fitsFileChanged(const char *filename)
                     visitor.getMinVal(0),
                     visitor.getMinVal(1),
                     visitor.getMinVal(2));
-            sprintf(tmp2, " max: %d/%d/%d ",
+            sprintf(tmp2, " mean: %d/%d/%d ",
+                    visitor.getMeanVal(0),
+                    visitor.getMeanVal(1),
+                    visitor.getMeanVal(2));
+            sprintf(tmp3, " max: %d/%d/%d ",
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));
         }
         minLabel.setText(tmp);
-        maxLabel.setText(tmp2);
+        meanLabel.setText(tmp2);
+        maxLabel.setText(tmp3);
+
+        visitor.getHistogramData(&numPoints, &histogram);
     }
     break;
     case ELS::FITS::BD_INT_16:
@@ -130,7 +155,8 @@ void MainWindow::fitsFileChanged(const char *filename)
         if (!isColor)
         {
             sprintf(tmp, " min: %d ", visitor.getMinVal());
-            sprintf(tmp2, " max: %d ", visitor.getMaxVal());
+            sprintf(tmp2, " mean: %d ", visitor.getMeanVal());
+            sprintf(tmp3, " max: %d ", visitor.getMaxVal());
         }
         else
         {
@@ -138,13 +164,20 @@ void MainWindow::fitsFileChanged(const char *filename)
                     visitor.getMinVal(0),
                     visitor.getMinVal(1),
                     visitor.getMinVal(2));
-            sprintf(tmp2, " max: %d/%d/%d ",
+            sprintf(tmp2, " mean: %d/%d/%d ",
+                    visitor.getMeanVal(0),
+                    visitor.getMeanVal(1),
+                    visitor.getMeanVal(2));
+            sprintf(tmp3, " max: %d/%d/%d ",
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));
         }
         minLabel.setText(tmp);
-        maxLabel.setText(tmp2);
+        meanLabel.setText(tmp2);
+        maxLabel.setText(tmp3);
+
+        visitor.getHistogramData(&numPoints, &histogram);
     }
     break;
     case ELS::FITS::BD_INT_32:
@@ -154,7 +187,8 @@ void MainWindow::fitsFileChanged(const char *filename)
         if (!isColor)
         {
             sprintf(tmp, " min: %d ", visitor.getMinVal());
-            sprintf(tmp2, " max: %d ", visitor.getMaxVal());
+            sprintf(tmp2, " mean: %d ", visitor.getMeanVal());
+            sprintf(tmp3, " max: %d ", visitor.getMaxVal());
         }
         else
         {
@@ -162,13 +196,20 @@ void MainWindow::fitsFileChanged(const char *filename)
                     visitor.getMinVal(0),
                     visitor.getMinVal(1),
                     visitor.getMinVal(2));
-            sprintf(tmp2, " max: %d/%d/%d ",
+            sprintf(tmp2, " mean: %d/%d/%d ",
+                    visitor.getMeanVal(0),
+                    visitor.getMeanVal(1),
+                    visitor.getMeanVal(2));
+            sprintf(tmp3, " max: %d/%d/%d ",
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));
         }
         minLabel.setText(tmp);
-        maxLabel.setText(tmp2);
+        meanLabel.setText(tmp2);
+        maxLabel.setText(tmp3);
+
+        visitor.getHistogramData(&numPoints, &histogram);
     }
     break;
     case ELS::FITS::BD_FLOAT:
@@ -178,7 +219,8 @@ void MainWindow::fitsFileChanged(const char *filename)
         if (!isColor)
         {
             sprintf(tmp, " min: %0.4f ", visitor.getMinVal());
-            sprintf(tmp2, " max: %0.4f ", visitor.getMaxVal());
+            sprintf(tmp2, " mean: %0.4f ", visitor.getMeanVal());
+            sprintf(tmp3, " max: %0.4f ", visitor.getMaxVal());
         }
         else
         {
@@ -186,13 +228,20 @@ void MainWindow::fitsFileChanged(const char *filename)
                     visitor.getMinVal(0),
                     visitor.getMinVal(1),
                     visitor.getMinVal(2));
-            sprintf(tmp2, " max: %0.4f/%0.4f/%0.4f ",
+            sprintf(tmp2, " mean: %0.4f/%0.4f/%0.4f ",
+                    visitor.getMeanVal(0),
+                    visitor.getMeanVal(1),
+                    visitor.getMeanVal(2));
+            sprintf(tmp3, " max: %0.4f/%0.4f/%0.4f ",
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));
         }
         minLabel.setText(tmp);
-        maxLabel.setText(tmp2);
+        meanLabel.setText(tmp2);
+        maxLabel.setText(tmp3);
+
+        visitor.getHistogramData(&numPoints, &histogram);
     }
     break;
     case ELS::FITS::BD_DOUBLE:
@@ -202,6 +251,7 @@ void MainWindow::fitsFileChanged(const char *filename)
         if (!isColor)
         {
             sprintf(tmp, " min: %0.4lf ", visitor.getMinVal());
+            sprintf(tmp2, " mean: %0.4f ", visitor.getMeanVal());
             sprintf(tmp2, " max: %0.4lf ", visitor.getMaxVal());
         }
         else
@@ -210,16 +260,25 @@ void MainWindow::fitsFileChanged(const char *filename)
                     visitor.getMinVal(0),
                     visitor.getMinVal(1),
                     visitor.getMinVal(2));
-            sprintf(tmp2, " max: %0.4lf/%0.4lf/%0.4lf ",
+            sprintf(tmp2, " mean: %0.4f/%0.4f/%0.4f ",
+                    visitor.getMeanVal(0),
+                    visitor.getMeanVal(1),
+                    visitor.getMeanVal(2));
+            sprintf(tmp3, " max: %0.4f/%0.4f/%0.4f ",
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));
         }
         minLabel.setText(tmp);
-        maxLabel.setText(tmp2);
+        meanLabel.setText(tmp2);
+        maxLabel.setText(tmp3);
+
+        visitor.getHistogramData(&numPoints, &histogram);
     }
     break;
     }
+
+    histWidget.setHistogramData(isColor, numPoints, histogram);
 
     printf("%s\n", image->getImageType());
     printf("%s\n", image->getSizeAndColor());

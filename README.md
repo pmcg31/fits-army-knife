@@ -8,12 +8,14 @@ It is unlikely I would have achieved success without [this code example](https:/
 [cfitsio documention](https://heasarc.gsfc.nasa.gov/docs/software/fitsio/c/c_user/cfitsio.html) does not really make things obvious. So, thank you Mitch Richling!
 
 There are times when I would just like to quickly take a look at a FITS image, and I have not yet found a simple tool for this. This project
-will become such a tool. 
+will become such a tool.
 
 Current features:
+
     - zoom with scroll wheel (centered only for now)
-        - buttons for 1:1 and zoom-to-fit
-        
+    - buttons for 1:1 and zoom-to-fit
+    - histogram
+
 Feature ideas:
 
     - Integrated screen transfer function
