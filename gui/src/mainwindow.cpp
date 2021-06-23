@@ -12,6 +12,8 @@ MainWindow::MainWindow(QWidget *parent)
       fitsWidget(),
       histWidget(),
       bottomLayout(),
+      statsLayout(),
+      statsHistLayout(),
       minLabel(" min: -- "),
       meanLabel(" mean: -- "),
       medLabel(" med: -- "),
@@ -35,27 +37,43 @@ MainWindow::MainWindow(QWidget *parent)
     currentZoom.setStyleSheet(lblStyle);
     currentZoom.setAlignment(Qt::AlignCenter);
     currentZoom.setMinimumWidth(65);
+    QSize hint = currentZoom.sizeHint();
+    int height = hint.height() * 1.5;
+    currentZoom.setMinimumHeight(height);
+    currentZoom.setMaximumHeight(height);
 
     minLabel.setStyleSheet(lblStyle);
     minLabel.setAlignment(Qt::AlignCenter);
+    minLabel.setMinimumHeight(height);
+    minLabel.setMaximumHeight(height);
     meanLabel.setStyleSheet(lblStyle);
     meanLabel.setAlignment(Qt::AlignCenter);
+    meanLabel.setMinimumHeight(height);
+    meanLabel.setMaximumHeight(height);
     medLabel.setStyleSheet(lblStyle);
     medLabel.setAlignment(Qt::AlignCenter);
+    medLabel.setMinimumHeight(height);
+    medLabel.setMaximumHeight(height);
     maxLabel.setStyleSheet(lblStyle);
     maxLabel.setAlignment(Qt::AlignCenter);
+    maxLabel.setMinimumHeight(height);
+    maxLabel.setMaximumHeight(height);
 
-    bottomLayout.addWidget(&minLabel);
-    bottomLayout.addWidget(&meanLabel);
-    bottomLayout.addWidget(&medLabel);
-    bottomLayout.addWidget(&maxLabel);
     bottomLayout.addStretch(1);
     bottomLayout.addWidget(&zoomFitBtn);
     bottomLayout.addWidget(&zoom100Btn);
     bottomLayout.addWidget(&currentZoom);
 
+    statsLayout.addWidget(&minLabel);
+    statsLayout.addWidget(&meanLabel);
+    statsLayout.addWidget(&medLabel);
+    statsLayout.addWidget(&maxLabel);
+
+    statsHistLayout.addLayout(&statsLayout);
+    statsHistLayout.addWidget(&histWidget);
+
     layout.addWidget(&fitsWidget);
-    layout.addWidget(&histWidget);
+    layout.addLayout(&statsHistLayout);
     layout.addLayout(&bottomLayout);
 
     setCentralWidget(&mainPane);
@@ -113,6 +131,23 @@ void MainWindow::fitsFileChanged(const char *filename)
     const ELS::FITSImage *image = fitsWidget.getImage();
     bool isColor = image->isColor();
 
+    const char *giMinF = " min: %d ";
+    const char *giMeanF = " mean: %d ";
+    const char *giMedF = " median: %d ";
+    const char *giMaxF = " max: %d ";
+    const char *ciMinF = " min: %d | %d | %d";
+    const char *ciMeanF = " mean: %d | %d | %d";
+    const char *ciMedF = " median: %d | %d | %d ";
+    const char *ciMaxF = " max: %d | %d | %d ";
+    const char *gfMinF = " min: %d0.4f ";
+    const char *gfMeanF = " mean: %0.4f ";
+    const char *gfMedF = " median: %0.4f ";
+    const char *gfMaxF = " max: %0.4f ";
+    const char *cfMinF = " min: %0.4f | %0.4f | %0.4f";
+    const char *cfMeanF = " mean: %0.4f | %0.4f | %0.4f";
+    const char *cfMedF = " median: %0.4f | %0.4f | %0.4f ";
+    const char *cfMaxF = " max: %0.4f | %0.4f | %0.4f ";
+
     char tmp[100];
     char tmp2[100];
     char tmp3[100];
@@ -127,26 +162,26 @@ void MainWindow::fitsFileChanged(const char *filename)
         image->visitPixels(&visitor);
         if (!isColor)
         {
-            sprintf(tmp, " min: %d ", visitor.getMinVal());
-            sprintf(tmp2, " mean: %d ", visitor.getMeanVal());
-            sprintf(tmp3, " med: %d ", visitor.getMedVal());
-            sprintf(tmp4, " max: %d ", visitor.getMaxVal());
+            sprintf(tmp, giMinF, visitor.getMinVal());
+            sprintf(tmp2, giMeanF, visitor.getMeanVal());
+            sprintf(tmp3, giMedF, visitor.getMedVal());
+            sprintf(tmp4, giMaxF, visitor.getMaxVal());
         }
         else
         {
-            sprintf(tmp, " min: %d/%d/%d ",
+            sprintf(tmp, ciMinF,
                     visitor.getMinVal(0),
                     visitor.getMinVal(1),
                     visitor.getMinVal(2));
-            sprintf(tmp2, " mean: %d/%d/%d ",
+            sprintf(tmp2, ciMeanF,
                     visitor.getMeanVal(0),
                     visitor.getMeanVal(1),
                     visitor.getMeanVal(2));
-            sprintf(tmp3, " med: %d/%d/%d ",
+            sprintf(tmp3, ciMedF,
                     visitor.getMedVal(0),
                     visitor.getMedVal(1),
                     visitor.getMedVal(2));
-            sprintf(tmp4, " max: %d/%d/%d ",
+            sprintf(tmp4, ciMaxF,
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));
@@ -165,26 +200,26 @@ void MainWindow::fitsFileChanged(const char *filename)
         image->visitPixels(&visitor);
         if (!isColor)
         {
-            sprintf(tmp, " min: %d ", visitor.getMinVal());
-            sprintf(tmp2, " mean: %d ", visitor.getMeanVal());
-            sprintf(tmp3, " med: %d ", visitor.getMedVal());
-            sprintf(tmp4, " max: %d ", visitor.getMaxVal());
+            sprintf(tmp, giMinF, visitor.getMinVal());
+            sprintf(tmp2, giMeanF, visitor.getMeanVal());
+            sprintf(tmp3, giMedF, visitor.getMedVal());
+            sprintf(tmp4, giMaxF, visitor.getMaxVal());
         }
         else
         {
-            sprintf(tmp, " min: %d/%d/%d ",
+            sprintf(tmp, ciMinF,
                     visitor.getMinVal(0),
                     visitor.getMinVal(1),
                     visitor.getMinVal(2));
-            sprintf(tmp2, " mean: %d/%d/%d ",
+            sprintf(tmp2, ciMeanF,
                     visitor.getMeanVal(0),
                     visitor.getMeanVal(1),
                     visitor.getMeanVal(2));
-            sprintf(tmp3, " med: %d/%d/%d ",
+            sprintf(tmp3, ciMedF,
                     visitor.getMedVal(0),
                     visitor.getMedVal(1),
                     visitor.getMedVal(2));
-            sprintf(tmp4, " max: %d/%d/%d ",
+            sprintf(tmp4, ciMaxF,
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));
@@ -203,26 +238,26 @@ void MainWindow::fitsFileChanged(const char *filename)
         image->visitPixels(&visitor);
         if (!isColor)
         {
-            sprintf(tmp, " min: %d ", visitor.getMinVal());
-            sprintf(tmp2, " mean: %d ", visitor.getMeanVal());
-            sprintf(tmp3, " med: %d ", visitor.getMedVal());
-            sprintf(tmp4, " max: %d ", visitor.getMaxVal());
+            sprintf(tmp, giMinF, visitor.getMinVal());
+            sprintf(tmp2, giMeanF, visitor.getMeanVal());
+            sprintf(tmp3, giMedF, visitor.getMedVal());
+            sprintf(tmp4, giMaxF, visitor.getMaxVal());
         }
         else
         {
-            sprintf(tmp, " min: %d/%d/%d ",
+            sprintf(tmp, ciMinF,
                     visitor.getMinVal(0),
                     visitor.getMinVal(1),
                     visitor.getMinVal(2));
-            sprintf(tmp2, " mean: %d/%d/%d ",
+            sprintf(tmp2, ciMeanF,
                     visitor.getMeanVal(0),
                     visitor.getMeanVal(1),
                     visitor.getMeanVal(2));
-            sprintf(tmp3, " med: %d/%d/%d ",
+            sprintf(tmp3, ciMedF,
                     visitor.getMedVal(0),
                     visitor.getMedVal(1),
                     visitor.getMedVal(2));
-            sprintf(tmp4, " max: %d/%d/%d ",
+            sprintf(tmp4, ciMaxF,
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));
@@ -241,26 +276,26 @@ void MainWindow::fitsFileChanged(const char *filename)
         image->visitPixels(&visitor);
         if (!isColor)
         {
-            sprintf(tmp, " min: %0.4f ", visitor.getMinVal());
-            sprintf(tmp2, " mean: %0.4f ", visitor.getMeanVal());
-            sprintf(tmp3, " med: %0.4f ", visitor.getMedVal());
-            sprintf(tmp4, " max: %0.4f ", visitor.getMaxVal());
+            sprintf(tmp, gfMinF, visitor.getMinVal());
+            sprintf(tmp2, gfMeanF, visitor.getMeanVal());
+            sprintf(tmp3, gfMedF, visitor.getMedVal());
+            sprintf(tmp4, gfMaxF, visitor.getMaxVal());
         }
         else
         {
-            sprintf(tmp, " min: %0.4f/%0.4f/%0.4f ",
+            sprintf(tmp, cfMinF,
                     visitor.getMinVal(0),
                     visitor.getMinVal(1),
                     visitor.getMinVal(2));
-            sprintf(tmp2, " mean: %0.4f/%0.4f/%0.4f ",
+            sprintf(tmp2, cfMeanF,
                     visitor.getMeanVal(0),
                     visitor.getMeanVal(1),
                     visitor.getMeanVal(2));
-            sprintf(tmp3, " med: %0.4f/%0.4f/%0.4f ",
+            sprintf(tmp3, cfMedF,
                     visitor.getMedVal(0),
                     visitor.getMedVal(1),
                     visitor.getMedVal(2));
-            sprintf(tmp4, " max: %0.4f/%0.4f/%0.4f ",
+            sprintf(tmp4, cfMaxF,
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));
@@ -279,26 +314,26 @@ void MainWindow::fitsFileChanged(const char *filename)
         image->visitPixels(&visitor);
         if (!isColor)
         {
-            sprintf(tmp, " min: %0.4lf ", visitor.getMinVal());
-            sprintf(tmp2, " mean: %0.4lf ", visitor.getMeanVal());
-            sprintf(tmp3, " med: %0.4lf ", visitor.getMedVal());
-            sprintf(tmp4, " max: %0.4lf ", visitor.getMaxVal());
+            sprintf(tmp, gfMinF, visitor.getMinVal());
+            sprintf(tmp2, gfMeanF, visitor.getMeanVal());
+            sprintf(tmp3, gfMedF, visitor.getMedVal());
+            sprintf(tmp4, gfMaxF, visitor.getMaxVal());
         }
         else
         {
-            sprintf(tmp, " min: %0.4lf/%0.4lf/%0.4lf ",
+            sprintf(tmp, cfMinF,
                     visitor.getMinVal(0),
                     visitor.getMinVal(1),
                     visitor.getMinVal(2));
-            sprintf(tmp2, " mean: %0.4lf/%0.4f/%0.4lf ",
+            sprintf(tmp2, cfMeanF,
                     visitor.getMeanVal(0),
                     visitor.getMeanVal(1),
                     visitor.getMeanVal(2));
-            sprintf(tmp3, " med: %0.4lf/%0.4lf/%0.4lf ",
+            sprintf(tmp3, cfMedF,
                     visitor.getMedVal(0),
                     visitor.getMedVal(1),
                     visitor.getMedVal(2));
-            sprintf(tmp4, " max: %0.4lf/%0.4lf/%0.4lf ",
+            sprintf(tmp4, cfMaxF,
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));

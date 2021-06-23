@@ -10,6 +10,7 @@ HistogramWidget::HistogramWidget(QWidget *parent /* = nullptr */)
       _data(0),
       _histImage(0)
 {
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 }
 
 HistogramWidget::~HistogramWidget()
@@ -22,12 +23,12 @@ HistogramWidget::~HistogramWidget()
 
 QSize HistogramWidget::sizeHint() const
 {
-    return QSize(500, 200);
+    return QSize(500, 150);
 }
 
 QSize HistogramWidget::minimumSizeHint() const
 {
-    return QSize(100, 100);
+    return QSize(100, 150);
 }
 
 void HistogramWidget::setHistogramData(bool isColor,
@@ -53,8 +54,24 @@ void HistogramWidget::paintEvent(QPaintEvent *event)
     int realHeight = height();
 
     int border = 5;
-    int w = realWidth - border;
-    int h = realHeight - border;
+    int borderBottom = 10;
+    int w = realWidth - border * 2;
+    int h = realHeight - border - borderBottom;
+
+    int hashHeight = 4;
+    painter.setPen(QColor::fromRgb(160, 160, 160));
+    painter.drawLine(border, realHeight - borderBottom / 2,
+                     realWidth - border, realHeight - borderBottom / 2);
+    painter.drawLine(border, realHeight - borderBottom / 2 - hashHeight / 2,
+                     border, realHeight - borderBottom / 2 + hashHeight / 2);
+    painter.drawLine(realWidth - border, realHeight - borderBottom / 2 - hashHeight / 2,
+                     realWidth - border, realHeight - borderBottom / 2 + hashHeight / 2);
+    painter.drawLine(realWidth * 0.25, realHeight - borderBottom / 2 - hashHeight / 2,
+                     realWidth * 0.25, realHeight - borderBottom / 2 + hashHeight / 2);
+    painter.drawLine(realWidth * 0.5, realHeight - borderBottom / 2 - hashHeight / 2,
+                     realWidth * 0.5, realHeight - borderBottom / 2 + hashHeight / 2);
+    painter.drawLine(realWidth * 0.75, realHeight - borderBottom / 2 - hashHeight / 2,
+                     realWidth * 0.75, realHeight - borderBottom / 2 + hashHeight / 2);
 
     double pointsPerPixel = (double)_numPoints / w;
 

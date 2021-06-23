@@ -40,6 +40,8 @@ private:
     FITSWidget fitsWidget;
     HistogramWidget histWidget;
     QHBoxLayout bottomLayout;
+    QVBoxLayout statsLayout;
+    QHBoxLayout statsHistLayout;
     QLabel minLabel;
     QLabel meanLabel;
     QLabel medLabel;
