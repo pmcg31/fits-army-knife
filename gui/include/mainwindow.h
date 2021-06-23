@@ -42,6 +42,7 @@ private:
     QHBoxLayout bottomLayout;
     QLabel minLabel;
     QLabel meanLabel;
+    QLabel medLabel;
     QLabel maxLabel;
     QLabel currentZoom;
     QPushButton zoomFitBtn;

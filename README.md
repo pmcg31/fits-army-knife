@@ -2,7 +2,7 @@
   FITS Army Knife
 </h1>
 
-Contains a FITS file viewer implemented using the cftisio library and QT. QT should enable cross-platform support, but I have only built and run on linux (Ubuntu 20.10) so far.
+Contains a FITS file viewer implemented using the cftisio library and Qt. Qt should enable cross-platform support, but I have only built and run on linux (Ubuntu 20.10) so far.
 
 It is unlikely I would have achieved success without [this code example](https://github.com/richmit/ex-CFITSIO/blob/master/fits2tga.c). The
 [cfitsio documention](https://heasarc.gsfc.nasa.gov/docs/software/fitsio/c/c_user/cfitsio.html) does not really make things obvious. So, thank you Mitch Richling!
@@ -15,6 +15,7 @@ Current features:
     - Zoom with scroll wheel (centered only for now)
         - Buttons for 1:1 and zoom-to-fit
     - Histogram
+    - Statistics (min/mean/median/max)
 
 Feature ideas:
 
@@ -34,9 +35,9 @@ Those are the key ones, and some nice to haves:
 
 ## Dependencies
 
-You will need QT5 and the cfitsio library. On debian based linux systems:
+You will need Qt5 and the cfitsio library. On debian based linux systems:
 
-`sudo apt install qt5-default` for QT
+`sudo apt install qt5-default` for Qt
 
 `sudo apt install libcfitsio-dev` for cfitsio
 

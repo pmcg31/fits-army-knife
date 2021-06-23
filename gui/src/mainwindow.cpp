@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
       bottomLayout(),
       minLabel(" min: -- "),
       meanLabel(" mean: -- "),
+      medLabel(" med: -- "),
       maxLabel(" max: -- "),
       currentZoom("--"),
       zoomFitBtn("fit"),
@@ -39,11 +40,14 @@ MainWindow::MainWindow(QWidget *parent)
     minLabel.setAlignment(Qt::AlignCenter);
     meanLabel.setStyleSheet(lblStyle);
     meanLabel.setAlignment(Qt::AlignCenter);
+    medLabel.setStyleSheet(lblStyle);
+    medLabel.setAlignment(Qt::AlignCenter);
     maxLabel.setStyleSheet(lblStyle);
     maxLabel.setAlignment(Qt::AlignCenter);
 
     bottomLayout.addWidget(&minLabel);
     bottomLayout.addWidget(&meanLabel);
+    bottomLayout.addWidget(&medLabel);
     bottomLayout.addWidget(&maxLabel);
     bottomLayout.addStretch(1);
     bottomLayout.addWidget(&zoomFitBtn);
@@ -109,9 +113,10 @@ void MainWindow::fitsFileChanged(const char *filename)
     const ELS::FITSImage *image = fitsWidget.getImage();
     bool isColor = image->isColor();
 
-    char tmp[500];
-    char tmp2[500];
-    char tmp3[500];
+    char tmp[100];
+    char tmp2[100];
+    char tmp3[100];
+    char tmp4[100];
     int numPoints = 0;
     uint32_t *histogram = 0;
     switch (image->getBitDepth())
@@ -124,7 +129,8 @@ void MainWindow::fitsFileChanged(const char *filename)
         {
             sprintf(tmp, " min: %d ", visitor.getMinVal());
             sprintf(tmp2, " mean: %d ", visitor.getMeanVal());
-            sprintf(tmp3, " max: %d ", visitor.getMaxVal());
+            sprintf(tmp3, " med: %d ", visitor.getMedVal());
+            sprintf(tmp4, " max: %d ", visitor.getMaxVal());
         }
         else
         {
@@ -136,14 +142,19 @@ void MainWindow::fitsFileChanged(const char *filename)
                     visitor.getMeanVal(0),
                     visitor.getMeanVal(1),
                     visitor.getMeanVal(2));
-            sprintf(tmp3, " max: %d/%d/%d ",
+            sprintf(tmp3, " med: %d/%d/%d ",
+                    visitor.getMedVal(0),
+                    visitor.getMedVal(1),
+                    visitor.getMedVal(2));
+            sprintf(tmp4, " max: %d/%d/%d ",
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));
         }
         minLabel.setText(tmp);
         meanLabel.setText(tmp2);
-        maxLabel.setText(tmp3);
+        medLabel.setText(tmp3);
+        maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
     }
@@ -156,7 +167,8 @@ void MainWindow::fitsFileChanged(const char *filename)
         {
             sprintf(tmp, " min: %d ", visitor.getMinVal());
             sprintf(tmp2, " mean: %d ", visitor.getMeanVal());
-            sprintf(tmp3, " max: %d ", visitor.getMaxVal());
+            sprintf(tmp3, " med: %d ", visitor.getMedVal());
+            sprintf(tmp4, " max: %d ", visitor.getMaxVal());
         }
         else
         {
@@ -168,14 +180,19 @@ void MainWindow::fitsFileChanged(const char *filename)
                     visitor.getMeanVal(0),
                     visitor.getMeanVal(1),
                     visitor.getMeanVal(2));
-            sprintf(tmp3, " max: %d/%d/%d ",
+            sprintf(tmp3, " med: %d/%d/%d ",
+                    visitor.getMedVal(0),
+                    visitor.getMedVal(1),
+                    visitor.getMedVal(2));
+            sprintf(tmp4, " max: %d/%d/%d ",
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));
         }
         minLabel.setText(tmp);
         meanLabel.setText(tmp2);
-        maxLabel.setText(tmp3);
+        medLabel.setText(tmp3);
+        maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
     }
@@ -188,7 +205,8 @@ void MainWindow::fitsFileChanged(const char *filename)
         {
             sprintf(tmp, " min: %d ", visitor.getMinVal());
             sprintf(tmp2, " mean: %d ", visitor.getMeanVal());
-            sprintf(tmp3, " max: %d ", visitor.getMaxVal());
+            sprintf(tmp3, " med: %d ", visitor.getMedVal());
+            sprintf(tmp4, " max: %d ", visitor.getMaxVal());
         }
         else
         {
@@ -200,14 +218,19 @@ void MainWindow::fitsFileChanged(const char *filename)
                     visitor.getMeanVal(0),
                     visitor.getMeanVal(1),
                     visitor.getMeanVal(2));
-            sprintf(tmp3, " max: %d/%d/%d ",
+            sprintf(tmp3, " med: %d/%d/%d ",
+                    visitor.getMedVal(0),
+                    visitor.getMedVal(1),
+                    visitor.getMedVal(2));
+            sprintf(tmp4, " max: %d/%d/%d ",
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));
         }
         minLabel.setText(tmp);
         meanLabel.setText(tmp2);
-        maxLabel.setText(tmp3);
+        medLabel.setText(tmp3);
+        maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
     }
@@ -220,7 +243,8 @@ void MainWindow::fitsFileChanged(const char *filename)
         {
             sprintf(tmp, " min: %0.4f ", visitor.getMinVal());
             sprintf(tmp2, " mean: %0.4f ", visitor.getMeanVal());
-            sprintf(tmp3, " max: %0.4f ", visitor.getMaxVal());
+            sprintf(tmp3, " med: %0.4f ", visitor.getMedVal());
+            sprintf(tmp4, " max: %0.4f ", visitor.getMaxVal());
         }
         else
         {
@@ -232,14 +256,19 @@ void MainWindow::fitsFileChanged(const char *filename)
                     visitor.getMeanVal(0),
                     visitor.getMeanVal(1),
                     visitor.getMeanVal(2));
-            sprintf(tmp3, " max: %0.4f/%0.4f/%0.4f ",
+            sprintf(tmp3, " med: %0.4f/%0.4f/%0.4f ",
+                    visitor.getMedVal(0),
+                    visitor.getMedVal(1),
+                    visitor.getMedVal(2));
+            sprintf(tmp4, " max: %0.4f/%0.4f/%0.4f ",
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));
         }
         minLabel.setText(tmp);
         meanLabel.setText(tmp2);
-        maxLabel.setText(tmp3);
+        medLabel.setText(tmp3);
+        maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
     }
@@ -251,8 +280,9 @@ void MainWindow::fitsFileChanged(const char *filename)
         if (!isColor)
         {
             sprintf(tmp, " min: %0.4lf ", visitor.getMinVal());
-            sprintf(tmp2, " mean: %0.4f ", visitor.getMeanVal());
-            sprintf(tmp2, " max: %0.4lf ", visitor.getMaxVal());
+            sprintf(tmp2, " mean: %0.4lf ", visitor.getMeanVal());
+            sprintf(tmp3, " med: %0.4lf ", visitor.getMedVal());
+            sprintf(tmp4, " max: %0.4lf ", visitor.getMaxVal());
         }
         else
         {
@@ -260,18 +290,23 @@ void MainWindow::fitsFileChanged(const char *filename)
                     visitor.getMinVal(0),
                     visitor.getMinVal(1),
                     visitor.getMinVal(2));
-            sprintf(tmp2, " mean: %0.4f/%0.4f/%0.4f ",
+            sprintf(tmp2, " mean: %0.4lf/%0.4f/%0.4lf ",
                     visitor.getMeanVal(0),
                     visitor.getMeanVal(1),
                     visitor.getMeanVal(2));
-            sprintf(tmp3, " max: %0.4f/%0.4f/%0.4f ",
+            sprintf(tmp3, " med: %0.4lf/%0.4lf/%0.4lf ",
+                    visitor.getMedVal(0),
+                    visitor.getMedVal(1),
+                    visitor.getMedVal(2));
+            sprintf(tmp4, " max: %0.4lf/%0.4lf/%0.4lf ",
                     visitor.getMaxVal(0),
                     visitor.getMaxVal(1),
                     visitor.getMaxVal(2));
         }
         minLabel.setText(tmp);
         meanLabel.setText(tmp2);
-        maxLabel.setText(tmp3);
+        medLabel.setText(tmp3);
+        maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
     }

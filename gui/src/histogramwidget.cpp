@@ -104,9 +104,10 @@ void HistogramWidget::paintEvent(QPaintEvent *event)
         dataIdxHigh = dataIdxLow + pointsPerPixel;
     }
 
+    int brightness = 200;
     if (!_isColor)
     {
-        painter.setPen(QColor::fromRgb(160, 160, 160));
+        painter.setPen(QColor::fromRgb(brightness, brightness, brightness));
         double factor = (double)h / tallest[0];
 
         for (int x = 0; x < w; x++)
@@ -188,7 +189,7 @@ void HistogramWidget::paintEvent(QPaintEvent *event)
 
             // Single color; the highest channel
             int rgb[] = {0, 0, 0};
-            rgb[sortedIdx[2]] = 160;
+            rgb[sortedIdx[2]] = brightness;
             if ((val[sortedIdx[2]] - val[sortedIdx[1]]) > 0)
             {
                 painter.setPen(QColor::fromRgb(rgb[0], rgb[1], rgb[2]));
@@ -197,7 +198,7 @@ void HistogramWidget::paintEvent(QPaintEvent *event)
             }
 
             // Bi-color, the middle and highest channel
-            rgb[sortedIdx[1]] = 160;
+            rgb[sortedIdx[1]] = brightness;
             if ((val[sortedIdx[1]] - val[sortedIdx[0]]) > 0)
             {
                 painter.setPen(QColor::fromRgb(rgb[0], rgb[1], rgb[2]));
@@ -206,7 +207,7 @@ void HistogramWidget::paintEvent(QPaintEvent *event)
             }
 
             // Gray; the portion all channels occupy
-            rgb[sortedIdx[0]] = 160;
+            rgb[sortedIdx[0]] = brightness;
             if (val[sortedIdx[0]] > 0)
             {
                 painter.setPen(QColor::fromRgb(rgb[0], rgb[1], rgb[2]));

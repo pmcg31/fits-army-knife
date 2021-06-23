@@ -11,7 +11,7 @@ public:
 
     PixelT getMinVal(int chan = 0) const;
     PixelT getMaxVal(int chan = 0) const;
-    PixelT getMedianVal(int chan = 0) const;
+    PixelT getMedVal(int chan = 0) const;
     PixelT getMeanVal(int chan = 0) const;
 
     void getHistogramData(int *numPoints, uint32_t **data);
@@ -28,6 +28,12 @@ private:
     static uint16_t convertRangeToHist(uint32_t val);
     static uint16_t convertRangeToHist(float val);
     static uint16_t convertRangeToHist(double val);
+
+    static void convertRangeFromHist(uint16_t hist, uint8_t *val);
+    static void convertRangeFromHist(uint16_t hist, uint16_t *val);
+    static void convertRangeFromHist(uint16_t hist, uint32_t *val);
+    static void convertRangeFromHist(uint16_t hist, float *val);
+    static void convertRangeFromHist(uint16_t hist, double *val);
 
 private:
     int _width;
@@ -89,7 +95,7 @@ PixelT StatisticsVisitor<PixelT>::getMaxVal(int chan /* = 0 */) const
 }
 
 template <typename PixelT>
-PixelT StatisticsVisitor<PixelT>::getMedianVal(int chan /* = 0 */) const
+PixelT StatisticsVisitor<PixelT>::getMedVal(int chan /* = 0 */) const
 {
     return _medVal[chan];
 }
@@ -257,6 +263,64 @@ void StatisticsVisitor<PixelT>::done()
         _meanVal[1] = (PixelT)(_accumulator[1] / _pixelCount);
         _meanVal[2] = (PixelT)(_accumulator[2] / _pixelCount);
     }
+
+    bool isColor = _gIdx != -1;
+
+    int64_t halfway = _pixelCount / 2;
+    int64_t pointCount[3] = {0, 0, 0};
+    bool done = false;
+    for (int i = 0; (!done) && (i < g_histogramPoints); i++)
+    {
+        done = true;
+
+        if (pointCount[0] < halfway)
+        {
+            pointCount[0] += _histogram[i];
+            if (pointCount[0] >= halfway)
+            {
+                PixelT val = 0;
+                convertRangeFromHist(i, &val);
+                _medVal[0] = val;
+            }
+            else
+            {
+                done = false;
+            }
+        }
+
+        if (isColor)
+        {
+            if (pointCount[1] < halfway)
+            {
+                pointCount[1] += _histogram[g_histogramPoints + i];
+                if (pointCount[1] >= halfway)
+                {
+                    PixelT val = 0;
+                    convertRangeFromHist(i, &val);
+                    _medVal[1] = val;
+                }
+                else
+                {
+                    done = false;
+                }
+            }
+
+            if (pointCount[2] < halfway)
+            {
+                pointCount[2] += _histogram[g_histogramPoints * 2 + i];
+                if (pointCount[2] >= halfway)
+                {
+                    PixelT val = 0;
+                    convertRangeFromHist(i, &val);
+                    _medVal[2] = val;
+                }
+                else
+                {
+                    done = false;
+                }
+            }
+        }
+    }
 }
 
 /* static */
@@ -338,4 +402,45 @@ uint16_t StatisticsVisitor<PixelT>::convertRangeToHist(double val)
     }
 
     return newVal;
+}
+
+/* static */
+template <typename PixelT>
+void StatisticsVisitor<PixelT>::convertRangeFromHist(uint16_t hist, uint8_t *val)
+{
+    uint8_t factor = 255 / g_histogramPoints;
+
+    *val = (uint8_t)(hist / factor);
+}
+
+/* static */
+template <typename PixelT>
+void StatisticsVisitor<PixelT>::convertRangeFromHist(uint16_t hist, uint16_t *val)
+{
+    uint16_t factor = 65535 / g_histogramPoints;
+
+    *val = (uint16_t)(hist / factor);
+}
+
+/* static */
+template <typename PixelT>
+void StatisticsVisitor<PixelT>::convertRangeFromHist(uint16_t hist, uint32_t *val)
+{
+    uint32_t factor = 4294967295 / g_histogramPoints;
+
+    *val = (uint32_t)(hist / factor);
+}
+
+/* static */
+template <typename PixelT>
+void StatisticsVisitor<PixelT>::convertRangeFromHist(uint16_t hist, float *val)
+{
+    *val = (float)hist / g_histogramPoints;
+}
+
+/* static */
+template <typename PixelT>
+void StatisticsVisitor<PixelT>::convertRangeFromHist(uint16_t hist, double *val)
+{
+    *val = (double)hist / g_histogramPoints;
 }

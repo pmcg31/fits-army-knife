@@ -235,8 +235,8 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
         emit actualZoomChanged(_actualZoom);
     }
 
-    painter.setRenderHint(QPainter::SmoothPixmapTransform);
-    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHints(QPainter::SmoothPixmapTransform |
+                           QPainter::Antialiasing);
     painter.drawImage(target, *_cacheImage, source);
 }
 
