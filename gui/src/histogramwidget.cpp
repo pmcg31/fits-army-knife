@@ -186,23 +186,33 @@ void HistogramWidget::paintEvent(QPaintEvent *event)
                 }
             }
 
-            // Gray; the portion all channels occupy
-            int rgb[] = {160, 160, 160};
-            painter.setPen(QColor::fromRgb(rgb[0], rgb[1], rgb[2]));
-            painter.drawLine(QPoint(border + x, border + h - val[sortedIdx[0]]),
-                             QPoint(border + x, border + h));
-            rgb[sortedIdx[0]] = 0;
+            // Single color; the highest channel
+            int rgb[] = {0, 0, 0};
+            rgb[sortedIdx[2]] = 160;
+            if ((val[sortedIdx[2]] - val[sortedIdx[1]]) > 0)
+            {
+                painter.setPen(QColor::fromRgb(rgb[0], rgb[1], rgb[2]));
+                painter.drawLine(QPoint(border + x, border + h - val[sortedIdx[2]]),
+                                 QPoint(border + x, border + h - val[sortedIdx[1]]));
+            }
 
             // Bi-color, the middle and highest channel
-            painter.setPen(QColor::fromRgb(rgb[0], rgb[1], rgb[2]));
-            painter.drawLine(QPoint(border + x, border + h - val[sortedIdx[1]]),
-                             QPoint(border + x, border + h - val[sortedIdx[0]]));
-            rgb[sortedIdx[1]] = 0;
+            rgb[sortedIdx[1]] = 160;
+            if ((val[sortedIdx[1]] - val[sortedIdx[0]]) > 0)
+            {
+                painter.setPen(QColor::fromRgb(rgb[0], rgb[1], rgb[2]));
+                painter.drawLine(QPoint(border + x, border + h - val[sortedIdx[1]]),
+                                 QPoint(border + x, border + h - val[sortedIdx[0]]));
+            }
 
-            // Single color; the highest channel
-            painter.setPen(QColor::fromRgb(rgb[0], rgb[1], rgb[2]));
-            painter.drawLine(QPoint(border + x, border + h - val[sortedIdx[2]]),
-                             QPoint(border + x, border + h - val[sortedIdx[1]]));
+            // Gray; the portion all channels occupy
+            rgb[sortedIdx[0]] = 160;
+            if (val[sortedIdx[0]] > 0)
+            {
+                painter.setPen(QColor::fromRgb(rgb[0], rgb[1], rgb[2]));
+                painter.drawLine(QPoint(border + x, border + h - val[sortedIdx[0]]),
+                                 QPoint(border + x, border + h));
+            }
         }
     }
 }
