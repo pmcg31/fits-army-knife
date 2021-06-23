@@ -2,7 +2,7 @@
   FITS Army Knife
 </h1>
 
-Contains a FITS file viewer implemented using the cftisio library and QT.
+Contains a FITS file viewer implemented using the cftisio library and QT. QT should enable cross-platform support, but I have only built and run on linux (Ubuntu 20.10) so far.
 
 It is unlikely I would have achieved success without [this code example](https://github.com/richmit/ex-CFITSIO/blob/master/fits2tga.c). The
 [cfitsio documention](https://heasarc.gsfc.nasa.gov/docs/software/fitsio/c/c_user/cfitsio.html) does not really make things obvious. So, thank you Mitch Richling!
@@ -29,6 +29,7 @@ Those are the key ones, and some nice to haves:
         - Keep zoom/position the same
     - Easy and quick Pick/Reject function
     - Ability to watch a directory and automatically keep loading files as they show up
+    - Support for DSLR raw files? Not sure how hard (i.e., proprietary) that is yet
     - Possible live stack? Depending on if I can figure out the math...
 
 ## Dependencies
