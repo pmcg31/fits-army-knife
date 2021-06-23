@@ -13,7 +13,7 @@ will become such a tool.
 Current features:
 
     - zoom with scroll wheel (centered only for now)
-    - buttons for 1:1 and zoom-to-fit
+        - buttons for 1:1 and zoom-to-fit
     - histogram
 
 Feature ideas:
