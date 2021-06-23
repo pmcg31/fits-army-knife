@@ -12,16 +12,16 @@ will become such a tool.
 
 Current features:
 
-    - zoom with scroll wheel (centered only for now)
-        - buttons for 1:1 and zoom-to-fit
-    - histogram
+    - Zoom with scroll wheel (centered only for now)
+        - Buttons for 1:1 and zoom-to-fit
+    - Histogram
 
 Feature ideas:
 
     - Integrated screen transfer function
     - Quick option to see center and corners at 1:1
     - Option to highlight the brightest and/or darkest pixels
-    - Histogram, possibly with a way to show more detail on the brightest and darkest sections (to get a better idea of how much data is getting close to being clipped; this is a reaction to my inability to choose optimal exposure times)
+    - Histogram refinements
 
 Those are the key ones, and some nice to haves:
 
