@@ -240,62 +240,6 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
     painter.drawImage(target, *_cacheImage, source);
 }
 
-// void FITSWidget::paintEvent(QPaintEvent * /* event */)
-// {
-//     QPainter painter(this);
-
-//     int w = width();
-//     int h = height();
-
-//     painter.setRenderHints(QPainter::SmoothPixmapTransform |
-//                            QPainter::Antialiasing);
-
-//     painter.drawRect(0, 0, w, h);
-
-//     if (_cacheImage == 0)
-//     {
-//         _cacheImage = convertImage();
-//     }
-
-//     int imgW = _fits->getWidth();
-//     int imgH = _fits->getHeight();
-
-//     QRect target;
-//     if ((imgW < w) && (imgH < h))
-//     {
-//         target.setLeft((w - imgW) / 2);
-//         target.setTop((h - imgH) / 2);
-//         target.setWidth(imgW);
-//         target.setHeight(imgH);
-//     }
-//     else
-//     {
-//         float imgAspect = (float)imgW / (float)imgH;
-//         float winAspect = (float)w / (float)h;
-
-//         if (imgAspect >= winAspect)
-//         {
-//             target.setLeft(0);
-//             target.setWidth(w);
-//             int targetHeight = (int)(w / imgAspect);
-//             target.setTop((h - targetHeight) / 2);
-//             target.setHeight(targetHeight);
-//         }
-//         else
-//         {
-//             target.setTop(0);
-//             target.setHeight(h);
-//             int targetWidth = (int)(h * imgAspect);
-//             target.setLeft((w - targetWidth) / 2);
-//             target.setWidth(targetWidth);
-//         }
-//     }
-
-//     painter.setRenderHint(QPainter::SmoothPixmapTransform);
-//     painter.setRenderHint(QPainter::Antialiasing);
-//     painter.drawImage(target, *_cacheImage);
-// }
-
 QImage *FITSWidget::convertImage() const
 {
     QImage::Format format = QImage::Format_ARGB32;
@@ -435,14 +379,14 @@ void FITSWidget::convertU16ColorImage(QImage *qi,
             switch (rf)
             {
             case ELS::FITS::RF_INTERLEAVED:
-                valR = (uint8_t)((double)pixels[3 * (x + width * y) + 2] / 257);
+                valR = (uint8_t)((double)pixels[3 * (x + width * y) + 0] / 257);
                 valG = (uint8_t)((double)pixels[3 * (x + width * y) + 1] / 257);
-                valB = (uint8_t)((double)pixels[3 * (x + width * y) + 0] / 257);
+                valB = (uint8_t)((double)pixels[3 * (x + width * y) + 2] / 257);
                 break;
             case ELS::FITS::RF_STRIDED:
-                valR = (uint8_t)((double)pixels[x + width * y + 2 * width * height] / 257);
+                valR = (uint8_t)((double)pixels[x + width * y + 0 * width * height] / 257);
                 valG = (uint8_t)((double)pixels[x + width * y + 1 * width * height] / 257);
-                valB = (uint8_t)((double)pixels[x + width * y + 0 * width * height] / 257);
+                valB = (uint8_t)((double)pixels[x + width * y + 2 * width * height] / 257);
                 break;
             }
 
@@ -468,14 +412,14 @@ void FITSWidget::convertFloatColorImage(QImage *qi,
             switch (rf)
             {
             case ELS::FITS::RF_INTERLEAVED:
-                valR = 255 * pixels[3 * (x + width * y) + 2];
+                valR = 255 * pixels[3 * (x + width * y) + 0];
                 valG = 255 * pixels[3 * (x + width * y) + 1];
-                valB = 255 * pixels[3 * (x + width * y) + 0];
+                valB = 255 * pixels[3 * (x + width * y) + 2];
                 break;
             case ELS::FITS::RF_STRIDED:
-                valR = 255 * pixels[x + width * y + 2 * width * height];
+                valR = 255 * pixels[x + width * y + 0 * width * height];
                 valG = 255 * pixels[x + width * y + 1 * width * height];
-                valB = 255 * pixels[x + width * y + 0 * width * height];
+                valB = 255 * pixels[x + width * y + 2 * width * height];
                 break;
             }
 
@@ -501,14 +445,14 @@ void FITSWidget::convertDoubleColorImage(QImage *qi,
             switch (rf)
             {
             case ELS::FITS::RF_INTERLEAVED:
-                valR = 255 * pixels[3 * (x + width * y) + 2];
+                valR = 255 * pixels[3 * (x + width * y) + 0];
                 valG = 255 * pixels[3 * (x + width * y) + 1];
-                valB = 255 * pixels[3 * (x + width * y) + 0];
+                valB = 255 * pixels[3 * (x + width * y) + 2];
                 break;
             case ELS::FITS::RF_STRIDED:
-                valR = 255 * pixels[x + width * y + 2 * width * height];
+                valR = 255 * pixels[x + width * y + 0 * width * height];
                 valG = 255 * pixels[x + width * y + 1 * width * height];
-                valB = 255 * pixels[x + width * y + 0 * width * height];
+                valB = 255 * pixels[x + width * y + 2 * width * height];
                 break;
             }
 

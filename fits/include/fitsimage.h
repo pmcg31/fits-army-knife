@@ -84,14 +84,14 @@ namespace ELS
                     switch (_format)
                     {
                     case ELS::FITS::RF_INTERLEAVED:
-                        vals[0] = ptPixels[3 * (x + _width * y) + 2];
+                        vals[0] = ptPixels[3 * (x + _width * y) + 0];
                         vals[1] = ptPixels[3 * (x + _width * y) + 1];
-                        vals[2] = ptPixels[3 * (x + _width * y) + 0];
+                        vals[2] = ptPixels[3 * (x + _width * y) + 2];
                         break;
                     case ELS::FITS::RF_STRIDED:
-                        vals[0] = ptPixels[x + _width * y + 2 * _width * _height];
+                        vals[0] = ptPixels[x + _width * y + 0 * _width * _height];
                         vals[1] = ptPixels[x + _width * y + 1 * _width * _height];
-                        vals[2] = ptPixels[x + _width * y + 0 * _width * _height];
+                        vals[2] = ptPixels[x + _width * y + 2 * _width * _height];
                         break;
                     }
 
