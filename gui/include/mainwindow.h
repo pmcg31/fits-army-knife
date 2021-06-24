@@ -41,8 +41,8 @@ private:
     FITSWidget fitsWidget;
     HistogramWidget histWidget;
     QHBoxLayout bottomLayout;
-    QVBoxLayout *statsLayout;
     QHBoxLayout statsHistLayout;
+    QVBoxLayout statsLayout;
     QLabel minLabel;
     QLabel meanLabel;
     QLabel medLabel;

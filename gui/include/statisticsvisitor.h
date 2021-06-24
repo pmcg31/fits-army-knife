@@ -140,9 +140,6 @@ void StatisticsVisitor<PixelT>::pixelFormat(ELS::FITS::PixelFormat pf)
         break;
     }
 
-    printf("rIdx: %d gIdx: %d bIdx: %d\n", _rIdx, _gIdx, _bIdx);
-    fflush(stdout);
-
     _isFirstPixel = true;
     _accumulator[0] = 0;
     _accumulator[1] = 0;

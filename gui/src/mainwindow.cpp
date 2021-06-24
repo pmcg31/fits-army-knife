@@ -13,8 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
       fitsWidget(),
       histWidget(),
       bottomLayout(),
-      statsLayout(),
       statsHistLayout(),
+      statsLayout(),
       minLabel(" min: -- "),
       meanLabel(" mean: -- "),
       medLabel(" med: -- "),
@@ -65,13 +65,12 @@ MainWindow::MainWindow(QWidget *parent)
     bottomLayout.addWidget(&zoom100Btn);
     bottomLayout.addWidget(&currentZoom);
 
-    statsLayout = new QVBoxLayout();
-    statsLayout->addWidget(&minLabel);
-    statsLayout->addWidget(&meanLabel);
-    statsLayout->addWidget(&medLabel);
-    statsLayout->addWidget(&maxLabel);
+    statsLayout.addWidget(&minLabel);
+    statsLayout.addWidget(&meanLabel);
+    statsLayout.addWidget(&medLabel);
+    statsLayout.addWidget(&maxLabel);
 
-    statsHistLayout.addLayout(statsLayout);
+    statsHistLayout.addLayout(&statsLayout);
     statsHistLayout.addWidget(&histWidget);
 
     layout.addWidget(&fitsWidget);
@@ -123,7 +122,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    delete statsLayout;
 }
 
 void MainWindow::fitsFileChanged(const char *filename)
