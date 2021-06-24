@@ -4,6 +4,7 @@
 #include "fits.h"
 #include "fitsimage.h"
 #include "statisticsvisitor.h"
+#include "adaptivedisplayfuncvisitor.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -192,6 +193,12 @@ void MainWindow::fitsFileChanged(const char *filename)
         maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
+
+        uint8_t medVals[3] = {visitor.getMedVal(0),
+                              visitor.getMedVal(1),
+                              visitor.getMedVal(2)};
+        ELS::AdaptiveDisplayFuncVisitor<uint8_t> v2(medVals);
+        image->visitPixels(&v2);
     }
     break;
     case ELS::FITS::BD_INT_16:
@@ -230,6 +237,12 @@ void MainWindow::fitsFileChanged(const char *filename)
         maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
+
+        uint16_t medVals[3] = {visitor.getMedVal(0),
+                               visitor.getMedVal(1),
+                               visitor.getMedVal(2)};
+        ELS::AdaptiveDisplayFuncVisitor<uint16_t> v2(medVals);
+        image->visitPixels(&v2);
     }
     break;
     case ELS::FITS::BD_INT_32:
@@ -268,6 +281,12 @@ void MainWindow::fitsFileChanged(const char *filename)
         maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
+
+        uint32_t medVals[3] = {visitor.getMedVal(0),
+                               visitor.getMedVal(1),
+                               visitor.getMedVal(2)};
+        ELS::AdaptiveDisplayFuncVisitor<uint32_t> v2(medVals);
+        image->visitPixels(&v2);
     }
     break;
     case ELS::FITS::BD_FLOAT:
@@ -306,6 +325,12 @@ void MainWindow::fitsFileChanged(const char *filename)
         maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
+
+        float medVals[3] = {visitor.getMedVal(0),
+                            visitor.getMedVal(1),
+                            visitor.getMedVal(2)};
+        ELS::AdaptiveDisplayFuncVisitor<float> v2(medVals);
+        image->visitPixels(&v2);
     }
     break;
     case ELS::FITS::BD_DOUBLE:
@@ -344,6 +369,12 @@ void MainWindow::fitsFileChanged(const char *filename)
         maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
+
+        double medVals[3] = {visitor.getMedVal(0),
+                             visitor.getMedVal(1),
+                             visitor.getMedVal(2)};
+        ELS::AdaptiveDisplayFuncVisitor<double> v2(medVals);
+        image->visitPixels(&v2);
     }
     break;
     }

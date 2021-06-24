@@ -8,7 +8,8 @@ LIBS += -lcfitsio
 
 INCLUDEPATH += \
     fits/include \
-    gui/include
+    gui/include \
+    stf/include
 
 SOURCES += \
     fits/src/fitsexception.cpp \
@@ -26,6 +27,7 @@ HEADERS += \
     fits/include/fitsimage.h \
     fits/include/fitspixelvisitor.h \
     fits/include/statisticsvisitor.h \
+    stf/include/adaptivedisplayfuncvisitor.h \
     gui/include/mainwindow.h \
     gui/include/fitswidget.h \
     gui/include/histogramwidget.h
