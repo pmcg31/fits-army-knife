@@ -25,10 +25,10 @@ HEADERS += \
     fits/include/fitstantrum.h \
     fits/include/fitsimage.h \
     fits/include/fitspixelvisitor.h \
+    fits/include/statisticsvisitor.h \
     gui/include/mainwindow.h \
     gui/include/fitswidget.h \
-    gui/include/histogramwidget.h \
-    gui/include/statisticsvisitor.h 
+    gui/include/histogramwidget.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

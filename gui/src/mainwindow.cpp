@@ -158,7 +158,7 @@ void MainWindow::fitsFileChanged(const char *filename)
     {
     case ELS::FITS::BD_INT_8:
     {
-        StatisticsVisitor<uint8_t> visitor;
+        ELS::StatisticsVisitor<uint8_t> visitor;
         image->visitPixels(&visitor);
         if (!isColor)
         {
@@ -196,7 +196,7 @@ void MainWindow::fitsFileChanged(const char *filename)
     break;
     case ELS::FITS::BD_INT_16:
     {
-        StatisticsVisitor<uint16_t> visitor;
+        ELS::StatisticsVisitor<uint16_t> visitor;
         image->visitPixels(&visitor);
         if (!isColor)
         {
@@ -234,7 +234,7 @@ void MainWindow::fitsFileChanged(const char *filename)
     break;
     case ELS::FITS::BD_INT_32:
     {
-        StatisticsVisitor<uint32_t> visitor;
+        ELS::StatisticsVisitor<uint32_t> visitor;
         image->visitPixels(&visitor);
         if (!isColor)
         {
@@ -272,7 +272,7 @@ void MainWindow::fitsFileChanged(const char *filename)
     break;
     case ELS::FITS::BD_FLOAT:
     {
-        StatisticsVisitor<float> visitor;
+        ELS::StatisticsVisitor<float> visitor;
         image->visitPixels(&visitor);
         if (!isColor)
         {
@@ -310,7 +310,7 @@ void MainWindow::fitsFileChanged(const char *filename)
     break;
     case ELS::FITS::BD_DOUBLE:
     {
-        StatisticsVisitor<double> visitor;
+        ELS::StatisticsVisitor<double> visitor;
         image->visitPixels(&visitor);
         if (!isColor)
         {
