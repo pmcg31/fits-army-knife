@@ -103,7 +103,7 @@ void HistogramWidget::paintEvent(QPaintEvent *event)
         for (int chan = 0; chan < numChan; chan++)
         {
             double leftPartial = ((lowIdxInt + 1) - dataIdxLow) * _data[_numPoints * chan + lowIdxInt];
-            double rightPartial = (dataIdxHigh - highIdxInt) * _data[_numPoints * chan + highIdxInt];
+            double rightPartial = (highIdxInt < _numPoints) ? (dataIdxHigh - highIdxInt) * _data[_numPoints * chan + highIdxInt] : 0.0;
             accumulator[chan] = leftPartial + rightPartial;
             for (int j = lowIdxInt + 1; j < highIdxInt; j++)
             {
@@ -233,4 +233,6 @@ void HistogramWidget::paintEvent(QPaintEvent *event)
             }
         }
     }
+
+    delete[] averagedHist;
 }

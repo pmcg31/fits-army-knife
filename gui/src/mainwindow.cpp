@@ -7,6 +7,7 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
+      filename(""),
       mainPane(),
       layout(&mainPane),
       fitsWidget(),
@@ -64,12 +65,13 @@ MainWindow::MainWindow(QWidget *parent)
     bottomLayout.addWidget(&zoom100Btn);
     bottomLayout.addWidget(&currentZoom);
 
-    statsLayout.addWidget(&minLabel);
-    statsLayout.addWidget(&meanLabel);
-    statsLayout.addWidget(&medLabel);
-    statsLayout.addWidget(&maxLabel);
+    statsLayout = new QVBoxLayout();
+    statsLayout->addWidget(&minLabel);
+    statsLayout->addWidget(&meanLabel);
+    statsLayout->addWidget(&medLabel);
+    statsLayout->addWidget(&maxLabel);
 
-    statsHistLayout.addLayout(&statsLayout);
+    statsHistLayout.addLayout(statsLayout);
     statsHistLayout.addWidget(&histWidget);
 
     layout.addWidget(&fitsWidget);
@@ -102,7 +104,6 @@ MainWindow::MainWindow(QWidget *parent)
             QString qfname = args.at(1);
             QByteArray qfnameBytes = qfname.toLocal8Bit();
             int size = qfnameBytes.size();
-            char *filename = new char[1000];
             for (int i = 0; i < size; i++)
             {
                 filename[i] = qfnameBytes.at(i);
@@ -122,6 +123,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    delete statsLayout;
 }
 
 void MainWindow::fitsFileChanged(const char *filename)

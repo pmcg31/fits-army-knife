@@ -109,6 +109,8 @@ namespace ELS
 
         void *pixels = readPix(tmpFits, bitDepth, pixelCount);
 
+        fits_close_file(tmpFits, &status);
+
         return new FITSImage(bitDepth,
                              format,
                              isColor,

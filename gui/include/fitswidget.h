@@ -16,6 +16,7 @@ class FITSWidget : public QWidget
 
 public:
     explicit FITSWidget(QWidget *parent = nullptr);
+    ~FITSWidget();
 
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;

@@ -35,6 +35,19 @@ FITSWidget::FITSWidget(QWidget *parent)
     setSizePolicy(_sizePolicy);
 }
 
+FITSWidget::~FITSWidget()
+{
+    if (_fits != 0)
+    {
+        delete _fits;
+    }
+
+    if (_cacheImage != 0)
+    {
+        delete _cacheImage;
+    }
+}
+
 QSize FITSWidget::sizeHint() const
 {
     return QSize(800, 600);

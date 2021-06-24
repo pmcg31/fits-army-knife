@@ -35,12 +35,13 @@ private:
     void zoom100Clicked(bool isChecked);
 
 private:
+    char filename[1000];
     QWidget mainPane;
     QVBoxLayout layout;
     FITSWidget fitsWidget;
     HistogramWidget histWidget;
     QHBoxLayout bottomLayout;
-    QVBoxLayout statsLayout;
+    QVBoxLayout *statsLayout;
     QHBoxLayout statsHistLayout;
     QLabel minLabel;
     QLabel meanLabel;
