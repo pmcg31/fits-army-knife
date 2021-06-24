@@ -14,6 +14,11 @@ namespace ELS
         AdaptiveDisplayFuncVisitor(PixelT medianVals[3]);
         ~AdaptiveDisplayFuncVisitor();
 
+        void getMADN(double *madn) const;
+        void getSClip(double *sClip) const;
+        void getHClip(double *hClip) const;
+        void getMBal(double *mBal) const;
+
     public:
         virtual void pixelFormat(ELS::FITS::PixelFormat pf) override;
         virtual void dimensions(int width, int height) override;
@@ -72,6 +77,50 @@ namespace ELS
         if (_histogram != 0)
         {
             delete[] _histogram;
+        }
+    }
+
+    template <typename PixelT>
+    void AdaptiveDisplayFuncVisitor<PixelT>::getMADN(double *madn) const
+    {
+        madn[0] = _madn[0];
+        if (_gIdx != -1)
+        {
+            madn[1] = _madn[1];
+            madn[2] = _madn[2];
+        }
+    }
+
+    template <typename PixelT>
+    void AdaptiveDisplayFuncVisitor<PixelT>::getSClip(double *sClip) const
+    {
+        sClip[0] = _sClip[0];
+        if (_gIdx != -1)
+        {
+            sClip[1] = _sClip[1];
+            sClip[2] = _sClip[2];
+        }
+    }
+
+    template <typename PixelT>
+    void AdaptiveDisplayFuncVisitor<PixelT>::getHClip(double *hClip) const
+    {
+        hClip[0] = _hClip[0];
+        if (_gIdx != -1)
+        {
+            hClip[1] = _hClip[1];
+            hClip[2] = _hClip[2];
+        }
+    }
+
+    template <typename PixelT>
+    void AdaptiveDisplayFuncVisitor<PixelT>::getMBal(double *mBal) const
+    {
+        mBal[0] = _mBal[0];
+        if (_gIdx != -1)
+        {
+            mBal[1] = _mBal[1];
+            mBal[2] = _mBal[2];
         }
     }
 
@@ -247,13 +296,6 @@ namespace ELS
                 _mBal[chan] = midtonesTransferFunc(B, _hClip[chan] - medVal);
             }
         }
-
-        for (int chan = 0; chan < numChan; chan++)
-        {
-            printf("c%d: madn: %0.4f sClip: %0.4f hClip: %0.4f mBal: %0.4f\n",
-                   chan, _madn[chan], _sClip[chan], _hClip[chan], _mBal[chan]);
-        }
-        fflush(stdout);
     }
 
     /* static */

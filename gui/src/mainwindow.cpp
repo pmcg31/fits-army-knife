@@ -153,6 +153,10 @@ void MainWindow::fitsFileChanged(const char *filename)
     char tmp2[100];
     char tmp3[100];
     char tmp4[100];
+    double madn[3] = {0, 0, 0};
+    double sClip[3] = {0, 0, 0};
+    double hClip[3] = {0, 0, 0};
+    double mBal[3] = {0, 0, 0};
     int numPoints = 0;
     uint32_t *histogram = 0;
     switch (image->getBitDepth())
@@ -199,6 +203,10 @@ void MainWindow::fitsFileChanged(const char *filename)
                               visitor.getMedVal(2)};
         ELS::AdaptiveDisplayFuncVisitor<uint8_t> v2(medVals);
         image->visitPixels(&v2);
+        v2.getMADN(madn);
+        v2.getSClip(sClip);
+        v2.getHClip(hClip);
+        v2.getMBal(mBal);
     }
     break;
     case ELS::FITS::BD_INT_16:
@@ -243,6 +251,10 @@ void MainWindow::fitsFileChanged(const char *filename)
                                visitor.getMedVal(2)};
         ELS::AdaptiveDisplayFuncVisitor<uint16_t> v2(medVals);
         image->visitPixels(&v2);
+        v2.getMADN(madn);
+        v2.getSClip(sClip);
+        v2.getHClip(hClip);
+        v2.getMBal(mBal);
     }
     break;
     case ELS::FITS::BD_INT_32:
@@ -287,6 +299,10 @@ void MainWindow::fitsFileChanged(const char *filename)
                                visitor.getMedVal(2)};
         ELS::AdaptiveDisplayFuncVisitor<uint32_t> v2(medVals);
         image->visitPixels(&v2);
+        v2.getMADN(madn);
+        v2.getSClip(sClip);
+        v2.getHClip(hClip);
+        v2.getMBal(mBal);
     }
     break;
     case ELS::FITS::BD_FLOAT:
@@ -331,6 +347,10 @@ void MainWindow::fitsFileChanged(const char *filename)
                             visitor.getMedVal(2)};
         ELS::AdaptiveDisplayFuncVisitor<float> v2(medVals);
         image->visitPixels(&v2);
+        v2.getMADN(madn);
+        v2.getSClip(sClip);
+        v2.getHClip(hClip);
+        v2.getMBal(mBal);
     }
     break;
     case ELS::FITS::BD_DOUBLE:
@@ -375,6 +395,10 @@ void MainWindow::fitsFileChanged(const char *filename)
                              visitor.getMedVal(2)};
         ELS::AdaptiveDisplayFuncVisitor<double> v2(medVals);
         image->visitPixels(&v2);
+        v2.getMADN(madn);
+        v2.getSClip(sClip);
+        v2.getHClip(hClip);
+        v2.getMBal(mBal);
     }
     break;
     }
@@ -383,6 +407,12 @@ void MainWindow::fitsFileChanged(const char *filename)
 
     printf("%s\n", image->getImageType());
     printf("%s\n", image->getSizeAndColor());
+    int numChan = image->isColor() ? 3 : 1;
+    for (int chan = 0; chan < numChan; chan++)
+    {
+        printf("c%d: madn: %0.4f sClip: %0.4f hClip: %0.4f mBal: %0.4f\n",
+               chan, madn[chan], sClip[chan], hClip[chan], mBal[chan]);
+    }
     fflush(stdout);
 }
 
