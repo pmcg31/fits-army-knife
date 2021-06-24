@@ -12,27 +12,27 @@ will become such a tool.
 
 Current features:
 
-    - Zoom with scroll wheel (centered only for now)
-        - Buttons for 1:1 and zoom-to-fit
-    - Histogram
-    - Statistics (min/mean/median/max)
-    - Integrated screen transfer function
-        - From [PixInsight Reference Documentation](https://pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html#__XISF_Data_Objects_:_XISF_Image_:_Display_Function__)
+- Zoom with scroll wheel (centered only for now)
+  - Buttons for 1:1 and zoom-to-fit
+- Histogram
+- Statistics (min/mean/median/max)
+- Integrated screen transfer function
+  - From [PixInsight Reference Documentation](https://pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html#__XISF_Data_Objects_:_XISF_Image_:_Display_Function__)
 
 Feature ideas:
 
-    - Quick option to see center and corners at 1:1
-    - Option to highlight the brightest and/or darkest pixels
-    - Histogram refinements
+- Quick option to see center and corners at 1:1
+- Option to highlight the brightest and/or darkest pixels
+- Histogram refinements
 
 Those are the key ones, and some nice to haves:
 
-    - Ability to scroll through many images
-        - Keep zoom/position the same
-    - Easy and quick Pick/Reject function
-    - Ability to watch a directory and automatically keep loading files as they show up
-    - Support for DSLR raw files? Not sure how hard (i.e., proprietary) that is yet
-    - Possible live stack? Depending on if I can figure out the math...
+- Ability to scroll through many images
+  - Keep zoom/position the same
+- Easy and quick Pick/Reject function
+- Ability to watch a directory and automatically keep loading files as they show up
+- Support for DSLR raw files? Not sure how hard (i.e., proprietary) that is yet
+- Possible live stack? Depending on if I can figure out the math...
 
 ## Dependencies
 
