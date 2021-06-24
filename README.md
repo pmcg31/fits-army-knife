@@ -16,10 +16,11 @@ Current features:
         - Buttons for 1:1 and zoom-to-fit
     - Histogram
     - Statistics (min/mean/median/max)
+    - Integrated screen transfer function
+        - From [PixInsight Reference Documentation](https://pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html#__XISF_Data_Objects_:_XISF_Image_:_Display_Function__)
 
 Feature ideas:
 
-    - Integrated screen transfer function
     - Quick option to see center and corners at 1:1
     - Option to highlight the brightest and/or darkest pixels
     - Histogram refinements

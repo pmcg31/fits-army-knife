@@ -4,23 +4,62 @@ namespace ELS
 {
 
     /* static */
-    double PixUtils::midtonesTransferFunc(double x,
-                                          double m)
+    double PixUtils::midtonesTransferFunc(double pixel,
+                                          double mBal)
     {
-        if (x == 0)
+        if (pixel == 0)
         {
             return 0.0;
         }
-        if (x == m)
+
+        if (pixel == mBal)
         {
             return 0.5;
         }
-        if (x == 1)
+
+        if (pixel == 1)
         {
             return 1.0;
         }
 
-        return ((m - 1) * x) / (((2 * m - 1) * x) - m);
+        return ((mBal - 1) * pixel) / (((2 * mBal - 1) * pixel) - mBal);
+    }
+
+    /* static */
+    double PixUtils::clippingFunc(double pixel, double sClip, double hClip)
+    {
+        if (pixel < sClip)
+        {
+            return 0.0;
+        }
+
+        if (pixel > hClip)
+        {
+            return 1.0;
+        }
+
+        return (pixel - sClip) / (hClip - sClip);
+    }
+
+    /* static */
+    double PixUtils::expansionFunc(double pixel, double sExp, double hExp)
+    {
+        return (pixel - sExp) / (hExp - sExp);
+    }
+
+    /* static */
+    double PixUtils::screenTransferFunc(double pixel,
+                                        double mBal,
+                                        double sClip,
+                                        double hClip,
+                                        double sExp,
+                                        double hExp)
+    {
+        pixel = PixUtils::clippingFunc(pixel, sClip, hClip);
+
+        pixel = PixUtils::midtonesTransferFunc(pixel, mBal);
+
+        return PixUtils::expansionFunc(pixel, sExp, hExp);
     }
 
     /* static */

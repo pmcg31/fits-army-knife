@@ -8,7 +8,15 @@ namespace ELS
     class PixUtils
     {
     public:
-        static double midtonesTransferFunc(double x, double m);
+        static double midtonesTransferFunc(double pixel, double mBal);
+        static double clippingFunc(double pixel, double sClip, double hClip);
+        static double expansionFunc(double pixel, double sExp, double hExp);
+        static double screenTransferFunc(double pixel,
+                                         double mBal,
+                                         double sClip,
+                                         double hClip,
+                                         double sExp,
+                                         double hExp);
 
         static uint16_t convertRangeToHist(uint8_t val);
         static uint16_t convertRangeToHist(uint16_t val);

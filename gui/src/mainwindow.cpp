@@ -9,6 +9,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       filename(""),
+      showingStretched(false),
       mainPane(),
       layout(&mainPane),
       fitsWidget(),
@@ -21,12 +22,27 @@ MainWindow::MainWindow(QWidget *parent)
       medLabel(" med: -- "),
       maxLabel(" max: -- "),
       currentZoom("--"),
+      onIcon(":/icon/stretch-icon.png"),
+      offIcon(":/icon/stretch-icon-off.png"),
+      stretchBtn(offIcon, ""),
       zoomFitBtn("fit"),
-      zoom100Btn("1:1")
+      zoom100Btn("1:1"),
+      madn{0.0, 0.0, 0.0},
+      sClip{0.0, 0.0, 0.0},
+      hClip{1.0, 1.0, 1.0},
+      mBal{0.5, 0.5, 0.5},
+      sExp{0.0, 0.0, 0.0},
+      hExp{1.0, 1.0, 1.0}
 {
+    const QSize iconSize(20, 20);
     const QSize btnSize(30, 30);
     const char *btnStyle = "QPushButton{border: none;border-radius: 7px;background-color: #444;}";
     const char *lblStyle = "QLabel{border: 1px solid #666;border-radius: 7px;color: #999;}";
+    stretchBtn.setStyleSheet(btnStyle);
+    stretchBtn.setIconSize(iconSize);
+    stretchBtn.setMinimumSize(btnSize);
+    stretchBtn.setMaximumSize(btnSize);
+    stretchBtn.setCheckable(true);
     zoomFitBtn.setEnabled(true);
     zoomFitBtn.setStyleSheet(btnStyle);
     zoomFitBtn.setMinimumSize(btnSize);
@@ -61,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent)
     maxLabel.setMinimumHeight(height);
     maxLabel.setMaximumHeight(height);
 
+    bottomLayout.addWidget(&stretchBtn);
     bottomLayout.addStretch(1);
     bottomLayout.addWidget(&zoomFitBtn);
     bottomLayout.addWidget(&zoom100Btn);
@@ -86,6 +103,12 @@ MainWindow::MainWindow(QWidget *parent)
                      this, &MainWindow::fitsFileFailed);
     QObject::connect(&fitsWidget, &FITSWidget::actualZoomChanged,
                      this, &MainWindow::fitsZoomChanged);
+    QObject::connect(&stretchBtn, &QPushButton::toggled,
+                     this, &MainWindow::stretchToggled);
+    QObject::connect(this, &MainWindow::showStretched,
+                     &fitsWidget, &FITSWidget::showStretched);
+    QObject::connect(this, &MainWindow::clearStretched,
+                     &fitsWidget, &FITSWidget::clearStretched);
     QObject::connect(&zoomFitBtn, &QPushButton::clicked,
                      this, &MainWindow::zoomFitClicked);
     QObject::connect(&zoom100Btn, &QPushButton::clicked,
@@ -153,10 +176,6 @@ void MainWindow::fitsFileChanged(const char *filename)
     char tmp2[100];
     char tmp3[100];
     char tmp4[100];
-    double madn[3] = {0, 0, 0};
-    double sClip[3] = {0, 0, 0};
-    double hClip[3] = {0, 0, 0};
-    double mBal[3] = {0, 0, 0};
     int numPoints = 0;
     uint32_t *histogram = 0;
     switch (image->getBitDepth())
@@ -428,6 +447,26 @@ void MainWindow::fitsZoomChanged(float zoom)
 
     sprintf(tmp, "%.1f%%", zoom * 100);
     currentZoom.setText(tmp);
+}
+
+void MainWindow::stretchToggled(bool isChecked)
+{
+    if (showingStretched != isChecked)
+    {
+        showingStretched = isChecked;
+
+        stretchBtn.setChecked(showingStretched);
+        if (showingStretched)
+        {
+            stretchBtn.setIcon(onIcon);
+            emit showStretched(mBal, sClip, hClip, sExp, hExp);
+        }
+        else
+        {
+            stretchBtn.setIcon(offIcon);
+            emit clearStretched();
+        }
+    }
 }
 
 void MainWindow::zoomFitClicked(bool /* isChecked */)

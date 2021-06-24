@@ -2,7 +2,7 @@ QT += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++11 debug
+CONFIG += c++11 
 
 LIBS += -lcfitsio
 
@@ -33,6 +33,9 @@ HEADERS += \
     gui/include/mainwindow.h \
     gui/include/fitswidget.h \
     gui/include/histogramwidget.h
+
+RESOURCES += \
+    icon/icon.qrc
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

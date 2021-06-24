@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/icon">
+    <file alias="stretch-icon.png">radioactive-icon.png</file>
+    <file alias="stretch-icon-off.png">radioactive-icon-off.png</file>
+</qresource>
+</RCC>

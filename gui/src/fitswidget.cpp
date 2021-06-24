@@ -26,8 +26,14 @@ FITSWidget::FITSWidget(QWidget *parent)
       _filename(""),
       _fits(0),
       _cacheImage(0),
+      _showStretched(false),
       _zoom(-1.0),
-      _actualZoom(-1.0)
+      _actualZoom(-1.0),
+      _mBal{0.5, 0.5, 0.5},
+      _sClip{0.0, 0.0, 0.0},
+      _hClip{1.0, 1.0, 1.0},
+      _sExp{0.0, 0.0, 0.0},
+      _hExp{1.0, 1.0, 1.0}
 {
     setBackgroundRole(QPalette::Dark);
     setAutoFillBackground(true);
@@ -68,6 +74,11 @@ const char *FITSWidget::getFilename() const
     return _filename;
 }
 
+bool FITSWidget::getStretched() const
+{
+    return _showStretched;
+}
+
 float FITSWidget::getZoom() const
 {
     return _zoom;
@@ -95,6 +106,58 @@ void FITSWidget::setFile(const char *filename)
         {
             fprintf(stderr, "FITSException: %s for file %s\n", e->getErrText(), filename);
             delete e;
+        }
+    }
+}
+
+void FITSWidget::showStretched(const double *mBal,
+                               const double *sClip,
+                               const double *hClip,
+                               const double *sExp,
+                               const double *hExp)
+{
+    if (_showStretched != true)
+    {
+        _showStretched = true;
+
+        for (int chan = 0; chan < 3; chan++)
+        {
+            _mBal[chan] = mBal[chan];
+            _sClip[chan] = sClip[chan];
+            _hClip[chan] = hClip[chan];
+            _sExp[chan] = sExp[chan];
+            _hExp[chan] = hExp[chan];
+        }
+
+        if (_cacheImage != 0)
+        {
+            delete _cacheImage;
+            _cacheImage = 0;
+            update();
+        }
+    }
+}
+
+void FITSWidget::clearStretched()
+{
+    if (_showStretched != false)
+    {
+        _showStretched = false;
+
+        for (int chan = 0; chan < 3; chan++)
+        {
+            _mBal[chan] = 0.5;
+            _sClip[chan] = 0.0;
+            _hClip[chan] = 1.0;
+            _sExp[chan] = 0.0;
+            _hExp[chan] = 1.0;
+        }
+
+        if (_cacheImage != 0)
+        {
+            delete _cacheImage;
+            _cacheImage = 0;
+            update();
         }
     }
 }
@@ -255,223 +318,86 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
 
 QImage *FITSWidget::convertImage() const
 {
-    QImage::Format format = QImage::Format_ARGB32;
-
-    int width = _fits->getWidth();
-    int height = _fits->getHeight();
-    ELS::FITS::RasterFormat rf = _fits->getRasterFormat();
-    bool isColor = _fits->isColor();
-
-    QImage *qi = new QImage(width,
-                            height,
-                            format);
-
-    const void *pixels = _fits->getPixels();
-
     switch (_fits->getBitDepth())
     {
     case ELS::FITS::BD_INT_8:
-        break;
+    {
+        ToQImageVisitor<uint8_t> visitor;
+        if (_showStretched)
+        {
+            visitor.applySTF(_mBal,
+                             _sClip,
+                             _hClip,
+                             _sExp,
+                             _hExp);
+        }
+        _fits->visitPixels(&visitor);
+        return visitor.getImage();
+    }
+    break;
     case ELS::FITS::BD_INT_16:
-        if (isColor)
+    {
+        ToQImageVisitor<uint16_t> visitor;
+        if (_showStretched)
         {
-            convertU16ColorImage(qi,
-                                 width,
-                                 height,
-                                 rf,
-                                 (const uint16_t *)pixels);
+            visitor.applySTF(_mBal,
+                             _sClip,
+                             _hClip,
+                             _sExp,
+                             _hExp);
         }
-        else
-        {
-            convertU16MonoImage(qi,
-                                width,
-                                height,
-                                (const uint16_t *)pixels);
-        }
-        break;
+        _fits->visitPixels(&visitor);
+        return visitor.getImage();
+    }
+    break;
     case ELS::FITS::BD_INT_32:
-        break;
+    {
+        ToQImageVisitor<uint32_t> visitor;
+        if (_showStretched)
+        {
+            visitor.applySTF(_mBal,
+                             _sClip,
+                             _hClip,
+                             _sExp,
+                             _hExp);
+        }
+        _fits->visitPixels(&visitor);
+        return visitor.getImage();
+    }
+    break;
     case ELS::FITS::BD_FLOAT:
-        if (isColor)
+    {
+        ToQImageVisitor<float> visitor;
+        if (_showStretched)
         {
-            convertFloatColorImage(qi,
-                                   width,
-                                   height,
-                                   rf,
-                                   (const float *)pixels);
+            visitor.applySTF(_mBal,
+                             _sClip,
+                             _hClip,
+                             _sExp,
+                             _hExp);
         }
-        else
-        {
-            convertFloatMonoImage(qi,
-                                  width,
-                                  height,
-                                  (const float *)pixels);
-        }
-        break;
+        _fits->visitPixels(&visitor);
+        return visitor.getImage();
+    }
+    break;
     case ELS::FITS::BD_DOUBLE:
-        if (isColor)
-        {
-            convertDoubleColorImage(qi,
-                                    width,
-                                    height,
-                                    rf,
-                                    (const double *)pixels);
-        }
-        else
-        {
-            convertDoubleMonoImage(qi,
-                                   width,
-                                   height,
-                                   (const double *)pixels);
-        }
-        break;
-    }
-
-    return qi;
-}
-
-void FITSWidget::convertU16MonoImage(QImage *qi,
-                                     int width,
-                                     int height,
-                                     const uint16_t *pixels) const
-{
-    for (int y = 0; y < height; y++)
     {
-        for (int x = 0; x < width; x++)
+        ToQImageVisitor<double> visitor;
+        if (_showStretched)
         {
-            uint8_t val = (uint8_t)((double)pixels[y * width + x] / 257);
-            qi->setPixelColor(x, y, QColor::fromRgb(val, val, val));
+            visitor.applySTF(_mBal,
+                             _sClip,
+                             _hClip,
+                             _sExp,
+                             _hExp);
         }
+        _fits->visitPixels(&visitor);
+        return visitor.getImage();
     }
-}
-
-void FITSWidget::convertFloatMonoImage(QImage *qi,
-                                       int width,
-                                       int height,
-                                       const float *pixels) const
-{
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            uint8_t val = (uint8_t)(pixels[y * width + x] * 255);
-            qi->setPixelColor(x, y, QColor::fromRgb(val, val, val));
-        }
+    break;
     }
-}
 
-void FITSWidget::convertDoubleMonoImage(QImage *qi,
-                                        int width,
-                                        int height,
-                                        const double *pixels) const
-{
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            uint8_t val = (uint8_t)(pixels[y * width + x] * 255);
-            qi->setPixelColor(x, y, QColor::fromRgb(val, val, val));
-        }
-    }
-}
-
-void FITSWidget::convertU16ColorImage(QImage *qi,
-                                      int width,
-                                      int height,
-                                      ELS::FITS::RasterFormat rf,
-                                      const uint16_t *pixels) const
-{
-    uint8_t valR = 0;
-    uint8_t valG = 0;
-    uint8_t valB = 0;
-
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            switch (rf)
-            {
-            case ELS::FITS::RF_INTERLEAVED:
-                valR = (uint8_t)((double)pixels[3 * (x + width * y) + 0] / 257);
-                valG = (uint8_t)((double)pixels[3 * (x + width * y) + 1] / 257);
-                valB = (uint8_t)((double)pixels[3 * (x + width * y) + 2] / 257);
-                break;
-            case ELS::FITS::RF_STRIDED:
-                valR = (uint8_t)((double)pixels[x + width * y + 0 * width * height] / 257);
-                valG = (uint8_t)((double)pixels[x + width * y + 1 * width * height] / 257);
-                valB = (uint8_t)((double)pixels[x + width * y + 2 * width * height] / 257);
-                break;
-            }
-
-            qi->setPixelColor(x, y, QColor::fromRgb(valR, valG, valB));
-        }
-    }
-}
-
-void FITSWidget::convertFloatColorImage(QImage *qi,
-                                        int width,
-                                        int height,
-                                        ELS::FITS::RasterFormat rf,
-                                        const float *pixels) const
-{
-    uint8_t valR = 0;
-    uint8_t valG = 0;
-    uint8_t valB = 0;
-
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            switch (rf)
-            {
-            case ELS::FITS::RF_INTERLEAVED:
-                valR = 255 * pixels[3 * (x + width * y) + 0];
-                valG = 255 * pixels[3 * (x + width * y) + 1];
-                valB = 255 * pixels[3 * (x + width * y) + 2];
-                break;
-            case ELS::FITS::RF_STRIDED:
-                valR = 255 * pixels[x + width * y + 0 * width * height];
-                valG = 255 * pixels[x + width * y + 1 * width * height];
-                valB = 255 * pixels[x + width * y + 2 * width * height];
-                break;
-            }
-
-            qi->setPixelColor(x, y, QColor::fromRgb(valR, valG, valB));
-        }
-    }
-}
-
-void FITSWidget::convertDoubleColorImage(QImage *qi,
-                                         int width,
-                                         int height,
-                                         ELS::FITS::RasterFormat rf,
-                                         const double *pixels) const
-{
-    uint8_t valR = 0;
-    uint8_t valG = 0;
-    uint8_t valB = 0;
-
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            switch (rf)
-            {
-            case ELS::FITS::RF_INTERLEAVED:
-                valR = 255 * pixels[3 * (x + width * y) + 0];
-                valG = 255 * pixels[3 * (x + width * y) + 1];
-                valB = 255 * pixels[3 * (x + width * y) + 2];
-                break;
-            case ELS::FITS::RF_STRIDED:
-                valR = 255 * pixels[x + width * y + 0 * width * height];
-                valG = 255 * pixels[x + width * y + 1 * width * height];
-                valB = 255 * pixels[x + width * y + 2 * width * height];
-                break;
-            }
-
-            qi->setPixelColor(x, y, QColor::fromRgb(valR, valG, valB));
-        }
-    }
+    return 0;
 }
 
 void FITSWidget::_internalSetZoom(float zoom)
