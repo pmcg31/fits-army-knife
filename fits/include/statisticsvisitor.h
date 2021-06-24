@@ -1,6 +1,7 @@
 #pragma once
 
 #include <inttypes.h>
+#include "pixutils.h"
 #include "fitspixelvisitor.h"
 
 namespace ELS
@@ -27,19 +28,6 @@ namespace ELS
         virtual void done() override;
 
     private:
-        static uint16_t convertRangeToHist(uint8_t val);
-        static uint16_t convertRangeToHist(uint16_t val);
-        static uint16_t convertRangeToHist(uint32_t val);
-        static uint16_t convertRangeToHist(float val);
-        static uint16_t convertRangeToHist(double val);
-
-        static void convertRangeFromHist(uint16_t hist, uint8_t *val);
-        static void convertRangeFromHist(uint16_t hist, uint16_t *val);
-        static void convertRangeFromHist(uint16_t hist, uint32_t *val);
-        static void convertRangeFromHist(uint16_t hist, float *val);
-        static void convertRangeFromHist(uint16_t hist, double *val);
-
-    private:
         int _width;
         int _height;
         int _rIdx;
@@ -54,9 +42,6 @@ namespace ELS
         PixelT _medVal[3];
         PixelT _meanVal[3];
         bool _shouldDeleteHistogram;
-
-    private:
-        static const int g_histogramPoints = 65535;
     };
 
     template <typename PixelT>
@@ -115,14 +100,14 @@ namespace ELS
                                                      uint32_t **data)
     {
         _shouldDeleteHistogram = false;
-        *numPoints = g_histogramPoints;
+        *numPoints = PixUtils::g_histogramPoints;
         *data = _histogram;
     }
 
     template <typename PixelT>
     void StatisticsVisitor<PixelT>::pixelFormat(ELS::FITS::PixelFormat pf)
     {
-        int totalHistogramPoints = g_histogramPoints;
+        int totalHistogramPoints = PixUtils::g_histogramPoints;
         bool isColor = true;
         switch (pf)
         {
@@ -156,13 +141,13 @@ namespace ELS
         }
 
         _histogram = new uint32_t[totalHistogramPoints];
-        for (int i = 0; i < g_histogramPoints; i++)
+        for (int i = 0; i < PixUtils::g_histogramPoints; i++)
         {
             _histogram[i] = 0;
             if (isColor)
             {
-                _histogram[g_histogramPoints + i] = 0;
-                _histogram[g_histogramPoints * 2 + i] = 0;
+                _histogram[PixUtils::g_histogramPoints + i] = 0;
+                _histogram[PixUtils::g_histogramPoints * 2 + i] = 0;
             }
         }
     }
@@ -226,9 +211,9 @@ namespace ELS
                 _accumulator[1] += pixelVals[_gIdx];
                 _accumulator[2] += pixelVals[_bIdx];
 
-                _histogram[convertRangeToHist(pixelVals[_rIdx])]++;
-                _histogram[g_histogramPoints + convertRangeToHist(pixelVals[_gIdx])]++;
-                _histogram[g_histogramPoints * 2 + convertRangeToHist(pixelVals[_bIdx])]++;
+                _histogram[PixUtils::convertRangeToHist(pixelVals[_rIdx])]++;
+                _histogram[PixUtils::g_histogramPoints + PixUtils::convertRangeToHist(pixelVals[_gIdx])]++;
+                _histogram[PixUtils::g_histogramPoints * 2 + PixUtils::convertRangeToHist(pixelVals[_bIdx])]++;
             }
         }
         else
@@ -254,7 +239,7 @@ namespace ELS
 
             _accumulator[0] += pixelVals[0];
 
-            _histogram[convertRangeToHist(pixelVals[0])]++;
+            _histogram[PixUtils::convertRangeToHist(pixelVals[0])]++;
         }
     }
 
@@ -273,7 +258,7 @@ namespace ELS
         int64_t halfway = _pixelCount / 2;
         int64_t pointCount[3] = {0, 0, 0};
         bool done = false;
-        for (int i = 0; (!done) && (i < g_histogramPoints); i++)
+        for (int i = 0; (!done) && (i < PixUtils::g_histogramPoints); i++)
         {
             done = true;
 
@@ -283,7 +268,7 @@ namespace ELS
                 if (pointCount[0] >= halfway)
                 {
                     PixelT val = 0;
-                    convertRangeFromHist(i, &val);
+                    PixUtils::convertRangeFromHist(i, &val);
                     _medVal[0] = val;
                 }
                 else
@@ -296,11 +281,11 @@ namespace ELS
             {
                 if (pointCount[1] < halfway)
                 {
-                    pointCount[1] += _histogram[g_histogramPoints + i];
+                    pointCount[1] += _histogram[PixUtils::g_histogramPoints + i];
                     if (pointCount[1] >= halfway)
                     {
                         PixelT val = 0;
-                        convertRangeFromHist(i, &val);
+                        PixUtils::convertRangeFromHist(i, &val);
                         _medVal[1] = val;
                     }
                     else
@@ -311,11 +296,11 @@ namespace ELS
 
                 if (pointCount[2] < halfway)
                 {
-                    pointCount[2] += _histogram[g_histogramPoints * 2 + i];
+                    pointCount[2] += _histogram[PixUtils::g_histogramPoints * 2 + i];
                     if (pointCount[2] >= halfway)
                     {
                         PixelT val = 0;
-                        convertRangeFromHist(i, &val);
+                        PixUtils::convertRangeFromHist(i, &val);
                         _medVal[2] = val;
                     }
                     else
@@ -325,128 +310,6 @@ namespace ELS
                 }
             }
         }
-    }
-
-    /* static */
-    template <typename PixelT>
-    uint16_t StatisticsVisitor<PixelT>::convertRangeToHist(uint8_t val)
-    {
-        uint8_t factor = 255 / g_histogramPoints;
-
-        uint16_t newVal = (uint16_t)(val / factor);
-        if (!(newVal < g_histogramPoints))
-        {
-            // printf("Fixed newVal of %d to %d\n", newVal, g_histogramPoints - 1);
-            // fflush(stdout);
-            newVal = g_histogramPoints - 1;
-        }
-
-        return newVal;
-    }
-
-    /* static */
-    template <typename PixelT>
-    uint16_t StatisticsVisitor<PixelT>::convertRangeToHist(uint16_t val)
-    {
-        uint16_t factor = 65535 / g_histogramPoints;
-
-        uint16_t newVal = val / factor;
-        if (!(newVal < g_histogramPoints))
-        {
-            // printf("Fixed newVal of %d to %d\n", newVal, g_histogramPoints - 1);
-            // fflush(stdout);
-            newVal = g_histogramPoints - 1;
-        }
-
-        return newVal;
-    }
-
-    /* static */
-    template <typename PixelT>
-    uint16_t StatisticsVisitor<PixelT>::convertRangeToHist(uint32_t val)
-    {
-        uint32_t factor = 4294967295 / g_histogramPoints;
-
-        uint16_t newVal = (uint16_t)(val / factor);
-        if (!(newVal < g_histogramPoints))
-        {
-            // printf("Fixed newVal of %d to %d\n", newVal, g_histogramPoints - 1);
-            // fflush(stdout);
-            newVal = g_histogramPoints - 1;
-        }
-
-        return newVal;
-    }
-
-    /* static */
-    template <typename PixelT>
-    uint16_t StatisticsVisitor<PixelT>::convertRangeToHist(float val)
-    {
-        uint16_t newVal = (uint16_t)(val * g_histogramPoints);
-        if (!(newVal < g_histogramPoints))
-        {
-            // printf("Fixed newVal of %d to %d\n", newVal, g_histogramPoints - 1);
-            // fflush(stdout);
-            newVal = g_histogramPoints - 1;
-        }
-
-        return newVal;
-    }
-
-    /* static */
-    template <typename PixelT>
-    uint16_t StatisticsVisitor<PixelT>::convertRangeToHist(double val)
-    {
-        uint16_t newVal = (uint16_t)(val * g_histogramPoints);
-        if (!(newVal < g_histogramPoints))
-        {
-            // printf("Fixed newVal of %d to %d\n", newVal, g_histogramPoints - 1);
-            // fflush(stdout);
-            newVal = g_histogramPoints - 1;
-        }
-
-        return newVal;
-    }
-
-    /* static */
-    template <typename PixelT>
-    void StatisticsVisitor<PixelT>::convertRangeFromHist(uint16_t hist, uint8_t *val)
-    {
-        uint8_t factor = 255 / g_histogramPoints;
-
-        *val = (uint8_t)(hist / factor);
-    }
-
-    /* static */
-    template <typename PixelT>
-    void StatisticsVisitor<PixelT>::convertRangeFromHist(uint16_t hist, uint16_t *val)
-    {
-        uint16_t factor = 65535 / g_histogramPoints;
-
-        *val = (uint16_t)(hist / factor);
-    }
-
-    /* static */
-    template <typename PixelT>
-    void StatisticsVisitor<PixelT>::convertRangeFromHist(uint16_t hist, uint32_t *val)
-    {
-        uint32_t factor = 4294967295 / g_histogramPoints;
-
-        *val = (uint32_t)(hist / factor);
-    }
-
-    /* static */
-    template <typename PixelT>
-    void StatisticsVisitor<PixelT>::convertRangeFromHist(uint16_t hist, float *val)
-    {
-        *val = (float)hist / g_histogramPoints;
-    }
-
-    /* static */
-    template <typename PixelT>
-    void StatisticsVisitor<PixelT>::convertRangeFromHist(uint16_t hist, double *val)
-    {
-        *val = (double)hist / g_histogramPoints;
     }
 
 }

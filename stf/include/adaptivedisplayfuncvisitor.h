@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <inttypes.h>
+#include "pixutils.h"
 #include "fitspixelvisitor.h"
 
 namespace ELS
@@ -26,21 +27,6 @@ namespace ELS
         virtual void done() override;
 
     private:
-        static double midtonesTransferFunc(double x, double m);
-
-        static uint16_t convertRangeToHist(uint8_t val);
-        static uint16_t convertRangeToHist(uint16_t val);
-        static uint16_t convertRangeToHist(uint32_t val);
-        static uint16_t convertRangeToHist(float val);
-        static uint16_t convertRangeToHist(double val);
-
-        static void convertRangeFromHist(uint16_t hist, uint8_t *val);
-        static void convertRangeFromHist(uint16_t hist, uint16_t *val);
-        static void convertRangeFromHist(uint16_t hist, uint32_t *val);
-        static void convertRangeFromHist(uint16_t hist, float *val);
-        static void convertRangeFromHist(uint16_t hist, double *val);
-
-    private:
         PixelT _medVal[3];
         int _rIdx;
         int _gIdx;
@@ -51,9 +37,6 @@ namespace ELS
         double _sClip[3];
         double _hClip[3];
         double _mBal[3];
-
-    private:
-        static const int g_histogramPoints = 65535;
     };
 
     template <typename PixelT>
@@ -148,20 +131,20 @@ namespace ELS
 
         _pixelCount = 0;
 
-        int totalHistogramPoints = g_histogramPoints;
+        int totalHistogramPoints = PixUtils::g_histogramPoints;
         if (_gIdx != -1)
         {
             totalHistogramPoints *= 3;
         }
 
         _histogram = new uint32_t[totalHistogramPoints];
-        for (int i = 0; i < g_histogramPoints; i++)
+        for (int i = 0; i < PixUtils::g_histogramPoints; i++)
         {
             _histogram[i] = 0;
             if (_gIdx != -1)
             {
-                _histogram[g_histogramPoints + i] = 0;
-                _histogram[g_histogramPoints * 2 + i] = 0;
+                _histogram[PixUtils::g_histogramPoints + i] = 0;
+                _histogram[PixUtils::g_histogramPoints * 2 + i] = 0;
             }
         }
     }
@@ -188,15 +171,15 @@ namespace ELS
             PixelT gVal = pixelVals[_gIdx] > _medVal[1] ? pixelVals[_gIdx] - _medVal[1] : _medVal[1] - pixelVals[_gIdx];
             PixelT bVal = pixelVals[_bIdx] > _medVal[2] ? pixelVals[_bIdx] - _medVal[2] : _medVal[2] - pixelVals[_bIdx];
 
-            _histogram[convertRangeToHist(rVal)]++;
-            _histogram[g_histogramPoints + convertRangeToHist(gVal)]++;
-            _histogram[g_histogramPoints * 2 + convertRangeToHist(bVal)]++;
+            _histogram[PixUtils::convertRangeToHist(rVal)]++;
+            _histogram[PixUtils::g_histogramPoints + PixUtils::convertRangeToHist(gVal)]++;
+            _histogram[PixUtils::g_histogramPoints * 2 + PixUtils::convertRangeToHist(bVal)]++;
         }
         else
         {
             PixelT val = pixelVals[0] > _medVal[0] ? pixelVals[0] - _medVal[0] : _medVal[0] - pixelVals[0];
 
-            _histogram[convertRangeToHist(val)]++;
+            _histogram[PixUtils::convertRangeToHist(val)]++;
         }
     }
 
@@ -212,7 +195,7 @@ namespace ELS
         int64_t halfway = _pixelCount / 2;
         int64_t pointCount[3] = {0, 0, 0};
         bool done = false;
-        for (int i = 0; (!done) && (i < g_histogramPoints); i++)
+        for (int i = 0; (!done) && (i < PixUtils::g_histogramPoints); i++)
         {
             done = true;
 
@@ -222,7 +205,7 @@ namespace ELS
                 if (pointCount[0] >= halfway)
                 {
                     double dval = 0.0;
-                    convertRangeFromHist(i, &dval);
+                    PixUtils::convertRangeFromHist(i, &dval);
                     _madn[0] = dval * madnConstant;
                 }
                 else
@@ -235,11 +218,11 @@ namespace ELS
             {
                 if (pointCount[1] < halfway)
                 {
-                    pointCount[1] += _histogram[g_histogramPoints + i];
+                    pointCount[1] += _histogram[PixUtils::g_histogramPoints + i];
                     if (pointCount[1] >= halfway)
                     {
                         double dval = 0.0;
-                        convertRangeFromHist(i, &dval);
+                        PixUtils::convertRangeFromHist(i, &dval);
                         _madn[1] = dval * madnConstant;
                     }
                     else
@@ -250,11 +233,11 @@ namespace ELS
 
                 if (pointCount[2] < halfway)
                 {
-                    pointCount[2] += _histogram[g_histogramPoints * 2 + i];
+                    pointCount[2] += _histogram[PixUtils::g_histogramPoints * 2 + i];
                     if (pointCount[2] >= halfway)
                     {
                         double dval = 0.0;
-                        convertRangeFromHist(i, &dval);
+                        PixUtils::convertRangeFromHist(i, &dval);
                         _madn[2] = dval * madnConstant;
                     }
                     else
@@ -267,9 +250,9 @@ namespace ELS
 
         for (int chan = 0; chan < numChan; chan++)
         {
-            uint16_t tmp = convertRangeToHist(_medVal[chan]);
+            uint16_t tmp = PixUtils::convertRangeToHist(_medVal[chan]);
             double medVal = 0.0;
-            convertRangeFromHist(tmp, &medVal);
+            PixUtils::convertRangeFromHist(tmp, &medVal);
 
             if ((medVal > 0.5) || (_madn[chan] == 0))
             {
@@ -289,156 +272,13 @@ namespace ELS
             }
             if (medVal < 0.5)
             {
-                _mBal[chan] = midtonesTransferFunc(medVal - _sClip[chan], B);
+                _mBal[chan] = PixUtils::midtonesTransferFunc(medVal - _sClip[chan], B);
             }
             else
             {
-                _mBal[chan] = midtonesTransferFunc(B, _hClip[chan] - medVal);
+                _mBal[chan] = PixUtils::midtonesTransferFunc(B, _hClip[chan] - medVal);
             }
         }
-    }
-
-    /* static */
-    template <typename PixelT>
-    double AdaptiveDisplayFuncVisitor<PixelT>::midtonesTransferFunc(double x,
-                                                                    double m)
-    {
-        if (x == 0)
-        {
-            return 0.0;
-        }
-        if (x == m)
-        {
-            return 0.5;
-        }
-        if (x == 1)
-        {
-            return 1.0;
-        }
-
-        return ((m - 1) * x) / (((2 * m - 1) * x) - m);
-    }
-
-    /* static */
-    template <typename PixelT>
-    uint16_t AdaptiveDisplayFuncVisitor<PixelT>::convertRangeToHist(uint8_t val)
-    {
-        uint8_t factor = 255 / g_histogramPoints;
-
-        uint16_t newVal = (uint16_t)(val / factor);
-        if (!(newVal < g_histogramPoints))
-        {
-            // printf("Fixed newVal of %d to %d\n", newVal, g_histogramPoints - 1);
-            // fflush(stdout);
-            newVal = g_histogramPoints - 1;
-        }
-
-        return newVal;
-    }
-
-    /* static */
-    template <typename PixelT>
-    uint16_t AdaptiveDisplayFuncVisitor<PixelT>::convertRangeToHist(uint16_t val)
-    {
-        uint16_t factor = 65535 / g_histogramPoints;
-
-        uint16_t newVal = val / factor;
-        if (!(newVal < g_histogramPoints))
-        {
-            // printf("Fixed newVal of %d to %d\n", newVal, g_histogramPoints - 1);
-            // fflush(stdout);
-            newVal = g_histogramPoints - 1;
-        }
-
-        return newVal;
-    }
-
-    /* static */
-    template <typename PixelT>
-    uint16_t AdaptiveDisplayFuncVisitor<PixelT>::convertRangeToHist(uint32_t val)
-    {
-        uint32_t factor = 4294967295 / g_histogramPoints;
-
-        uint16_t newVal = (uint16_t)(val / factor);
-        if (!(newVal < g_histogramPoints))
-        {
-            // printf("Fixed newVal of %d to %d\n", newVal, g_histogramPoints - 1);
-            // fflush(stdout);
-            newVal = g_histogramPoints - 1;
-        }
-
-        return newVal;
-    }
-
-    /* static */
-    template <typename PixelT>
-    uint16_t AdaptiveDisplayFuncVisitor<PixelT>::convertRangeToHist(float val)
-    {
-        uint16_t newVal = (uint16_t)(val * g_histogramPoints);
-        if (!(newVal < g_histogramPoints))
-        {
-            // printf("Fixed newVal of %d to %d\n", newVal, g_histogramPoints - 1);
-            // fflush(stdout);
-            newVal = g_histogramPoints - 1;
-        }
-
-        return newVal;
-    }
-
-    /* static */
-    template <typename PixelT>
-    uint16_t AdaptiveDisplayFuncVisitor<PixelT>::convertRangeToHist(double val)
-    {
-        uint16_t newVal = (uint16_t)(val * g_histogramPoints);
-        if (!(newVal < g_histogramPoints))
-        {
-            // printf("Fixed newVal of %d to %d\n", newVal, g_histogramPoints - 1);
-            // fflush(stdout);
-            newVal = g_histogramPoints - 1;
-        }
-
-        return newVal;
-    }
-
-    /* static */
-    template <typename PixelT>
-    void AdaptiveDisplayFuncVisitor<PixelT>::convertRangeFromHist(uint16_t hist, uint8_t *val)
-    {
-        uint8_t factor = 255 / g_histogramPoints;
-
-        *val = (uint8_t)(hist / factor);
-    }
-
-    /* static */
-    template <typename PixelT>
-    void AdaptiveDisplayFuncVisitor<PixelT>::convertRangeFromHist(uint16_t hist, uint16_t *val)
-    {
-        uint16_t factor = 65535 / g_histogramPoints;
-
-        *val = (uint16_t)(hist / factor);
-    }
-
-    /* static */
-    template <typename PixelT>
-    void AdaptiveDisplayFuncVisitor<PixelT>::convertRangeFromHist(uint16_t hist, uint32_t *val)
-    {
-        uint32_t factor = 4294967295 / g_histogramPoints;
-
-        *val = (uint32_t)(hist / factor);
-    }
-
-    /* static */
-    template <typename PixelT>
-    void AdaptiveDisplayFuncVisitor<PixelT>::convertRangeFromHist(uint16_t hist, float *val)
-    {
-        *val = (float)hist / g_histogramPoints;
-    }
-
-    /* static */
-    template <typename PixelT>
-    void AdaptiveDisplayFuncVisitor<PixelT>::convertRangeFromHist(uint16_t hist, double *val)
-    {
-        *val = (double)hist / g_histogramPoints;
     }
 
 }

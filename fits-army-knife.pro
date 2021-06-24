@@ -15,6 +15,7 @@ SOURCES += \
     fits/src/fitsexception.cpp \
     fits/src/fitsimage.cpp \
     fits/src/fitstantrum.cpp \
+    stf/src/pixutils.cpp \
     gui/src/main.cpp \
     gui/src/mainwindow.cpp \
     gui/src/fitswidget.cpp \
@@ -27,6 +28,7 @@ HEADERS += \
     fits/include/fitsimage.h \
     fits/include/fitspixelvisitor.h \
     fits/include/statisticsvisitor.h \
+    stf/include/pixutils.h \
     stf/include/adaptivedisplayfuncvisitor.h \
     gui/include/mainwindow.h \
     gui/include/fitswidget.h \
