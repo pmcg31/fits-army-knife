@@ -8,23 +8,26 @@ namespace ELS
     class PixUtils
     {
     public:
-        static uint8_t midtonesTransferFunc(uint8_t pixel, double mBal);
-        static uint16_t midtonesTransferFunc(uint16_t pixel, double mBal);
-        static uint32_t midtonesTransferFunc(uint32_t pixel, double mBal);
-        static float midtonesTransferFunc(float pixel, double mBal);
+        static double midtonesTransferFunc(uint8_t pixel, double mBal);
+        static double midtonesTransferFunc(uint16_t pixel, double mBal);
+        static double midtonesTransferFunc(uint32_t pixel, double mBal);
+        static double midtonesTransferFunc(float pixel, double mBal);
         static double midtonesTransferFunc(double pixel, double mBal);
 
-        static uint8_t clippingFunc(uint8_t pixel, double sClip, double hClip);
-        static uint16_t clippingFunc(uint16_t pixel, double sClip, double hClip);
-        static uint32_t clippingFunc(uint32_t pixel, double sClip, double hClip);
-        static float clippingFunc(float pixel, double sClip, double hClip);
+        static double clippingFunc(uint8_t pixel, double sClip, double hClip);
+        static double clippingFunc(uint16_t pixel, double sClip, double hClip);
+        static double clippingFunc(uint32_t pixel, double sClip, double hClip);
+        static double clippingFunc(float pixel, double sClip, double hClip);
         static double clippingFunc(double pixel, double sClip, double hClip);
 
-        template <typename PixelT>
-        static PixelT expansionFunc(PixelT pixel, double sExp, double hExp);
+        static double expansionFunc(uint8_t pixel, double sExp, double hExp);
+        static double expansionFunc(uint16_t pixel, double sExp, double hExp);
+        static double expansionFunc(uint32_t pixel, double sExp, double hExp);
+        static double expansionFunc(float pixel, double sExp, double hExp);
+        static double expansionFunc(double pixel, double sExp, double hExp);
 
         template <typename PixelT>
-        static PixelT screenTransferFunc(PixelT pixel,
+        static double screenTransferFunc(PixelT pixel,
                                          double mBal,
                                          double sClip,
                                          double hClip,
@@ -60,25 +63,18 @@ namespace ELS
 
     /* static */
     template <typename PixelT>
-    PixelT PixUtils::expansionFunc(PixelT pixel, double sExp, double hExp)
-    {
-        return (pixel - sExp) / (hExp - sExp);
-    }
-
-    /* static */
-    template <typename PixelT>
-    PixelT PixUtils::screenTransferFunc(PixelT pixel,
+    double PixUtils::screenTransferFunc(PixelT pixel,
                                         double mBal,
                                         double sClip,
                                         double hClip,
                                         double sExp,
                                         double hExp)
     {
-        pixel = PixUtils::clippingFunc(pixel, sClip, hClip);
+        double tmpPix = PixUtils::clippingFunc(pixel, sClip, hClip);
 
-        pixel = PixUtils::midtonesTransferFunc(pixel, mBal);
+        tmpPix = PixUtils::midtonesTransferFunc(tmpPix, mBal);
 
-        return PixUtils::expansionFunc(pixel, sExp, hExp);
+        return PixUtils::expansionFunc(tmpPix, sExp, hExp);
     }
 
 }

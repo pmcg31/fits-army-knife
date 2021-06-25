@@ -80,18 +80,6 @@ private:
         virtual void done() override;
 
     private:
-        QColor convertGrayPixel(uint8_t val);
-        QColor convertGrayPixel(uint16_t val);
-        QColor convertGrayPixel(uint32_t val);
-        QColor convertGrayPixel(float val);
-        QColor convertGrayPixel(double val);
-        QColor convertColorPixel(const uint8_t *vals);
-        QColor convertColorPixel(const uint16_t *vals);
-        QColor convertColorPixel(const uint32_t *vals);
-        QColor convertColorPixel(const float *vals);
-        QColor convertColorPixel(const double *vals);
-
-    private:
         bool _isColor;
         int _rIdx;
         int _gIdx;
@@ -191,32 +179,34 @@ void FITSWidget::ToQImageVisitor<PixelT>::pixel(int x,
     double hExp = 1.0;
     if (_isColor)
     {
-        PixelT newVals[3];
+        uint8_t newVals[3];
         int chanIdx[3] = {_rIdx, _gIdx, _bIdx};
         for (int chan = 0; chan < 3; chan++)
         {
             _stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp, chan);
-            newVals[chan] = ELS::PixUtils::screenTransferFunc(pixelVals[chanIdx[chan]],
-                                                              mBal,
-                                                              sClip,
-                                                              hClip,
-                                                              sExp,
-                                                              hExp);
+            newVals[chan] = (uint8_t)(ELS::PixUtils::screenTransferFunc(pixelVals[chanIdx[chan]],
+                                                                        mBal,
+                                                                        sClip,
+                                                                        hClip,
+                                                                        sExp,
+                                                                        hExp) *
+                                      ELS::PixUtils::g_u8Max);
         }
 
-        _qi->setPixelColor(x, y, convertColorPixel(newVals));
+        _qi->setPixelColor(x, y, QColor::fromRgb(newVals[0], newVals[1], newVals[2]));
     }
     else
     {
         _stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp);
-        PixelT val = ELS::PixUtils::screenTransferFunc(pixelVals[0],
-                                                       mBal,
-                                                       sClip,
-                                                       hClip,
-                                                       sExp,
-                                                       hExp);
+        uint8_t val = (uint8_t)(ELS::PixUtils::screenTransferFunc(pixelVals[0],
+                                                                  mBal,
+                                                                  sClip,
+                                                                  hClip,
+                                                                  sExp,
+                                                                  hExp) *
+                                ELS::PixUtils::g_u8Max);
 
-        _qi->setPixelColor(x, y, convertGrayPixel(val));
+        _qi->setPixelColor(x, y, QColor::fromRgb(val, val, val));
     }
 }
 
@@ -224,109 +214,6 @@ template <typename PixelT>
 void FITSWidget::ToQImageVisitor<PixelT>::done()
 {
     // Cool
-}
-
-template <typename PixelT>
-QColor FITSWidget::ToQImageVisitor<PixelT>::convertGrayPixel(uint8_t val)
-{
-    return QColor::fromRgb(val, val, val);
-}
-
-template <typename PixelT>
-QColor FITSWidget::ToQImageVisitor<PixelT>::convertGrayPixel(uint16_t val)
-{
-    // uint8_t newVal = (uint8_t)(((double)val / ELS::PixUtils::g_u16Max) * ELS::PixUtils::g_u8Max);
-    uint8_t newVal = (uint8_t)(val / (ELS::PixUtils::g_u16Max / ELS::PixUtils::g_u8Max));
-
-    return QColor::fromRgb(newVal, newVal, newVal);
-}
-
-template <typename PixelT>
-QColor FITSWidget::ToQImageVisitor<PixelT>::convertGrayPixel(uint32_t val)
-{
-    uint8_t newVal = (uint8_t)(((double)val / ELS::PixUtils::g_u32Max) * ELS::PixUtils::g_u8Max);
-
-    return QColor::fromRgb(newVal, newVal, newVal);
-}
-
-template <typename PixelT>
-QColor FITSWidget::ToQImageVisitor<PixelT>::convertGrayPixel(float val)
-{
-    uint8_t newVal = (uint8_t)(val * ELS::PixUtils::g_u8Max);
-
-    return QColor::fromRgb(newVal, newVal, newVal);
-}
-
-template <typename PixelT>
-QColor FITSWidget::ToQImageVisitor<PixelT>::convertGrayPixel(double val)
-{
-    uint8_t newVal = (uint8_t)(val * ELS::PixUtils::g_u8Max);
-
-    return QColor::fromRgb(newVal, newVal, newVal);
-}
-
-template <typename PixelT>
-QColor FITSWidget::ToQImageVisitor<PixelT>::convertColorPixel(const uint8_t *vals)
-{
-    return QColor::fromRgb(vals[0],
-                           vals[1],
-                           vals[2]);
-}
-
-template <typename PixelT>
-QColor FITSWidget::ToQImageVisitor<PixelT>::convertColorPixel(const uint16_t *vals)
-{
-    uint8_t newVals[3];
-    for (int chan = 0; chan < 3; chan++)
-    {
-        newVals[chan] = (uint8_t)(((double)vals[chan] / ELS::PixUtils::g_u16Max) * ELS::PixUtils::g_u8Max);
-    }
-
-    return QColor::fromRgb(newVals[0],
-                           newVals[1],
-                           newVals[2]);
-}
-
-template <typename PixelT>
-QColor FITSWidget::ToQImageVisitor<PixelT>::convertColorPixel(const uint32_t *vals)
-{
-    uint8_t newVals[3];
-    for (int chan = 0; chan < 3; chan++)
-    {
-        newVals[chan] = (uint8_t)(((double)vals[chan] / ELS::PixUtils::g_u32Max) * ELS::PixUtils::g_u8Max);
-    }
-
-    return QColor::fromRgb(newVals[0],
-                           newVals[1],
-                           newVals[2]);
-}
-
-template <typename PixelT>
-QColor FITSWidget::ToQImageVisitor<PixelT>::convertColorPixel(const float *vals)
-{
-    uint8_t newVals[3];
-    for (int chan = 0; chan < 3; chan++)
-    {
-        newVals[chan] = (uint8_t)(vals[chan] * ELS::PixUtils::g_u8Max);
-    }
-
-    return QColor::fromRgb(newVals[0],
-                           newVals[1],
-                           newVals[2]);
-}
-
-template <typename PixelT>
-QColor FITSWidget::ToQImageVisitor<PixelT>::convertColorPixel(const double *vals)
-{
-    uint8_t newVals[3];
-    for (int chan = 0; chan < 3; chan++)
-    {
-        newVals[chan] = (uint8_t)(vals[chan] * ELS::PixUtils::g_u8Max);
-    }
-
-    return QColor::fromRgb(newVals[0],
-                           newVals[1],
-                           newVals[2]);
 }
 
 #endif // FITSWIDGET_H
