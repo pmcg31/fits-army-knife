@@ -29,11 +29,7 @@ FITSWidget::FITSWidget(QWidget *parent)
       _showStretched(false),
       _zoom(-1.0),
       _actualZoom(-1.0),
-      _mBal{0.5, 0.5, 0.5},
-      _sClip{0.0, 0.0, 0.0},
-      _hClip{1.0, 1.0, 1.0},
-      _sExp{0.0, 0.0, 0.0},
-      _hExp{1.0, 1.0, 1.0}
+      _stfParms()
 {
     setBackgroundRole(QPalette::Dark);
     setAutoFillBackground(true);
@@ -110,24 +106,13 @@ void FITSWidget::setFile(const char *filename)
     }
 }
 
-void FITSWidget::showStretched(const double *mBal,
-                               const double *sClip,
-                               const double *hClip,
-                               const double *sExp,
-                               const double *hExp)
+void FITSWidget::showStretched(ELS::PixSTFParms stfParms)
 {
     if (_showStretched != true)
     {
         _showStretched = true;
 
-        for (int chan = 0; chan < 3; chan++)
-        {
-            _mBal[chan] = mBal[chan];
-            _sClip[chan] = sClip[chan];
-            _hClip[chan] = hClip[chan];
-            _sExp[chan] = sExp[chan];
-            _hExp[chan] = hExp[chan];
-        }
+        _stfParms = stfParms;
 
         if (_cacheImage != 0)
         {
@@ -144,14 +129,7 @@ void FITSWidget::clearStretched()
     {
         _showStretched = false;
 
-        for (int chan = 0; chan < 3; chan++)
-        {
-            _mBal[chan] = 0.5;
-            _sClip[chan] = 0.0;
-            _hClip[chan] = 1.0;
-            _sExp[chan] = 0.0;
-            _hExp[chan] = 1.0;
-        }
+        _stfParms = ELS::PixSTFParms();
 
         if (_cacheImage != 0)
         {
@@ -322,75 +300,35 @@ QImage *FITSWidget::convertImage() const
     {
     case ELS::FITS::BD_INT_8:
     {
-        ToQImageVisitor<uint8_t> visitor;
-        if (_showStretched)
-        {
-            visitor.applySTF(_mBal,
-                             _sClip,
-                             _hClip,
-                             _sExp,
-                             _hExp);
-        }
+        ToQImageVisitor<uint8_t> visitor(_stfParms);
         _fits->visitPixels(&visitor);
         return visitor.getImage();
     }
     break;
     case ELS::FITS::BD_INT_16:
     {
-        ToQImageVisitor<uint16_t> visitor;
-        if (_showStretched)
-        {
-            visitor.applySTF(_mBal,
-                             _sClip,
-                             _hClip,
-                             _sExp,
-                             _hExp);
-        }
+        ToQImageVisitor<uint16_t> visitor(_stfParms);
         _fits->visitPixels(&visitor);
         return visitor.getImage();
     }
     break;
     case ELS::FITS::BD_INT_32:
     {
-        ToQImageVisitor<uint32_t> visitor;
-        if (_showStretched)
-        {
-            visitor.applySTF(_mBal,
-                             _sClip,
-                             _hClip,
-                             _sExp,
-                             _hExp);
-        }
+        ToQImageVisitor<uint32_t> visitor(_stfParms);
         _fits->visitPixels(&visitor);
         return visitor.getImage();
     }
     break;
     case ELS::FITS::BD_FLOAT:
     {
-        ToQImageVisitor<float> visitor;
-        if (_showStretched)
-        {
-            visitor.applySTF(_mBal,
-                             _sClip,
-                             _hClip,
-                             _sExp,
-                             _hExp);
-        }
+        ToQImageVisitor<float> visitor(_stfParms);
         _fits->visitPixels(&visitor);
         return visitor.getImage();
     }
     break;
     case ELS::FITS::BD_DOUBLE:
     {
-        ToQImageVisitor<double> visitor;
-        if (_showStretched)
-        {
-            visitor.applySTF(_mBal,
-                             _sClip,
-                             _hClip,
-                             _sExp,
-                             _hExp);
-        }
+        ToQImageVisitor<double> visitor(_stfParms);
         _fits->visitPixels(&visitor);
         return visitor.getImage();
     }

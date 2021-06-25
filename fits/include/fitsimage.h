@@ -1,6 +1,7 @@
 #pragma once
 
 #include <inttypes.h>
+#include <fitsio.h>
 #include "fits.h"
 #include "fitspixelvisitor.h"
 namespace ELS

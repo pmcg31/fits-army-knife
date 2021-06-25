@@ -2,6 +2,7 @@
 
 #include <inttypes.h>
 #include "pixutils.h"
+#include "pixstatistics.h"
 #include "fitspixelvisitor.h"
 
 namespace ELS
@@ -14,10 +15,7 @@ namespace ELS
         StatisticsVisitor();
         ~StatisticsVisitor();
 
-        PixelT getMinVal(int chan = 0) const;
-        PixelT getMaxVal(int chan = 0) const;
-        PixelT getMedVal(int chan = 0) const;
-        PixelT getMeanVal(int chan = 0) const;
+        PixStatistics<PixelT> getStatistics() const;
 
         void getHistogramData(int *numPoints, uint32_t **data);
 
@@ -39,8 +37,7 @@ namespace ELS
         double _accumulator[3];
         PixelT _minVal[3];
         PixelT _maxVal[3];
-        PixelT _medVal[3];
-        PixelT _meanVal[3];
+        PixStatistics<PixelT> _statistics;
         bool _shouldDeleteHistogram;
     };
 
@@ -56,8 +53,7 @@ namespace ELS
           _accumulator{0.0, 0.0, 0.0},
           _minVal{0, 0, 0},
           _maxVal{0, 0, 0},
-          _medVal{0, 0, 0},
-          _meanVal{0, 0, 0},
+          _statistics(),
           _shouldDeleteHistogram(true)
     {
     }
@@ -72,27 +68,9 @@ namespace ELS
     }
 
     template <typename PixelT>
-    PixelT StatisticsVisitor<PixelT>::getMinVal(int chan /* = 0 */) const
+    PixStatistics<PixelT> StatisticsVisitor<PixelT>::getStatistics() const
     {
-        return _minVal[chan];
-    }
-
-    template <typename PixelT>
-    PixelT StatisticsVisitor<PixelT>::getMaxVal(int chan /* = 0 */) const
-    {
-        return _maxVal[chan];
-    }
-
-    template <typename PixelT>
-    PixelT StatisticsVisitor<PixelT>::getMedVal(int chan /* = 0 */) const
-    {
-        return _medVal[chan];
-    }
-
-    template <typename PixelT>
-    PixelT StatisticsVisitor<PixelT>::getMeanVal(int chan /* = 0 */) const
-    {
-        return _meanVal[chan];
+        return _statistics;
     }
 
     template <typename PixelT>
@@ -246,19 +224,29 @@ namespace ELS
     template <typename PixelT>
     void StatisticsVisitor<PixelT>::done()
     {
-        _meanVal[0] = (PixelT)(_accumulator[0] / _pixelCount);
+        const int gOffset = PixUtils::g_histogramPoints;
+        const int bOffset = PixUtils::g_histogramPoints * 2;
+
+        _statistics.setMinVal(0, _minVal[0]);
+        _statistics.setMaxVal(0, _maxVal[0]);
+        _statistics.setMeanVal(0, (PixelT)(_accumulator[0] / _pixelCount));
         if (_gIdx != -1)
         {
-            _meanVal[1] = (PixelT)(_accumulator[1] / _pixelCount);
-            _meanVal[2] = (PixelT)(_accumulator[2] / _pixelCount);
+            _statistics.setMinVal(1, _minVal[1]);
+            _statistics.setMinVal(2, _minVal[2]);
+            _statistics.setMaxVal(1, _maxVal[1]);
+            _statistics.setMaxVal(2, _maxVal[2]);
+            _statistics.setMeanVal(1, (PixelT)(_accumulator[1] / _pixelCount));
+            _statistics.setMeanVal(2, (PixelT)(_accumulator[2] / _pixelCount));
         }
 
         bool isColor = _gIdx != -1;
 
         int64_t halfway = _pixelCount / 2;
         int64_t pointCount[3] = {0, 0, 0};
+        uint16_t medHist[3] = {0, 0, 0};
         bool done = false;
-        for (int i = 0; (!done) && (i < PixUtils::g_histogramPoints); i++)
+        for (uint16_t i = 0; (!done) && (i < PixUtils::g_histogramPoints); i++)
         {
             done = true;
 
@@ -269,7 +257,8 @@ namespace ELS
                 {
                     PixelT val = 0;
                     PixUtils::convertRangeFromHist(i, &val);
-                    _medVal[0] = val;
+                    medHist[0] = i;
+                    _statistics.setMedVal(0, val);
                 }
                 else
                 {
@@ -281,12 +270,13 @@ namespace ELS
             {
                 if (pointCount[1] < halfway)
                 {
-                    pointCount[1] += _histogram[PixUtils::g_histogramPoints + i];
+                    pointCount[1] += _histogram[gOffset + i];
                     if (pointCount[1] >= halfway)
                     {
                         PixelT val = 0;
                         PixUtils::convertRangeFromHist(i, &val);
-                        _medVal[1] = val;
+                        medHist[1] = i;
+                        _statistics.setMedVal(1, val);
                     }
                     else
                     {
@@ -296,12 +286,91 @@ namespace ELS
 
                 if (pointCount[2] < halfway)
                 {
-                    pointCount[2] += _histogram[PixUtils::g_histogramPoints * 2 + i];
+                    pointCount[2] += _histogram[bOffset + i];
                     if (pointCount[2] >= halfway)
                     {
                         PixelT val = 0;
                         PixUtils::convertRangeFromHist(i, &val);
-                        _medVal[2] = val;
+                        medHist[2] = i;
+                        _statistics.setMedVal(2, val);
+                    }
+                    else
+                    {
+                        done = false;
+                    }
+                }
+            }
+        }
+
+        int totalHistogramPoints = isColor ? PixUtils::g_histogramPoints * 3 : PixUtils::g_histogramPoints;
+        uint32_t *tmp = new uint32_t[totalHistogramPoints];
+        for (int i = 0; i < totalHistogramPoints; i++)
+        {
+            tmp[i] = 0;
+        }
+        for (uint16_t i = 0; i < PixUtils::g_histogramPoints; i++)
+        {
+            uint16_t val = i > medHist[0] ? i - medHist[0] : medHist[0] - i;
+            tmp[val] += _histogram[i];
+
+            if (isColor)
+            {
+                val = i > medHist[1] ? i - medHist[1] : medHist[1] - i;
+                tmp[gOffset + val] += _histogram[gOffset + i];
+
+                val = i > medHist[2] ? i - medHist[2] : medHist[2] - i;
+                tmp[bOffset + val] += _histogram[bOffset + i];
+            }
+        }
+
+        pointCount[0] = 0;
+        pointCount[1] = 0;
+        pointCount[2] = 0;
+        done = false;
+        for (uint16_t i = 0; (!done) && (i < PixUtils::g_histogramPoints); i++)
+        {
+            done = true;
+
+            if (pointCount[0] < halfway)
+            {
+                pointCount[0] += tmp[i];
+                if (pointCount[0] >= halfway)
+                {
+                    PixelT val = 0;
+                    PixUtils::convertRangeFromHist(i, &val);
+                    _statistics.setMADN(0, (PixelT)(PixUtils::g_madnConstant * (double)val));
+                }
+                else
+                {
+                    done = false;
+                }
+            }
+
+            if (isColor)
+            {
+                if (pointCount[1] < halfway)
+                {
+                    pointCount[1] += tmp[gOffset + i];
+                    if (pointCount[1] >= halfway)
+                    {
+                        PixelT val = 0;
+                        PixUtils::convertRangeFromHist(i, &val);
+                        _statistics.setMADN(1, (PixelT)(PixUtils::g_madnConstant * (double)val));
+                    }
+                    else
+                    {
+                        done = false;
+                    }
+                }
+
+                if (pointCount[2] < halfway)
+                {
+                    pointCount[2] += tmp[bOffset + i];
+                    if (pointCount[2] >= halfway)
+                    {
+                        PixelT val = 0;
+                        PixUtils::convertRangeFromHist(i, &val);
+                        _statistics.setMADN(2, (PixelT)(PixUtils::g_madnConstant * (double)val));
                     }
                     else
                     {

@@ -9,13 +9,14 @@ LIBS += -lcfitsio
 INCLUDEPATH += \
     fits/include \
     gui/include \
-    stf/include
+    raster/include
 
 SOURCES += \
     fits/src/fitsexception.cpp \
     fits/src/fitsimage.cpp \
     fits/src/fitstantrum.cpp \
-    stf/src/pixutils.cpp \
+    raster/src/pixutils.cpp \
+    raster/src/pixstfparms.cpp \
     gui/src/main.cpp \
     gui/src/mainwindow.cpp \
     gui/src/fitswidget.cpp \
@@ -28,8 +29,10 @@ HEADERS += \
     fits/include/fitsimage.h \
     fits/include/fitspixelvisitor.h \
     fits/include/statisticsvisitor.h \
-    stf/include/pixutils.h \
-    stf/include/adaptivedisplayfuncvisitor.h \
+    raster/include/pixutils.h \
+    raster/include/pixstatistics.h \
+    raster/include/pixstfparms.h \
+    raster/include/adaptivedisplayfuncvisitor.h \
     gui/include/mainwindow.h \
     gui/include/fitswidget.h \
     gui/include/histogramwidget.h

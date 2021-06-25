@@ -7,6 +7,8 @@
 #include <QLabel>
 #include <QPushButton>
 
+#include "pixstatistics.h"
+#include "pixstfparms.h"
 #include "fitswidget.h"
 #include "histogramwidget.h"
 
@@ -26,11 +28,7 @@ public:
     ~MainWindow();
 
 signals:
-    void showStretched(const double *mBal,
-                       const double *sClip,
-                       const double *hClip,
-                       const double *sExp,
-                       const double *hExp);
+    void showStretched(ELS::PixSTFParms stfParms);
     void clearStretched();
 
 private:
@@ -64,11 +62,6 @@ private:
     QPushButton stretchBtn;
     QPushButton zoomFitBtn;
     QPushButton zoom100Btn;
-    double madn[3];
-    double sClip[3];
-    double hClip[3];
-    double mBal[3];
-    double sExp[3];
-    double hExp[3];
+    ELS::PixSTFParms stfParms;
 };
 #endif // MAINWINDOW_H

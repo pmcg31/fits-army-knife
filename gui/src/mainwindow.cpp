@@ -1,10 +1,10 @@
 #include <QApplication>
 
-#include "mainwindow.h"
 #include "fits.h"
 #include "fitsimage.h"
 #include "statisticsvisitor.h"
 #include "adaptivedisplayfuncvisitor.h"
+#include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -27,12 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
       stretchBtn(offIcon, ""),
       zoomFitBtn("fit"),
       zoom100Btn("1:1"),
-      madn{0.0, 0.0, 0.0},
-      sClip{0.0, 0.0, 0.0},
-      hClip{1.0, 1.0, 1.0},
-      mBal{0.5, 0.5, 0.5},
-      sExp{0.0, 0.0, 0.0},
-      hExp{1.0, 1.0, 1.0}
+      stfParms()
 {
     const QSize iconSize(20, 20);
     const QSize btnSize(30, 30);
@@ -184,31 +179,33 @@ void MainWindow::fitsFileChanged(const char *filename)
     {
         ELS::StatisticsVisitor<uint8_t> visitor;
         image->visitPixels(&visitor);
+        ELS::PixStatistics<uint8_t> *localStats = new ELS::PixStatistics<uint8_t>(visitor.getStatistics());
+        stfParms = localStats->getStretchParameters();
         if (!isColor)
         {
-            sprintf(tmp, giMinF, visitor.getMinVal());
-            sprintf(tmp2, giMeanF, visitor.getMeanVal());
-            sprintf(tmp3, giMedF, visitor.getMedVal());
-            sprintf(tmp4, giMaxF, visitor.getMaxVal());
+            sprintf(tmp, giMinF, localStats->getMinVal());
+            sprintf(tmp2, giMeanF, localStats->getMeanVal());
+            sprintf(tmp3, giMedF, localStats->getMedVal());
+            sprintf(tmp4, giMaxF, localStats->getMaxVal());
         }
         else
         {
             sprintf(tmp, ciMinF,
-                    visitor.getMinVal(0),
-                    visitor.getMinVal(1),
-                    visitor.getMinVal(2));
+                    localStats->getMinVal(0),
+                    localStats->getMinVal(1),
+                    localStats->getMinVal(2));
             sprintf(tmp2, ciMeanF,
-                    visitor.getMeanVal(0),
-                    visitor.getMeanVal(1),
-                    visitor.getMeanVal(2));
+                    localStats->getMeanVal(0),
+                    localStats->getMeanVal(1),
+                    localStats->getMeanVal(2));
             sprintf(tmp3, ciMedF,
-                    visitor.getMedVal(0),
-                    visitor.getMedVal(1),
-                    visitor.getMedVal(2));
+                    localStats->getMedVal(0),
+                    localStats->getMedVal(1),
+                    localStats->getMedVal(2));
             sprintf(tmp4, ciMaxF,
-                    visitor.getMaxVal(0),
-                    visitor.getMaxVal(1),
-                    visitor.getMaxVal(2));
+                    localStats->getMaxVal(0),
+                    localStats->getMaxVal(1),
+                    localStats->getMaxVal(2));
         }
         minLabel.setText(tmp);
         meanLabel.setText(tmp2);
@@ -217,46 +214,48 @@ void MainWindow::fitsFileChanged(const char *filename)
 
         visitor.getHistogramData(&numPoints, &histogram);
 
-        uint8_t medVals[3] = {visitor.getMedVal(0),
-                              visitor.getMedVal(1),
-                              visitor.getMedVal(2)};
-        ELS::AdaptiveDisplayFuncVisitor<uint8_t> v2(medVals);
-        image->visitPixels(&v2);
-        v2.getMADN(madn);
-        v2.getSClip(sClip);
-        v2.getHClip(hClip);
-        v2.getMBal(mBal);
+        // uint8_t medVals[3] = {statistics.getMedVal(0),
+        //                       statistics.getMedVal(1),
+        //                       statistics.getMedVal(2)};
+        // ELS::AdaptiveDisplayFuncVisitor<uint8_t> v2(medVals);
+        // image->visitPixels(&v2);
+        // v2.getMADN(madn);
+        // v2.getSClip(sClip);
+        // v2.getHClip(hClip);
+        // v2.getMBal(mBal);
     }
     break;
     case ELS::FITS::BD_INT_16:
     {
         ELS::StatisticsVisitor<uint16_t> visitor;
         image->visitPixels(&visitor);
+        ELS::PixStatistics<uint16_t> *localStats = new ELS::PixStatistics<uint16_t>(visitor.getStatistics());
+        stfParms = localStats->getStretchParameters();
         if (!isColor)
         {
-            sprintf(tmp, giMinF, visitor.getMinVal());
-            sprintf(tmp2, giMeanF, visitor.getMeanVal());
-            sprintf(tmp3, giMedF, visitor.getMedVal());
-            sprintf(tmp4, giMaxF, visitor.getMaxVal());
+            sprintf(tmp, giMinF, localStats->getMinVal());
+            sprintf(tmp2, giMeanF, localStats->getMeanVal());
+            sprintf(tmp3, giMedF, localStats->getMedVal());
+            sprintf(tmp4, giMaxF, localStats->getMaxVal());
         }
         else
         {
             sprintf(tmp, ciMinF,
-                    visitor.getMinVal(0),
-                    visitor.getMinVal(1),
-                    visitor.getMinVal(2));
+                    localStats->getMinVal(0),
+                    localStats->getMinVal(1),
+                    localStats->getMinVal(2));
             sprintf(tmp2, ciMeanF,
-                    visitor.getMeanVal(0),
-                    visitor.getMeanVal(1),
-                    visitor.getMeanVal(2));
+                    localStats->getMeanVal(0),
+                    localStats->getMeanVal(1),
+                    localStats->getMeanVal(2));
             sprintf(tmp3, ciMedF,
-                    visitor.getMedVal(0),
-                    visitor.getMedVal(1),
-                    visitor.getMedVal(2));
+                    localStats->getMedVal(0),
+                    localStats->getMedVal(1),
+                    localStats->getMedVal(2));
             sprintf(tmp4, ciMaxF,
-                    visitor.getMaxVal(0),
-                    visitor.getMaxVal(1),
-                    visitor.getMaxVal(2));
+                    localStats->getMaxVal(0),
+                    localStats->getMaxVal(1),
+                    localStats->getMaxVal(2));
         }
         minLabel.setText(tmp);
         meanLabel.setText(tmp2);
@@ -265,46 +264,55 @@ void MainWindow::fitsFileChanged(const char *filename)
 
         visitor.getHistogramData(&numPoints, &histogram);
 
-        uint16_t medVals[3] = {visitor.getMedVal(0),
-                               visitor.getMedVal(1),
-                               visitor.getMedVal(2)};
-        ELS::AdaptiveDisplayFuncVisitor<uint16_t> v2(medVals);
-        image->visitPixels(&v2);
-        v2.getMADN(madn);
-        v2.getSClip(sClip);
-        v2.getHClip(hClip);
-        v2.getMBal(mBal);
+        // uint16_t medVals[3] = {visitor.getMedVal(0),
+        //                        visitor.getMedVal(1),
+        //                        visitor.getMedVal(2)};
+        // ELS::AdaptiveDisplayFuncVisitor<uint16_t> v2(medVals);
+        // image->visitPixels(&v2);
+        // v2.getMADN(madn);
+        // v2.getSClip(sClip);
+        // v2.getHClip(hClip);
+        // v2.getMBal(mBal);
+
+        // int numChan = isColor ? 3 : 1;
+        // for (int chan = 0; chan < numChan; chan++)
+        // {
+        //     printf("c%d: v.madn: %d v2.madn: %lf\n", chan, visitor.getMADN(chan), madn[chan]);
+        // }
+        // fflush(stdout);
     }
     break;
     case ELS::FITS::BD_INT_32:
     {
         ELS::StatisticsVisitor<uint32_t> visitor;
         image->visitPixels(&visitor);
+        ELS::PixStatistics<uint32_t> *localStats = new ELS::PixStatistics<uint32_t>(visitor.getStatistics());
+        stfParms = localStats->getStretchParameters();
         if (!isColor)
         {
-            sprintf(tmp, giMinF, visitor.getMinVal());
-            sprintf(tmp2, giMeanF, visitor.getMeanVal());
-            sprintf(tmp3, giMedF, visitor.getMedVal());
-            sprintf(tmp4, giMaxF, visitor.getMaxVal());
+            sprintf(tmp, giMinF, localStats->getMinVal());
+            sprintf(tmp2, giMeanF, localStats->getMeanVal());
+            sprintf(tmp3, giMedF, localStats->getMedVal());
+            sprintf(tmp4, giMaxF, localStats->getMaxVal());
         }
         else
         {
             sprintf(tmp, ciMinF,
-                    visitor.getMinVal(0),
-                    visitor.getMinVal(1),
-                    visitor.getMinVal(2));
+                    localStats->getMinVal(0),
+                    localStats->getMinVal(1),
+                    localStats->getMinVal(2));
             sprintf(tmp2, ciMeanF,
-                    visitor.getMeanVal(0),
-                    visitor.getMeanVal(1),
-                    visitor.getMeanVal(2));
+                    localStats->getMeanVal(0),
+                    localStats->getMeanVal(1),
+                    localStats->getMeanVal(2));
             sprintf(tmp3, ciMedF,
-                    visitor.getMedVal(0),
-                    visitor.getMedVal(1),
-                    visitor.getMedVal(2));
+                    localStats->getMedVal(0),
+                    localStats->getMedVal(1),
+                    localStats->getMedVal(2));
             sprintf(tmp4, ciMaxF,
-                    visitor.getMaxVal(0),
-                    visitor.getMaxVal(1),
-                    visitor.getMaxVal(2));
+                    localStats->getMaxVal(0),
+                    localStats->getMaxVal(1),
+                    localStats->getMaxVal(2));
         }
         minLabel.setText(tmp);
         meanLabel.setText(tmp2);
@@ -313,46 +321,55 @@ void MainWindow::fitsFileChanged(const char *filename)
 
         visitor.getHistogramData(&numPoints, &histogram);
 
-        uint32_t medVals[3] = {visitor.getMedVal(0),
-                               visitor.getMedVal(1),
-                               visitor.getMedVal(2)};
-        ELS::AdaptiveDisplayFuncVisitor<uint32_t> v2(medVals);
-        image->visitPixels(&v2);
-        v2.getMADN(madn);
-        v2.getSClip(sClip);
-        v2.getHClip(hClip);
-        v2.getMBal(mBal);
+        // uint32_t medVals[3] = {visitor.getMedVal(0),
+        //                        visitor.getMedVal(1),
+        //                        visitor.getMedVal(2)};
+        // ELS::AdaptiveDisplayFuncVisitor<uint32_t> v2(medVals);
+        // image->visitPixels(&v2);
+        // v2.getMADN(madn);
+        // v2.getSClip(sClip);
+        // v2.getHClip(hClip);
+        // v2.getMBal(mBal);
+
+        // int numChan = isColor ? 3 : 1;
+        // for (int chan = 0; chan < numChan; chan++)
+        // {
+        //     printf("c%d: v.madn: %d v2.madn: %lf\n", chan, visitor.getMADN(chan), madn[chan]);
+        // }
+        // fflush(stdout);
     }
     break;
     case ELS::FITS::BD_FLOAT:
     {
         ELS::StatisticsVisitor<float> visitor;
         image->visitPixels(&visitor);
+        ELS::PixStatistics<float> *localStats = new ELS::PixStatistics<float>(visitor.getStatistics());
+        stfParms = localStats->getStretchParameters();
         if (!isColor)
         {
-            sprintf(tmp, gfMinF, visitor.getMinVal());
-            sprintf(tmp2, gfMeanF, visitor.getMeanVal());
-            sprintf(tmp3, gfMedF, visitor.getMedVal());
-            sprintf(tmp4, gfMaxF, visitor.getMaxVal());
+            sprintf(tmp, gfMinF, localStats->getMinVal());
+            sprintf(tmp2, gfMeanF, localStats->getMeanVal());
+            sprintf(tmp3, gfMedF, localStats->getMedVal());
+            sprintf(tmp4, gfMaxF, localStats->getMaxVal());
         }
         else
         {
             sprintf(tmp, cfMinF,
-                    visitor.getMinVal(0),
-                    visitor.getMinVal(1),
-                    visitor.getMinVal(2));
+                    localStats->getMinVal(0),
+                    localStats->getMinVal(1),
+                    localStats->getMinVal(2));
             sprintf(tmp2, cfMeanF,
-                    visitor.getMeanVal(0),
-                    visitor.getMeanVal(1),
-                    visitor.getMeanVal(2));
+                    localStats->getMeanVal(0),
+                    localStats->getMeanVal(1),
+                    localStats->getMeanVal(2));
             sprintf(tmp3, cfMedF,
-                    visitor.getMedVal(0),
-                    visitor.getMedVal(1),
-                    visitor.getMedVal(2));
+                    localStats->getMedVal(0),
+                    localStats->getMedVal(1),
+                    localStats->getMedVal(2));
             sprintf(tmp4, cfMaxF,
-                    visitor.getMaxVal(0),
-                    visitor.getMaxVal(1),
-                    visitor.getMaxVal(2));
+                    localStats->getMaxVal(0),
+                    localStats->getMaxVal(1),
+                    localStats->getMaxVal(2));
         }
         minLabel.setText(tmp);
         meanLabel.setText(tmp2);
@@ -361,46 +378,55 @@ void MainWindow::fitsFileChanged(const char *filename)
 
         visitor.getHistogramData(&numPoints, &histogram);
 
-        float medVals[3] = {visitor.getMedVal(0),
-                            visitor.getMedVal(1),
-                            visitor.getMedVal(2)};
-        ELS::AdaptiveDisplayFuncVisitor<float> v2(medVals);
-        image->visitPixels(&v2);
-        v2.getMADN(madn);
-        v2.getSClip(sClip);
-        v2.getHClip(hClip);
-        v2.getMBal(mBal);
+        // float medVals[3] = {visitor.getMedVal(0),
+        //                     visitor.getMedVal(1),
+        //                     visitor.getMedVal(2)};
+        // ELS::AdaptiveDisplayFuncVisitor<float> v2(medVals);
+        // image->visitPixels(&v2);
+        // v2.getMADN(madn);
+        // v2.getSClip(sClip);
+        // v2.getHClip(hClip);
+        // v2.getMBal(mBal);
+
+        // int numChan = isColor ? 3 : 1;
+        // for (int chan = 0; chan < numChan; chan++)
+        // {
+        //     printf("c%d: v.madn: %f v2.madn: %lf\n", chan, visitor.getMADN(chan), madn[chan]);
+        // }
+        // fflush(stdout);
     }
     break;
     case ELS::FITS::BD_DOUBLE:
     {
         ELS::StatisticsVisitor<double> visitor;
+        ELS::PixStatistics<double> *localStats = new ELS::PixStatistics<double>(visitor.getStatistics());
+        stfParms = localStats->getStretchParameters();
         image->visitPixels(&visitor);
         if (!isColor)
         {
-            sprintf(tmp, gfMinF, visitor.getMinVal());
-            sprintf(tmp2, gfMeanF, visitor.getMeanVal());
-            sprintf(tmp3, gfMedF, visitor.getMedVal());
-            sprintf(tmp4, gfMaxF, visitor.getMaxVal());
+            sprintf(tmp, gfMinF, localStats->getMinVal());
+            sprintf(tmp2, gfMeanF, localStats->getMeanVal());
+            sprintf(tmp3, gfMedF, localStats->getMedVal());
+            sprintf(tmp4, gfMaxF, localStats->getMaxVal());
         }
         else
         {
             sprintf(tmp, cfMinF,
-                    visitor.getMinVal(0),
-                    visitor.getMinVal(1),
-                    visitor.getMinVal(2));
+                    localStats->getMinVal(0),
+                    localStats->getMinVal(1),
+                    localStats->getMinVal(2));
             sprintf(tmp2, cfMeanF,
-                    visitor.getMeanVal(0),
-                    visitor.getMeanVal(1),
-                    visitor.getMeanVal(2));
+                    localStats->getMeanVal(0),
+                    localStats->getMeanVal(1),
+                    localStats->getMeanVal(2));
             sprintf(tmp3, cfMedF,
-                    visitor.getMedVal(0),
-                    visitor.getMedVal(1),
-                    visitor.getMedVal(2));
+                    localStats->getMedVal(0),
+                    localStats->getMedVal(1),
+                    localStats->getMedVal(2));
             sprintf(tmp4, cfMaxF,
-                    visitor.getMaxVal(0),
-                    visitor.getMaxVal(1),
-                    visitor.getMaxVal(2));
+                    localStats->getMaxVal(0),
+                    localStats->getMaxVal(1),
+                    localStats->getMaxVal(2));
         }
         minLabel.setText(tmp);
         meanLabel.setText(tmp2);
@@ -409,15 +435,22 @@ void MainWindow::fitsFileChanged(const char *filename)
 
         visitor.getHistogramData(&numPoints, &histogram);
 
-        double medVals[3] = {visitor.getMedVal(0),
-                             visitor.getMedVal(1),
-                             visitor.getMedVal(2)};
-        ELS::AdaptiveDisplayFuncVisitor<double> v2(medVals);
-        image->visitPixels(&v2);
-        v2.getMADN(madn);
-        v2.getSClip(sClip);
-        v2.getHClip(hClip);
-        v2.getMBal(mBal);
+        // double medVals[3] = {visitor.getMedVal(0),
+        //                      visitor.getMedVal(1),
+        //                      visitor.getMedVal(2)};
+        // ELS::AdaptiveDisplayFuncVisitor<double> v2(medVals);
+        // image->visitPixels(&v2);
+        // v2.getMADN(madn);
+        // v2.getSClip(sClip);
+        // v2.getHClip(hClip);
+        // v2.getMBal(mBal);
+
+        // int numChan = isColor ? 3 : 1;
+        // for (int chan = 0; chan < numChan; chan++)
+        // {
+        //     printf("c%d: v.madn: %lf v2.madn: %lf\n", chan, visitor.getMADN(chan), madn[chan]);
+        // }
+        // fflush(stdout);
     }
     break;
     }
@@ -426,12 +459,12 @@ void MainWindow::fitsFileChanged(const char *filename)
 
     printf("%s\n", image->getImageType());
     printf("%s\n", image->getSizeAndColor());
-    int numChan = image->isColor() ? 3 : 1;
-    for (int chan = 0; chan < numChan; chan++)
-    {
-        printf("c%d: madn: %0.4f sClip: %0.4f hClip: %0.4f mBal: %0.4f\n",
-               chan, madn[chan], sClip[chan], hClip[chan], mBal[chan]);
-    }
+    // int numChan = image->isColor() ? 3 : 1;
+    // for (int chan = 0; chan < numChan; chan++)
+    // {
+    //     printf("c%d: madn: %0.4f sClip: %0.4f hClip: %0.4f mBal: %0.4f\n",
+    //            chan, madn[chan], sClip[chan], hClip[chan], mBal[chan]);
+    // }
     fflush(stdout);
 }
 
@@ -459,7 +492,7 @@ void MainWindow::stretchToggled(bool isChecked)
         if (showingStretched)
         {
             stretchBtn.setIcon(onIcon);
-            emit showStretched(mBal, sClip, hClip, sExp, hExp);
+            emit showStretched(stfParms);
         }
         else
         {
