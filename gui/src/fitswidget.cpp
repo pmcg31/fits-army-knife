@@ -48,12 +48,28 @@ FITSWidget::~FITSWidget()
     if (_fits != 0)
     {
         delete _fits;
+        _fits = 0;
     }
 
     if (_cacheImage != 0)
     {
         delete _cacheImage;
+        _cacheImage = 0;
     }
+
+    if (_identityLUT != 0)
+    {
+        delete[] _identityLUT;
+        _identityLUT = 0;
+    }
+
+    if (_stfLUT != 0)
+    {
+        delete[] _stfLUT;
+        _stfLUT = 0;
+    }
+
+    _lutInUse = 0;
 }
 
 QSize FITSWidget::sizeHint() const

@@ -35,6 +35,11 @@ void HistogramWidget::setHistogramData(bool isColor,
                                        int numPoints,
                                        uint32_t *data)
 {
+    if (_data != 0)
+    {
+        delete[] _data;
+    }
+
     _isColor = isColor;
     _numPoints = numPoints;
     _data = data;

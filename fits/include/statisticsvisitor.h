@@ -379,6 +379,8 @@ namespace ELS
                 }
             }
         }
+
+        delete[] tmp;
     }
 
 }
