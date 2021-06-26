@@ -29,13 +29,15 @@ FITSWidget::FITSWidget(QWidget *parent)
       _showStretched(false),
       _zoom(-1.0),
       _actualZoom(-1.0),
+      _centerPoint(-1, -1),
       _stfParms(),
       _isColor(false),
       _numHistogramPoints(0),
       _histogramData(),
       _stfLUT(0),
       _identityLUT(0),
-      _lutInUse(_identityLUT)
+      _lutInUse(_identityLUT),
+      _mouseDragLast(-1, -1)
 {
     setBackgroundRole(QPalette::Dark);
     setAutoFillBackground(true);
@@ -111,6 +113,9 @@ void FITSWidget::setFile(const char *filename)
 
             strcpy(_filename, filename);
             _fits = tmpFits;
+
+            _centerPoint = QPoint(_fits->getWidth() / 2,
+                                  _fits->getHeight() / 2);
 
             emit fileChanged(_filename);
         }
@@ -234,6 +239,88 @@ void FITSWidget::setHistogramData(bool isColor,
     update();
 }
 
+void FITSWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    if (_mouseDragLast != QPoint(-1, -1))
+    {
+        QPoint deltas = _mouseDragLast - event->pos();
+        deltas /= _zoom;
+
+        _centerPoint += deltas;
+
+        int realWidth = width();
+        int realHeight = height();
+        int border = 1;
+        int w = realWidth - (border * 2);
+        int h = realHeight - (border * 2);
+        int imgW = _fits->getWidth();
+        int imgH = _fits->getHeight();
+        int imgZoomW = imgW;
+        int imgZoomH = imgH;
+        QPoint centerPointZoom = _centerPoint;
+        if (_zoom != -1.0)
+        {
+            imgZoomW *= _zoom;
+            imgZoomH *= _zoom;
+            centerPointZoom *= _zoom;
+        }
+        QPoint imgCenterZoom(imgZoomW / 2, imgZoomH / 2);
+        QPoint centerDeltaZoom = imgCenterZoom - centerPointZoom;
+        int widthXtra = imgZoomW - w;
+        int heightXtra = imgZoomH - h;
+
+        int xTmp = centerDeltaZoom.x();
+        int maxXDelta = widthXtra / 2;
+        if (xTmp > maxXDelta)
+        {
+            centerPointZoom.setX(imgCenterZoom.x() - maxXDelta);
+        }
+        else if (xTmp < -maxXDelta)
+        {
+            centerPointZoom.setX(imgCenterZoom.x() + maxXDelta);
+        }
+
+        int yTmp = centerDeltaZoom.y();
+        int maxYDelta = heightXtra / 2;
+        if (yTmp > maxYDelta)
+        {
+            centerPointZoom.setY(imgCenterZoom.y() - maxYDelta);
+        }
+        else if (yTmp < -maxYDelta)
+        {
+            centerPointZoom.setY(imgCenterZoom.y() + maxYDelta);
+        }
+
+        _centerPoint = centerPointZoom / _zoom;
+
+        _mouseDragLast = event->pos();
+        update();
+
+        printf("center point (%d, %d)\n", _centerPoint.x(), _centerPoint.y());
+        fflush(stdout);
+    }
+}
+
+void FITSWidget::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton)
+    {
+        _mouseDragLast = event->pos();
+        printf("center point (%d, %d)\n", _centerPoint.x(), _centerPoint.y());
+        fflush(stdout);
+    }
+}
+
+void FITSWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton)
+    {
+        _mouseDragLast = QPoint(-1, -1);
+        printf("weighed anchor!\n");
+        fflush(stdout);
+    }
+}
+
 void FITSWidget::wheelEvent(QWheelEvent *event)
 {
     QPoint numSteps = event->angleDelta() / 120;
@@ -278,12 +365,14 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
         int imgH = _fits->getHeight();
         int imgZoomW = imgW;
         int imgZoomH = imgH;
-
+        QPoint centerPointZoom = _centerPoint;
         if (_zoom != -1.0)
         {
             imgZoomW *= _zoom;
             imgZoomH *= _zoom;
+            centerPointZoom *= _zoom;
         }
+        QPoint imgCenterZoom(imgZoomW / 2, imgZoomH / 2);
 
         QRect target;
         QRect source(0, 0, imgW, imgH);
@@ -327,6 +416,8 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
                 int heightXtra = imgZoomH - h;
 
                 QRect sourceZoom(0, 0, 0, 0);
+                QPoint centerDeltaZoom = imgCenterZoom - centerPointZoom;
+                printf("centerDeltaZoom (%d, %d)\n", centerDeltaZoom.x(), centerDeltaZoom.y());
                 if (widthXtra < 0)
                 {
                     target.setLeft((w - imgZoomW) / 2 + border);
@@ -338,7 +429,9 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
                 {
                     target.setLeft(border);
                     target.setWidth(w);
-                    sourceZoom.setLeft(widthXtra / 2);
+                    int left = std::max(0, std::min((widthXtra / 2) - centerDeltaZoom.x(), widthXtra));
+                    printf("left: %d would have been: %d\n", left, widthXtra / 2);
+                    sourceZoom.setLeft(left);
                     sourceZoom.setWidth(w);
                 }
 
@@ -353,7 +446,9 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
                 {
                     target.setTop(border);
                     target.setHeight(h);
-                    sourceZoom.setTop(heightXtra / 2);
+                    int top = std::max(0, std::min((heightXtra / 2) - centerDeltaZoom.y(), heightXtra));
+                    printf("top: %d would have been: %d\n", top, heightXtra / 2);
+                    sourceZoom.setTop(top);
                     sourceZoom.setHeight(h);
                 }
 
@@ -361,6 +456,9 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
                 source.setWidth(sourceZoom.width() / _zoom);
                 source.setTop(sourceZoom.top() / _zoom);
                 source.setHeight(sourceZoom.height() / _zoom);
+
+                printf("source: (%d, %d) %dx%d\n", source.left(), source.top(), source.width(), source.height());
+                fflush(stdout);
             }
         }
 

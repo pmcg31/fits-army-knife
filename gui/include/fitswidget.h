@@ -50,6 +50,9 @@ signals:
     void actualZoomChanged(float zoom);
 
 protected:
+    virtual void mouseMoveEvent(QMouseEvent *event) override;
+    virtual void mousePressEvent(QMouseEvent *event) override;
+    virtual void mouseReleaseEvent(QMouseEvent *event) override;
     virtual void wheelEvent(QWheelEvent *event) override;
     virtual void paintEvent(QPaintEvent *event) override;
 
@@ -108,6 +111,7 @@ private:
     bool _showStretched;
     float _zoom;
     float _actualZoom;
+    QPoint _centerPoint;
     ELS::PixSTFParms _stfParms;
     bool _isColor;
     int _numHistogramPoints;
@@ -115,6 +119,7 @@ private:
     uint8_t *_stfLUT;
     uint8_t *_identityLUT;
     uint8_t *_lutInUse;
+    QPoint _mouseDragLast;
 
 private:
     static const float g_validZooms[];
