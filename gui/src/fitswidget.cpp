@@ -25,14 +25,14 @@ FITSWidget::FITSWidget(QWidget *parent)
       _sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding),
       _filename(""),
       _fits(0),
-      _cacheImage(0),
+      _cacheImage(),
       _showStretched(false),
       _zoom(-1.0),
       _actualZoom(-1.0),
       _stfParms(),
       _isColor(false),
       _numHistogramPoints(0),
-      _histogramData(0),
+      _histogramData(),
       _stfLUT(0),
       _identityLUT(0),
       _lutInUse(_identityLUT)
@@ -49,12 +49,6 @@ FITSWidget::~FITSWidget()
     {
         delete _fits;
         _fits = 0;
-    }
-
-    if (_cacheImage != 0)
-    {
-        delete _cacheImage;
-        _cacheImage = 0;
     }
 
     if (_identityLUT != 0)
@@ -143,10 +137,10 @@ void FITSWidget::showStretched(ELS::PixSTFParms stfParms)
 
         if (_cacheImage != 0)
         {
-            delete _cacheImage;
-            _cacheImage = 0;
-            update();
+            _cacheImage.reset();
         }
+
+        update();
     }
 }
 
@@ -161,10 +155,10 @@ void FITSWidget::clearStretched()
 
         if (_cacheImage != 0)
         {
-            delete _cacheImage;
-            _cacheImage = 0;
-            update();
+            _cacheImage.reset();
         }
+
+        update();
     }
 }
 
@@ -184,7 +178,7 @@ void FITSWidget::setZoom(float zoom)
 
 void FITSWidget::setHistogramData(bool isColor,
                                   int numPoints,
-                                  uint32_t *data)
+                                  std::shared_ptr<uint32_t[]> data)
 {
     _isColor = isColor;
     _numHistogramPoints = numPoints;
@@ -383,7 +377,7 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
     }
 }
 
-QImage *FITSWidget::convertImage() const
+std::shared_ptr<QImage> FITSWidget::convertImage() const
 {
     switch (_fits->getBitDepth())
     {

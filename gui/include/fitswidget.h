@@ -1,6 +1,8 @@
 #ifndef FITSWIDGET_H
 #define FITSWIDGET_H
 
+#include <memory>
+
 #include <QWidget>
 #include <QSizePolicy>
 #include <QWheelEvent>
@@ -38,7 +40,7 @@ public slots:
     void setZoom(float zoom);
     void setHistogramData(bool isColor,
                           int numPoints,
-                          uint32_t *data);
+                          std::shared_ptr<uint32_t[]> data);
 
 signals:
     void fileChanged(const char *filename);
@@ -51,7 +53,7 @@ protected:
     virtual void wheelEvent(QWheelEvent *event) override;
     virtual void paintEvent(QPaintEvent *event) override;
 
-    QImage *convertImage() const;
+    std::shared_ptr<QImage> convertImage() const;
 
 protected:
     enum ZoomAdjustStrategy
@@ -79,7 +81,7 @@ private:
                         int lutPoints);
         ~ToQImageVisitor();
 
-        QImage *getImage();
+        std::shared_ptr<QImage> getImage();
 
     public:
         virtual void pixelFormat(ELS::FITS::PixelFormat pf) override;
@@ -93,8 +95,7 @@ private:
         int _gIdx;
         int _bIdx;
         ELS::PixSTFParms _stfParms;
-        QImage *_qi;
-        bool _shouldDeleteImage;
+        std::shared_ptr<QImage> _qi;
         uint8_t *_lut;
         int _lutPoints;
     };
@@ -103,14 +104,14 @@ private:
     QSizePolicy _sizePolicy;
     char _filename[500];
     ELS::FITSImage *_fits;
-    QImage *_cacheImage;
+    std::shared_ptr<QImage> _cacheImage;
     bool _showStretched;
     float _zoom;
     float _actualZoom;
     ELS::PixSTFParms _stfParms;
     bool _isColor;
     int _numHistogramPoints;
-    uint32_t *_histogramData;
+    std::shared_ptr<uint32_t[]> _histogramData;
     uint8_t *_stfLUT;
     uint8_t *_identityLUT;
     uint8_t *_lutInUse;
@@ -128,8 +129,7 @@ FITSWidget::ToQImageVisitor<PixelT>::ToQImageVisitor(ELS::PixSTFParms stfParms,
       _gIdx(-1),
       _bIdx(-1),
       _stfParms(stfParms),
-      _qi(0),
-      _shouldDeleteImage(true),
+      _qi(),
       _lut(lut),
       _lutPoints(lutPoints)
 {
@@ -138,16 +138,11 @@ FITSWidget::ToQImageVisitor<PixelT>::ToQImageVisitor(ELS::PixSTFParms stfParms,
 template <typename PixelT>
 FITSWidget::ToQImageVisitor<PixelT>::~ToQImageVisitor()
 {
-    if (_shouldDeleteImage && (_qi != 0))
-    {
-        delete _qi;
-    }
 }
 
 template <typename PixelT>
-QImage *FITSWidget::ToQImageVisitor<PixelT>::getImage()
+std::shared_ptr<QImage> FITSWidget::ToQImageVisitor<PixelT>::getImage()
 {
-    _shouldDeleteImage = false;
     return _qi;
 }
 
@@ -179,12 +174,7 @@ template <typename PixelT>
 void FITSWidget::ToQImageVisitor<PixelT>::dimensions(int width,
                                                      int height)
 {
-    if (_shouldDeleteImage && (_qi != 0))
-    {
-        delete _qi;
-    }
-
-    _qi = new QImage(width, height, QImage::Format_ARGB32);
+    _qi.reset(new QImage(width, height, QImage::Format_ARGB32));
 }
 
 template <typename PixelT>

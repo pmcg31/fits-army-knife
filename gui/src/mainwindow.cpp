@@ -1,5 +1,7 @@
 #include <QApplication>
 
+#include <memory>
+
 #include "fits.h"
 #include "fitsimage.h"
 #include "statisticsvisitor.h"
@@ -171,7 +173,7 @@ void MainWindow::fitsFileChanged(const char *filename)
     char tmp3[100];
     char tmp4[100];
     int numPoints = 0;
-    uint32_t *histogram = 0;
+    std::shared_ptr<uint32_t[]> histogram;
     switch (image->getBitDepth())
     {
     case ELS::FITS::BD_INT_8:

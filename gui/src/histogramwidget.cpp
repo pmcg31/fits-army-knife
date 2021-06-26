@@ -7,7 +7,7 @@ HistogramWidget::HistogramWidget(QWidget *parent /* = nullptr */)
     : QWidget(parent),
       _isColor(false),
       _numPoints(0),
-      _data(0),
+      _data(),
       _histImage(0)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
@@ -15,10 +15,6 @@ HistogramWidget::HistogramWidget(QWidget *parent /* = nullptr */)
 
 HistogramWidget::~HistogramWidget()
 {
-    if (_data != 0)
-    {
-        delete[] _data;
-    }
 }
 
 QSize HistogramWidget::sizeHint() const
@@ -33,13 +29,8 @@ QSize HistogramWidget::minimumSizeHint() const
 
 void HistogramWidget::setHistogramData(bool isColor,
                                        int numPoints,
-                                       uint32_t *data)
+                                       std::shared_ptr<uint32_t[]> data)
 {
-    if (_data != 0)
-    {
-        delete[] _data;
-    }
-
     _isColor = isColor;
     _numPoints = numPoints;
     _data = data;

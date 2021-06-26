@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <inttypes.h>
 #include "pixutils.h"
 #include "pixstatistics.h"
@@ -17,7 +18,8 @@ namespace ELS
 
         PixStatistics<PixelT> getStatistics() const;
 
-        void getHistogramData(int *numPoints, uint32_t **data);
+        void getHistogramData(int *numPoints,
+                              std::shared_ptr<uint32_t[]> *data);
 
     public:
         virtual void pixelFormat(ELS::FITS::PixelFormat pf) override;
@@ -33,12 +35,11 @@ namespace ELS
         int _bIdx;
         bool _isFirstPixel;
         int64_t _pixelCount;
-        uint32_t *_histogram;
+        std::shared_ptr<uint32_t[]> _histogram;
         double _accumulator[3];
         PixelT _minVal[3];
         PixelT _maxVal[3];
         PixStatistics<PixelT> _statistics;
-        bool _shouldDeleteHistogram;
     };
 
     template <typename PixelT>
@@ -53,18 +54,13 @@ namespace ELS
           _accumulator{0.0, 0.0, 0.0},
           _minVal{0, 0, 0},
           _maxVal{0, 0, 0},
-          _statistics(),
-          _shouldDeleteHistogram(true)
+          _statistics()
     {
     }
 
     template <typename PixelT>
     StatisticsVisitor<PixelT>::~StatisticsVisitor()
     {
-        if (_shouldDeleteHistogram && (_histogram != 0))
-        {
-            delete[] _histogram;
-        }
     }
 
     template <typename PixelT>
@@ -75,9 +71,8 @@ namespace ELS
 
     template <typename PixelT>
     void StatisticsVisitor<PixelT>::getHistogramData(int *numPoints,
-                                                     uint32_t **data)
+                                                     std::shared_ptr<uint32_t[]> *data)
     {
-        _shouldDeleteHistogram = false;
         *numPoints = PixUtils::g_histogramPoints;
         *data = _histogram;
     }
@@ -118,7 +113,8 @@ namespace ELS
             totalHistogramPoints *= 3;
         }
 
-        _histogram = new uint32_t[totalHistogramPoints];
+        _histogram = std::shared_ptr<uint32_t[]>(new uint32_t[totalHistogramPoints]);
+        // _histogram = new uint32_t[totalHistogramPoints];
         for (int i = 0; i < PixUtils::g_histogramPoints; i++)
         {
             _histogram[i] = 0;
