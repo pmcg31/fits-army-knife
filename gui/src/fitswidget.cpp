@@ -296,15 +296,6 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
 
 QImage *FITSWidget::convertImage() const
 {
-    for (int chan = 0; chan < 3; chan++)
-    {
-        printf("stfParms[%d]: mBal: %0.3lf sClip: %0.3lf hClip: %0.3lf sExp: %0.3lf hExp: %0.3lf\n",
-               chan, _stfParms.getMBal(chan), _stfParms.getSClip(chan),
-               _stfParms.getHClip(chan), _stfParms.getSExp(chan),
-               _stfParms.getHExp(chan));
-    }
-    fflush(stdout);
-
     switch (_fits->getBitDepth())
     {
     case ELS::FITS::BD_INT_8:

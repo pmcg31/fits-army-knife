@@ -227,56 +227,7 @@ namespace ELS
             tmpMedVal[chan] = (double)medVal[chan] / PixUtils::g_u8Max;
         }
 
-        PixSTFParms stfParms;
-
-        double tmpSClip = 0.0;
-        double tmpHClip = 0.0;
-        for (int chan = 0; chan < 3; chan++)
-        {
-            if ((tmpMedVal[chan] > 0.5) ||
-                (tmpMADN[chan] == 0))
-            {
-                tmpSClip = 0.0;
-                stfParms.setSClip(tmpSClip, chan);
-            }
-            else
-            {
-                tmpSClip = std::min(1.0,
-                                    std::max(0.0,
-                                             tmpMedVal[chan] + g_C * tmpMADN[chan]));
-                stfParms.setSClip(tmpSClip,
-                                  chan);
-            }
-
-            if ((tmpMedVal[chan] > 0.5) ||
-                (tmpMADN[chan] == 0))
-            {
-                tmpHClip = 1.0;
-                stfParms.setHClip(tmpHClip, chan);
-            }
-            else
-            {
-                tmpHClip = std::min(1.0,
-                                    std::max(0.0,
-                                             tmpMedVal[chan] - g_C * tmpMADN[chan]));
-                stfParms.setHClip(tmpHClip,
-                                  chan);
-            }
-
-            if (tmpMedVal[chan] < 0.5)
-            {
-                stfParms.setMBal(PixUtils::midtonesTransferFunc(tmpMedVal[chan] - tmpSClip, g_B));
-            }
-            else
-            {
-                stfParms.setMBal(PixUtils::midtonesTransferFunc(g_B, tmpHClip - tmpMedVal[chan]));
-            }
-
-            stfParms.setSExp(0.0, chan);
-            stfParms.setHExp(1.0, chan);
-        }
-
-        return stfParms;
+        return getStretchParameters(tmpMADN, tmpMedVal);
     }
 
     /* static */
@@ -292,56 +243,7 @@ namespace ELS
             tmpMedVal[chan] = (double)medVal[chan] / PixUtils::g_u16Max;
         }
 
-        PixSTFParms stfParms;
-
-        double tmpSClip = 0.0;
-        double tmpHClip = 0.0;
-        for (int chan = 0; chan < 3; chan++)
-        {
-            if ((tmpMedVal[chan] > 0.5) ||
-                (tmpMADN[chan] == 0))
-            {
-                tmpSClip = 0.0;
-                stfParms.setSClip(tmpSClip, chan);
-            }
-            else
-            {
-                tmpSClip = std::min(1.0,
-                                    std::max(0.0,
-                                             tmpMedVal[chan] + g_C * tmpMADN[chan]));
-                stfParms.setSClip(tmpSClip,
-                                  chan);
-            }
-
-            if ((tmpMedVal[chan] > 0.5) ||
-                (tmpMADN[chan] == 0))
-            {
-                tmpHClip = 1.0;
-                stfParms.setHClip(tmpHClip, chan);
-            }
-            else
-            {
-                tmpHClip = std::min(1.0,
-                                    std::max(0.0,
-                                             tmpMedVal[chan] - g_C * tmpMADN[chan]));
-                stfParms.setHClip(tmpHClip,
-                                  chan);
-            }
-
-            if (tmpMedVal[chan] < 0.5)
-            {
-                stfParms.setMBal(PixUtils::midtonesTransferFunc(tmpMedVal[chan] - tmpSClip, g_B));
-            }
-            else
-            {
-                stfParms.setMBal(PixUtils::midtonesTransferFunc(g_B, tmpHClip - tmpMedVal[chan]));
-            }
-
-            stfParms.setSExp(0.0, chan);
-            stfParms.setHExp(1.0, chan);
-        }
-
-        return stfParms;
+        return getStretchParameters(tmpMADN, tmpMedVal);
     }
 
     /* static */
@@ -357,56 +259,7 @@ namespace ELS
             tmpMedVal[chan] = (double)medVal[chan] / PixUtils::g_u32Max;
         }
 
-        PixSTFParms stfParms;
-
-        double tmpSClip = 0.0;
-        double tmpHClip = 0.0;
-        for (int chan = 0; chan < 3; chan++)
-        {
-            if ((tmpMedVal[chan] > 0.5) ||
-                (tmpMADN[chan] == 0))
-            {
-                tmpSClip = 0.0;
-                stfParms.setSClip(tmpSClip, chan);
-            }
-            else
-            {
-                tmpSClip = std::min(1.0,
-                                    std::max(0.0,
-                                             tmpMedVal[chan] + g_C * tmpMADN[chan]));
-                stfParms.setSClip(tmpSClip,
-                                  chan);
-            }
-
-            if ((tmpMedVal[chan] > 0.5) ||
-                (tmpMADN[chan] == 0))
-            {
-                tmpHClip = 1.0;
-                stfParms.setHClip(tmpHClip, chan);
-            }
-            else
-            {
-                tmpHClip = std::min(1.0,
-                                    std::max(0.0,
-                                             tmpMedVal[chan] - g_C * tmpMADN[chan]));
-                stfParms.setHClip(tmpHClip,
-                                  chan);
-            }
-
-            if (tmpMedVal[chan] < 0.5)
-            {
-                stfParms.setMBal(PixUtils::midtonesTransferFunc(tmpMedVal[chan] - tmpSClip, g_B));
-            }
-            else
-            {
-                stfParms.setMBal(PixUtils::midtonesTransferFunc(g_B, tmpHClip - tmpMedVal[chan]));
-            }
-
-            stfParms.setSExp(0.0, chan);
-            stfParms.setHExp(1.0, chan);
-        }
-
-        return stfParms;
+        return getStretchParameters(tmpMADN, tmpMedVal);
     }
 
     /* static */
@@ -414,56 +267,15 @@ namespace ELS
     PixSTFParms PixStatistics<PixelT>::getStretchParameters(const float *madn,
                                                             const float *medVal)
     {
-        PixSTFParms stfParms;
-
-        double tmpSClip = 0.0;
-        double tmpHClip = 0.0;
+        double tmpMADN[3];
+        double tmpMedVal[3];
         for (int chan = 0; chan < 3; chan++)
         {
-            if ((medVal[chan] > 0.5) ||
-                (madn[chan] == 0))
-            {
-                tmpSClip = 0.0;
-                stfParms.setSClip(tmpSClip, chan);
-            }
-            else
-            {
-                tmpSClip = std::min(1.0,
-                                    std::max(0.0,
-                                             medVal[chan] + g_C * madn[chan]));
-                stfParms.setSClip(tmpSClip,
-                                  chan);
-            }
-
-            if ((medVal[chan] > 0.5) ||
-                (madn[chan] == 0))
-            {
-                tmpHClip = 1.0;
-                stfParms.setHClip(tmpHClip, chan);
-            }
-            else
-            {
-                tmpHClip = std::min(1.0,
-                                    std::max(0.0,
-                                             medVal[chan] - g_C * madn[chan]));
-                stfParms.setHClip(tmpHClip,
-                                  chan);
-            }
-
-            if (medVal[chan] < 0.5)
-            {
-                stfParms.setMBal(PixUtils::midtonesTransferFunc(medVal[chan] - tmpSClip, g_B));
-            }
-            else
-            {
-                stfParms.setMBal(PixUtils::midtonesTransferFunc(g_B, tmpHClip - medVal[chan]));
-            }
-
-            stfParms.setSExp(0.0, chan);
-            stfParms.setHExp(1.0, chan);
+            tmpMADN[chan] = (double)madn[chan];
+            tmpMedVal[chan] = (double)medVal[chan];
         }
 
-        return stfParms;
+        return getStretchParameters(tmpMADN, tmpMedVal);
     }
 
     /* static */
@@ -492,7 +304,7 @@ namespace ELS
                                   chan);
             }
 
-            if ((medVal[chan] > 0.5) ||
+            if ((medVal[chan] <= 0.5) ||
                 (madn[chan] == 0))
             {
                 tmpHClip = 1.0;
@@ -507,13 +319,14 @@ namespace ELS
                                   chan);
             }
 
-            if (medVal[chan] < 0.5)
+            if (medVal[chan] <= 0.5)
             {
-                stfParms.setMBal(PixUtils::midtonesTransferFunc(medVal[chan] - tmpSClip, g_B));
+                double mBal = PixUtils::midtonesTransferFunc(medVal[chan] - tmpSClip, g_B);
+                stfParms.setMBal(mBal, chan);
             }
             else
             {
-                stfParms.setMBal(PixUtils::midtonesTransferFunc(g_B, tmpHClip - medVal[chan]));
+                stfParms.setMBal(PixUtils::midtonesTransferFunc(g_B, tmpHClip - medVal[chan]), chan);
             }
 
             stfParms.setSExp(0.0, chan);

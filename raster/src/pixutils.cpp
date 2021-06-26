@@ -21,22 +21,7 @@ namespace ELS
                                           double mBal)
     {
         double tmpPix = (double)pixel / PixUtils::g_u8Max;
-        if (tmpPix == 0)
-        {
-            return 0;
-        }
-
-        if (tmpPix == mBal)
-        {
-            return g_u8Mid;
-        }
-
-        if (tmpPix == 1)
-        {
-            return g_u8Max;
-        }
-
-        return ((mBal - 1) * tmpPix) / (((2 * mBal - 1) * tmpPix) - mBal);
+        return midtonesTransferFunc(tmpPix, mBal);
     }
 
     /* static */
@@ -44,22 +29,7 @@ namespace ELS
                                           double mBal)
     {
         double tmpPix = (double)pixel / PixUtils::g_u16Max;
-        if (tmpPix == 0)
-        {
-            return 0;
-        }
-
-        if (tmpPix == mBal)
-        {
-            return g_u16Mid;
-        }
-
-        if (tmpPix == 1)
-        {
-            return g_u16Max;
-        }
-
-        return ((mBal - 1) * tmpPix) / (((2 * mBal - 1) * tmpPix) - mBal);
+        return midtonesTransferFunc(tmpPix, mBal);
     }
 
     /* static */
@@ -67,44 +37,15 @@ namespace ELS
                                           double mBal)
     {
         double tmpPix = (double)pixel / PixUtils::g_u32Max;
-        if (tmpPix == 0)
-        {
-            return 0;
-        }
-
-        if (tmpPix == mBal)
-        {
-            return g_u32Mid;
-        }
-
-        if (tmpPix == 1)
-        {
-            return g_u32Max;
-        }
-
-        return ((mBal - 1) * tmpPix) / (((2 * mBal - 1) * tmpPix) - mBal);
+        return midtonesTransferFunc(tmpPix, mBal);
     }
 
     /* static */
     double PixUtils::midtonesTransferFunc(float pixel,
                                           double mBal)
     {
-        if (pixel == 0)
-        {
-            return 0.0;
-        }
-
-        if (pixel == mBal)
-        {
-            return 0.5;
-        }
-
-        if (pixel == 1)
-        {
-            return 1.0;
-        }
-
-        return ((mBal - 1) * pixel) / (((2 * mBal - 1) * pixel) - mBal);
+        double tmpPix = (double)pixel;
+        return midtonesTransferFunc(tmpPix, mBal);
     }
 
     /* static */
@@ -133,67 +74,31 @@ namespace ELS
     double PixUtils::clippingFunc(uint8_t pixel, double sClip, double hClip)
     {
         double tmpPix = (double)pixel / PixUtils::g_u8Max;
-        if (tmpPix < sClip)
-        {
-            return 0;
-        }
 
-        if (tmpPix > hClip)
-        {
-            return g_u8Max;
-        }
-
-        return (tmpPix - sClip) / (hClip - sClip);
+        return clippingFunc(tmpPix, sClip, hClip);
     }
 
     /* static */
     double PixUtils::clippingFunc(uint16_t pixel, double sClip, double hClip)
     {
         double tmpPix = (double)pixel / PixUtils::g_u16Max;
-        if (tmpPix < sClip)
-        {
-            return 0;
-        }
 
-        if (tmpPix > hClip)
-        {
-            return g_u16Max;
-        }
-
-        return (tmpPix - sClip) / (hClip - sClip);
+        return clippingFunc(tmpPix, sClip, hClip);
     }
 
     /* static */
     double PixUtils::clippingFunc(uint32_t pixel, double sClip, double hClip)
     {
         double tmpPix = (double)pixel / PixUtils::g_u16Max;
-        if (tmpPix < sClip)
-        {
-            return 0;
-        }
 
-        if (tmpPix > hClip)
-        {
-            return g_u32Max;
-        }
-
-        return (tmpPix - sClip) / (hClip - sClip);
+        return clippingFunc(tmpPix, sClip, hClip);
     }
 
     /* static */
     double PixUtils::clippingFunc(float pixel, double sClip, double hClip)
     {
-        if (pixel < sClip)
-        {
-            return 0.0;
-        }
-
-        if (pixel > hClip)
-        {
-            return 1.0;
-        }
-
-        return (pixel - sClip) / (hClip - sClip);
+        double tmpPix = pixel;
+        return clippingFunc(tmpPix, sClip, hClip);
     }
 
     /* static */
@@ -216,27 +121,28 @@ namespace ELS
     double PixUtils::expansionFunc(uint8_t pixel, double sExp, double hExp)
     {
         double tmpPix = (double)pixel / PixUtils::g_u8Max;
-        return (tmpPix - sExp) / (hExp - sExp);
+        return expansionFunc(tmpPix, sExp, hExp);
     }
 
     /* static */
     double PixUtils::expansionFunc(uint16_t pixel, double sExp, double hExp)
     {
         double tmpPix = (double)pixel / PixUtils::g_u16Max;
-        return (tmpPix - sExp) / (hExp - sExp);
+        return expansionFunc(tmpPix, sExp, hExp);
     }
 
     /* static */
     double PixUtils::expansionFunc(uint32_t pixel, double sExp, double hExp)
     {
         double tmpPix = (double)pixel / PixUtils::g_u32Max;
-        return (tmpPix - sExp) / (hExp - sExp);
+        return expansionFunc(tmpPix, sExp, hExp);
     }
 
     /* static */
     double PixUtils::expansionFunc(float pixel, double sExp, double hExp)
     {
-        return (pixel - sExp) / (hExp - sExp);
+        double tmpPix = pixel;
+        return expansionFunc(tmpPix, sExp, hExp);
     }
 
     /* static */
