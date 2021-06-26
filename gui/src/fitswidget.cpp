@@ -29,7 +29,13 @@ FITSWidget::FITSWidget(QWidget *parent)
       _showStretched(false),
       _zoom(-1.0),
       _actualZoom(-1.0),
-      _stfParms()
+      _stfParms(),
+      _isColor(false),
+      _numHistogramPoints(0),
+      _histogramData(0),
+      _stfLUT(0),
+      _identityLUT(0),
+      _lutInUse(_identityLUT)
 {
     setBackgroundRole(QPalette::Dark);
     setAutoFillBackground(true);
@@ -112,7 +118,12 @@ void FITSWidget::showStretched(ELS::PixSTFParms stfParms)
     {
         _showStretched = true;
 
-        _stfParms = stfParms;
+        if ((_stfLUT == 0) || (_stfParms != stfParms))
+        {
+            _stfParms = stfParms;
+            calculateStfLUT();
+        }
+        _lutInUse = _stfLUT;
 
         if (_cacheImage != 0)
         {
@@ -130,6 +141,7 @@ void FITSWidget::clearStretched()
         _showStretched = false;
 
         _stfParms = ELS::PixSTFParms();
+        _lutInUse = _identityLUT;
 
         if (_cacheImage != 0)
         {
@@ -154,6 +166,64 @@ void FITSWidget::setZoom(float zoom)
     }
 }
 
+void FITSWidget::setHistogramData(bool isColor,
+                                  int numPoints,
+                                  uint32_t *data)
+{
+    _isColor = isColor;
+    _numHistogramPoints = numPoints;
+    _histogramData = data;
+
+    int totalHistogramPoints = _numHistogramPoints;
+    if (_isColor)
+    {
+        totalHistogramPoints *= 3;
+    }
+    _identityLUT = new uint8_t[totalHistogramPoints];
+    _lutInUse = _identityLUT;
+
+    ELS::PixSTFParms stfParms;
+    double mBal = 0.5;
+    double sClip = 0.0;
+    double hClip = 1.0;
+    double sExp = 0.0;
+    double hExp = 1.0;
+    for (uint16_t i = 0; i < _numHistogramPoints; i++)
+    {
+        if (_isColor)
+        {
+            int chanOffset[3] = {
+                0,
+                _numHistogramPoints,
+                _numHistogramPoints * 2};
+            for (int chan = 0; chan < 3; chan++)
+            {
+                stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp, chan);
+                _identityLUT[chanOffset[chan] + i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
+                                                                                                 mBal,
+                                                                                                 sClip,
+                                                                                                 hClip,
+                                                                                                 sExp,
+                                                                                                 hExp) *
+                                                               ELS::PixUtils::g_u8Max);
+            }
+        }
+        else
+        {
+            stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp);
+            _identityLUT[i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
+                                                                          mBal,
+                                                                          sClip,
+                                                                          hClip,
+                                                                          sExp,
+                                                                          hExp) *
+                                        ELS::PixUtils::g_u8Max);
+        }
+    }
+
+    update();
+}
+
 void FITSWidget::wheelEvent(QWheelEvent *event)
 {
     QPoint numSteps = event->angleDelta() / 120;
@@ -175,123 +245,126 @@ void FITSWidget::wheelEvent(QWheelEvent *event)
 
 void FITSWidget::paintEvent(QPaintEvent * /* event */)
 {
-    QPainter painter(this);
-
-    int realWidth = width();
-    int realHeight = height();
-
-    // painter.drawRect(0, 0, realWidth, realHeight);
-
-    int border = 1;
-
-    int w = realWidth - (border * 2);
-    int h = realHeight - (border * 2);
-
-    if (_cacheImage == 0)
+    if (_lutInUse != 0)
     {
-        _cacheImage = convertImage();
-    }
+        QPainter painter(this);
 
-    int imgW = _fits->getWidth();
-    int imgH = _fits->getHeight();
-    int imgZoomW = imgW;
-    int imgZoomH = imgH;
+        int realWidth = width();
+        int realHeight = height();
 
-    if (_zoom != -1.0)
-    {
-        imgZoomW *= _zoom;
-        imgZoomH *= _zoom;
-    }
+        // painter.drawRect(0, 0, realWidth, realHeight);
 
-    QRect target;
-    QRect source(0, 0, imgW, imgH);
-    float zoomNow = _zoom;
-    if ((imgZoomW < w) && (imgZoomH < h))
-    {
-        target.setLeft((w - imgZoomW) / 2);
-        target.setTop((h - imgZoomH) / 2);
-        target.setWidth(imgZoomW);
-        target.setHeight(imgZoomH);
-    }
-    else
-    {
-        if (_zoom == -1.0)
+        int border = 1;
+
+        int w = realWidth - (border * 2);
+        int h = realHeight - (border * 2);
+
+        if (_cacheImage == 0)
         {
-            float imgAspect = (float)imgW / (float)imgH;
-            float winAspect = (float)w / (float)h;
+            _cacheImage = convertImage();
+        }
 
-            if (imgAspect >= winAspect)
-            {
-                target.setLeft(border);
-                target.setWidth(w);
-                int targetHeight = (int)(w / imgAspect);
-                target.setTop((h - targetHeight) / 2 + border);
-                target.setHeight(targetHeight);
-            }
-            else
-            {
-                target.setTop(border);
-                target.setHeight(h);
-                int targetWidth = (int)(h * imgAspect);
-                target.setLeft((w - targetWidth) / 2 + border);
-                target.setWidth(targetWidth);
-            }
+        int imgW = _fits->getWidth();
+        int imgH = _fits->getHeight();
+        int imgZoomW = imgW;
+        int imgZoomH = imgH;
 
-            zoomNow = (float)target.width() / (float)imgW;
+        if (_zoom != -1.0)
+        {
+            imgZoomW *= _zoom;
+            imgZoomH *= _zoom;
+        }
+
+        QRect target;
+        QRect source(0, 0, imgW, imgH);
+        float zoomNow = _zoom;
+        if ((imgZoomW < w) && (imgZoomH < h))
+        {
+            target.setLeft((w - imgZoomW) / 2);
+            target.setTop((h - imgZoomH) / 2);
+            target.setWidth(imgZoomW);
+            target.setHeight(imgZoomH);
         }
         else
         {
-            int widthXtra = imgZoomW - w;
-            int heightXtra = imgZoomH - h;
-
-            QRect sourceZoom(0, 0, 0, 0);
-            if (widthXtra < 0)
+            if (_zoom == -1.0)
             {
-                target.setLeft((w - imgZoomW) / 2 + border);
-                target.setWidth(imgZoomW);
-                sourceZoom.setLeft(0);
-                sourceZoom.setWidth(imgZoomW);
+                float imgAspect = (float)imgW / (float)imgH;
+                float winAspect = (float)w / (float)h;
+
+                if (imgAspect >= winAspect)
+                {
+                    target.setLeft(border);
+                    target.setWidth(w);
+                    int targetHeight = (int)(w / imgAspect);
+                    target.setTop((h - targetHeight) / 2 + border);
+                    target.setHeight(targetHeight);
+                }
+                else
+                {
+                    target.setTop(border);
+                    target.setHeight(h);
+                    int targetWidth = (int)(h * imgAspect);
+                    target.setLeft((w - targetWidth) / 2 + border);
+                    target.setWidth(targetWidth);
+                }
+
+                zoomNow = (float)target.width() / (float)imgW;
             }
             else
             {
-                target.setLeft(border);
-                target.setWidth(w);
-                sourceZoom.setLeft(widthXtra / 2);
-                sourceZoom.setWidth(w);
-            }
+                int widthXtra = imgZoomW - w;
+                int heightXtra = imgZoomH - h;
 
-            if (heightXtra < 0)
-            {
-                target.setTop((h - imgZoomH) / 2 + border);
-                target.setHeight(imgZoomH);
-                sourceZoom.setTop(0);
-                sourceZoom.setHeight(imgZoomH);
-            }
-            else
-            {
-                target.setTop(border);
-                target.setHeight(h);
-                sourceZoom.setTop(heightXtra / 2);
-                sourceZoom.setHeight(h);
-            }
+                QRect sourceZoom(0, 0, 0, 0);
+                if (widthXtra < 0)
+                {
+                    target.setLeft((w - imgZoomW) / 2 + border);
+                    target.setWidth(imgZoomW);
+                    sourceZoom.setLeft(0);
+                    sourceZoom.setWidth(imgZoomW);
+                }
+                else
+                {
+                    target.setLeft(border);
+                    target.setWidth(w);
+                    sourceZoom.setLeft(widthXtra / 2);
+                    sourceZoom.setWidth(w);
+                }
 
-            source.setLeft(sourceZoom.left() / _zoom);
-            source.setWidth(sourceZoom.width() / _zoom);
-            source.setTop(sourceZoom.top() / _zoom);
-            source.setHeight(sourceZoom.height() / _zoom);
+                if (heightXtra < 0)
+                {
+                    target.setTop((h - imgZoomH) / 2 + border);
+                    target.setHeight(imgZoomH);
+                    sourceZoom.setTop(0);
+                    sourceZoom.setHeight(imgZoomH);
+                }
+                else
+                {
+                    target.setTop(border);
+                    target.setHeight(h);
+                    sourceZoom.setTop(heightXtra / 2);
+                    sourceZoom.setHeight(h);
+                }
+
+                source.setLeft(sourceZoom.left() / _zoom);
+                source.setWidth(sourceZoom.width() / _zoom);
+                source.setTop(sourceZoom.top() / _zoom);
+                source.setHeight(sourceZoom.height() / _zoom);
+            }
         }
+
+        if (zoomNow != _actualZoom)
+        {
+            _actualZoom = zoomNow;
+
+            emit actualZoomChanged(_actualZoom);
+        }
+
+        painter.setRenderHints(QPainter::SmoothPixmapTransform |
+                               QPainter::Antialiasing);
+        painter.drawImage(target, *_cacheImage, source);
     }
-
-    if (zoomNow != _actualZoom)
-    {
-        _actualZoom = zoomNow;
-
-        emit actualZoomChanged(_actualZoom);
-    }
-
-    painter.setRenderHints(QPainter::SmoothPixmapTransform |
-                           QPainter::Antialiasing);
-    painter.drawImage(target, *_cacheImage, source);
 }
 
 QImage *FITSWidget::convertImage() const
@@ -300,35 +373,35 @@ QImage *FITSWidget::convertImage() const
     {
     case ELS::FITS::BD_INT_8:
     {
-        ToQImageVisitor<uint8_t> visitor(_stfParms);
+        ToQImageVisitor<uint8_t> visitor(_stfParms, _lutInUse, _numHistogramPoints);
         _fits->visitPixels(&visitor);
         return visitor.getImage();
     }
     break;
     case ELS::FITS::BD_INT_16:
     {
-        ToQImageVisitor<uint16_t> visitor(_stfParms);
+        ToQImageVisitor<uint16_t> visitor(_stfParms, _lutInUse, _numHistogramPoints);
         _fits->visitPixels(&visitor);
         return visitor.getImage();
     }
     break;
     case ELS::FITS::BD_INT_32:
     {
-        ToQImageVisitor<uint32_t> visitor(_stfParms);
+        ToQImageVisitor<uint32_t> visitor(_stfParms, _lutInUse, _numHistogramPoints);
         _fits->visitPixels(&visitor);
         return visitor.getImage();
     }
     break;
     case ELS::FITS::BD_FLOAT:
     {
-        ToQImageVisitor<float> visitor(_stfParms);
+        ToQImageVisitor<float> visitor(_stfParms, _lutInUse, _numHistogramPoints);
         _fits->visitPixels(&visitor);
         return visitor.getImage();
     }
     break;
     case ELS::FITS::BD_DOUBLE:
     {
-        ToQImageVisitor<double> visitor(_stfParms);
+        ToQImageVisitor<double> visitor(_stfParms, _lutInUse, _numHistogramPoints);
         _fits->visitPixels(&visitor);
         return visitor.getImage();
     }
@@ -423,4 +496,61 @@ float FITSWidget::adjustZoom(float desiredZoom,
     }
 
     return g_validZooms[0];
+}
+
+void FITSWidget::calculateStfLUT()
+{
+    if (_stfLUT != 0)
+    {
+        delete[] _stfLUT;
+    }
+
+    int totalHistogramPoints = _numHistogramPoints;
+    if (_isColor)
+    {
+        totalHistogramPoints *= 3;
+    }
+    _stfLUT = new uint8_t[totalHistogramPoints];
+
+    double mBal = 0.5;
+    double sClip = 0.0;
+    double hClip = 1.0;
+    double sExp = 0.0;
+    double hExp = 1.0;
+    for (uint16_t i = 0; i < _numHistogramPoints; i++)
+    {
+        // Only calculate points that are in the image
+        if (_histogramData[i] != 0)
+        {
+            if (_isColor)
+            {
+                int chanOffset[3] = {
+                    0,
+                    _numHistogramPoints,
+                    _numHistogramPoints * 2};
+                for (int chan = 0; chan < 3; chan++)
+                {
+                    _stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp, chan);
+                    _stfLUT[chanOffset[chan] + i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
+                                                                                                mBal,
+                                                                                                sClip,
+                                                                                                hClip,
+                                                                                                sExp,
+                                                                                                hExp) *
+                                                              ELS::PixUtils::g_u8Max);
+                }
+            }
+            else
+            {
+                _stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp);
+                _stfLUT[i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
+                                                                         mBal,
+                                                                         sClip,
+                                                                         hClip,
+                                                                         sExp,
+                                                                         hExp) *
+                                       ELS::PixUtils::g_u8Max);
+            }
+        }
+    }
 }

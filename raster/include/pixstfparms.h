@@ -11,6 +11,9 @@ namespace ELS
 
         PixSTFParms &operator=(const PixSTFParms &rhs);
 
+        bool operator==(const PixSTFParms &rhs) const;
+        bool operator!=(const PixSTFParms &rhs) const;
+
         double getMBal(int chan = 0) const;
         double getSClip(int chan = 0) const;
         double getHClip(int chan = 0) const;

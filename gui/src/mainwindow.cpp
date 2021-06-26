@@ -456,6 +456,7 @@ void MainWindow::fitsFileChanged(const char *filename)
     }
 
     histWidget.setHistogramData(isColor, numPoints, histogram);
+    fitsWidget.setHistogramData(isColor, numPoints, histogram);
 
     printf("%s\n", image->getImageType());
     printf("%s\n", image->getSizeAndColor());

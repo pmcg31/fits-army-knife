@@ -36,6 +36,9 @@ public slots:
     void showStretched(ELS::PixSTFParms stfParams);
     void clearStretched();
     void setZoom(float zoom);
+    void setHistogramData(bool isColor,
+                          int numPoints,
+                          uint32_t *data);
 
 signals:
     void fileChanged(const char *filename);
@@ -64,11 +67,16 @@ protected:
                             ZoomAdjustStrategy strategy = ZAS_CLOSEST);
 
 private:
+    void calculateStfLUT();
+
+private:
     template <typename PixelT>
     class ToQImageVisitor : public ELS::FITSPixelVisitor<PixelT>
     {
     public:
-        ToQImageVisitor(ELS::PixSTFParms stfParms);
+        ToQImageVisitor(ELS::PixSTFParms stfParms,
+                        uint8_t *lut,
+                        int lutPoints);
         ~ToQImageVisitor();
 
         QImage *getImage();
@@ -87,6 +95,8 @@ private:
         ELS::PixSTFParms _stfParms;
         QImage *_qi;
         bool _shouldDeleteImage;
+        uint8_t *_lut;
+        int _lutPoints;
     };
 
 private:
@@ -98,20 +108,30 @@ private:
     float _zoom;
     float _actualZoom;
     ELS::PixSTFParms _stfParms;
+    bool _isColor;
+    int _numHistogramPoints;
+    uint32_t *_histogramData;
+    uint8_t *_stfLUT;
+    uint8_t *_identityLUT;
+    uint8_t *_lutInUse;
 
 private:
     static const float g_validZooms[];
 };
 
 template <typename PixelT>
-FITSWidget::ToQImageVisitor<PixelT>::ToQImageVisitor(ELS::PixSTFParms stfParms)
+FITSWidget::ToQImageVisitor<PixelT>::ToQImageVisitor(ELS::PixSTFParms stfParms,
+                                                     uint8_t *lut,
+                                                     int lutPoints)
     : _isColor(false),
       _rIdx(0),
       _gIdx(-1),
       _bIdx(-1),
       _stfParms(stfParms),
       _qi(0),
-      _shouldDeleteImage(true)
+      _shouldDeleteImage(true),
+      _lut(lut),
+      _lutPoints(lutPoints)
 {
 }
 
@@ -172,39 +192,22 @@ void FITSWidget::ToQImageVisitor<PixelT>::pixel(int x,
                                                 int y,
                                                 const PixelT *pixelVals)
 {
-    double mBal = 0.5;
-    double sClip = 0.0;
-    double hClip = 1.0;
-    double sExp = 0.0;
-    double hExp = 1.0;
     if (_isColor)
     {
         uint8_t newVals[3];
         int chanIdx[3] = {_rIdx, _gIdx, _bIdx};
         for (int chan = 0; chan < 3; chan++)
         {
-            _stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp, chan);
-            newVals[chan] = (uint8_t)(ELS::PixUtils::screenTransferFunc(pixelVals[chanIdx[chan]],
-                                                                        mBal,
-                                                                        sClip,
-                                                                        hClip,
-                                                                        sExp,
-                                                                        hExp) *
-                                      ELS::PixUtils::g_u8Max);
+            uint16_t tmp = ELS::PixUtils::convertRangeToHist(pixelVals[chanIdx[chan]]);
+            newVals[chan] = _lut[tmp];
         }
 
         _qi->setPixelColor(x, y, QColor::fromRgb(newVals[0], newVals[1], newVals[2]));
     }
     else
     {
-        _stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp);
-        uint8_t val = (uint8_t)(ELS::PixUtils::screenTransferFunc(pixelVals[0],
-                                                                  mBal,
-                                                                  sClip,
-                                                                  hClip,
-                                                                  sExp,
-                                                                  hExp) *
-                                ELS::PixUtils::g_u8Max);
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(pixelVals[0]);
+        uint8_t val = _lut[tmp];
 
         _qi->setPixelColor(x, y, QColor::fromRgb(val, val, val));
     }

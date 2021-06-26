@@ -35,6 +35,40 @@ namespace ELS
         return *this;
     }
 
+    bool PixSTFParms::operator==(const PixSTFParms &rhs) const
+    {
+        for (int chan = 0; chan < 3; chan++)
+        {
+            if (_mBal[chan] != rhs._mBal[chan])
+            {
+                return false;
+            }
+            if (_sClip[chan] != rhs._sClip[chan])
+            {
+                return false;
+            }
+            if (_hClip[chan] != rhs._hClip[chan])
+            {
+                return false;
+            }
+            if (_sExp[chan] != rhs._sExp[chan])
+            {
+                return false;
+            }
+            if (_hExp[chan] != rhs._hExp[chan])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool PixSTFParms::operator!=(const PixSTFParms &rhs) const
+    {
+        return !(*this == rhs);
+    }
+
     double PixSTFParms::getMBal(int chan /* = 0 */) const
     {
         return _mBal[chan];
@@ -98,5 +132,4 @@ namespace ELS
     {
         _hExp[chan] = hExp;
     }
-
 }
