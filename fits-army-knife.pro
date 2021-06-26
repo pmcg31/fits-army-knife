@@ -32,7 +32,6 @@ HEADERS += \
     raster/include/pixutils.h \
     raster/include/pixstatistics.h \
     raster/include/pixstfparms.h \
-    raster/include/adaptivedisplayfuncvisitor.h \
     gui/include/mainwindow.h \
     gui/include/fitswidget.h \
     gui/include/histogramwidget.h

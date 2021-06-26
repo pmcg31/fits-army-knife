@@ -3,7 +3,6 @@
 #include "fits.h"
 #include "fitsimage.h"
 #include "statisticsvisitor.h"
-#include "adaptivedisplayfuncvisitor.h"
 #include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -213,16 +212,6 @@ void MainWindow::fitsFileChanged(const char *filename)
         maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
-
-        // uint8_t medVals[3] = {statistics.getMedVal(0),
-        //                       statistics.getMedVal(1),
-        //                       statistics.getMedVal(2)};
-        // ELS::AdaptiveDisplayFuncVisitor<uint8_t> v2(medVals);
-        // image->visitPixels(&v2);
-        // v2.getMADN(madn);
-        // v2.getSClip(sClip);
-        // v2.getHClip(hClip);
-        // v2.getMBal(mBal);
     }
     break;
     case ELS::FITS::BD_INT_16:
@@ -263,23 +252,6 @@ void MainWindow::fitsFileChanged(const char *filename)
         maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
-
-        // uint16_t medVals[3] = {visitor.getMedVal(0),
-        //                        visitor.getMedVal(1),
-        //                        visitor.getMedVal(2)};
-        // ELS::AdaptiveDisplayFuncVisitor<uint16_t> v2(medVals);
-        // image->visitPixels(&v2);
-        // v2.getMADN(madn);
-        // v2.getSClip(sClip);
-        // v2.getHClip(hClip);
-        // v2.getMBal(mBal);
-
-        // int numChan = isColor ? 3 : 1;
-        // for (int chan = 0; chan < numChan; chan++)
-        // {
-        //     printf("c%d: v.madn: %d v2.madn: %lf\n", chan, visitor.getMADN(chan), madn[chan]);
-        // }
-        // fflush(stdout);
     }
     break;
     case ELS::FITS::BD_INT_32:
@@ -320,23 +292,6 @@ void MainWindow::fitsFileChanged(const char *filename)
         maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
-
-        // uint32_t medVals[3] = {visitor.getMedVal(0),
-        //                        visitor.getMedVal(1),
-        //                        visitor.getMedVal(2)};
-        // ELS::AdaptiveDisplayFuncVisitor<uint32_t> v2(medVals);
-        // image->visitPixels(&v2);
-        // v2.getMADN(madn);
-        // v2.getSClip(sClip);
-        // v2.getHClip(hClip);
-        // v2.getMBal(mBal);
-
-        // int numChan = isColor ? 3 : 1;
-        // for (int chan = 0; chan < numChan; chan++)
-        // {
-        //     printf("c%d: v.madn: %d v2.madn: %lf\n", chan, visitor.getMADN(chan), madn[chan]);
-        // }
-        // fflush(stdout);
     }
     break;
     case ELS::FITS::BD_FLOAT:
@@ -377,23 +332,6 @@ void MainWindow::fitsFileChanged(const char *filename)
         maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
-
-        // float medVals[3] = {visitor.getMedVal(0),
-        //                     visitor.getMedVal(1),
-        //                     visitor.getMedVal(2)};
-        // ELS::AdaptiveDisplayFuncVisitor<float> v2(medVals);
-        // image->visitPixels(&v2);
-        // v2.getMADN(madn);
-        // v2.getSClip(sClip);
-        // v2.getHClip(hClip);
-        // v2.getMBal(mBal);
-
-        // int numChan = isColor ? 3 : 1;
-        // for (int chan = 0; chan < numChan; chan++)
-        // {
-        //     printf("c%d: v.madn: %f v2.madn: %lf\n", chan, visitor.getMADN(chan), madn[chan]);
-        // }
-        // fflush(stdout);
     }
     break;
     case ELS::FITS::BD_DOUBLE:
@@ -434,23 +372,6 @@ void MainWindow::fitsFileChanged(const char *filename)
         maxLabel.setText(tmp4);
 
         visitor.getHistogramData(&numPoints, &histogram);
-
-        // double medVals[3] = {visitor.getMedVal(0),
-        //                      visitor.getMedVal(1),
-        //                      visitor.getMedVal(2)};
-        // ELS::AdaptiveDisplayFuncVisitor<double> v2(medVals);
-        // image->visitPixels(&v2);
-        // v2.getMADN(madn);
-        // v2.getSClip(sClip);
-        // v2.getHClip(hClip);
-        // v2.getMBal(mBal);
-
-        // int numChan = isColor ? 3 : 1;
-        // for (int chan = 0; chan < numChan; chan++)
-        // {
-        //     printf("c%d: v.madn: %lf v2.madn: %lf\n", chan, visitor.getMADN(chan), madn[chan]);
-        // }
-        // fflush(stdout);
     }
     break;
     }
@@ -460,12 +381,6 @@ void MainWindow::fitsFileChanged(const char *filename)
 
     printf("%s\n", image->getImageType());
     printf("%s\n", image->getSizeAndColor());
-    // int numChan = image->isColor() ? 3 : 1;
-    // for (int chan = 0; chan < numChan; chan++)
-    // {
-    //     printf("c%d: madn: %0.4f sClip: %0.4f hClip: %0.4f mBal: %0.4f\n",
-    //            chan, madn[chan], sClip[chan], hClip[chan], mBal[chan]);
-    // }
     fflush(stdout);
 }
 
