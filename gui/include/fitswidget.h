@@ -115,7 +115,6 @@ private:
     bool _showStretched;
     float _zoom;
     float _actualZoom;
-    QPoint _centerPoint;
     ELS::PixSTFParms _stfParms;
     bool _isColor;
     int _numHistogramPoints;

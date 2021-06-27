@@ -29,7 +29,6 @@ FITSWidget::FITSWidget(QWidget *parent)
       _showStretched(false),
       _zoom(-1.0),
       _actualZoom(-1.0),
-      _centerPoint(-1, -1),
       _stfParms(),
       _isColor(false),
       _numHistogramPoints(0),
@@ -120,9 +119,6 @@ void FITSWidget::setFile(const char *filename)
             strcpy(_filename, filename);
             _fits = tmpFits;
 
-            _centerPoint = QPoint(_fits->getWidth() / 2,
-                                  _fits->getHeight() / 2);
-
             emit fileChanged(_filename);
         }
         catch (ELS::FITSException *e)
@@ -179,6 +175,11 @@ void FITSWidget::setZoom(float zoom)
     if (zoom != -1.0)
     {
         zoom = adjustZoom(zoom);
+    }
+    else
+    {
+        _windowZoomLockPoint = QPoint(width() / 2, height() / 2);
+        _imageZoomLockPoint = QPoint(_fits->getWidth() / 2, _fits->getHeight() / 2);
     }
 
     if (_zoom != zoom)
@@ -347,12 +348,10 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
 
         int imgZoomW = imgW;
         int imgZoomH = imgH;
-        QPoint centerPointZoom = _centerPoint;
         if (_zoom != -1.0)
         {
             imgZoomW *= _zoom;
             imgZoomH *= _zoom;
-            centerPointZoom *= _zoom;
         }
         QPoint imgCenterZoom(imgZoomW / 2, imgZoomH / 2);
 
