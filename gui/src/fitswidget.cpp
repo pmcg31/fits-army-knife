@@ -26,6 +26,7 @@ FITSWidget::FITSWidget(QWidget *parent)
       _filename(""),
       _fits(0),
       _cacheImage(),
+      _cacheImageData(),
       _showStretched(false),
       _zoom(-1.0),
       _actualZoom(-1.0),
@@ -145,6 +146,7 @@ void FITSWidget::showStretched(ELS::PixSTFParms stfParms)
         if (_cacheImage != 0)
         {
             _cacheImage.reset();
+            _cacheImageData.reset();
         }
 
         update();
@@ -163,6 +165,7 @@ void FITSWidget::clearStretched()
         if (_cacheImage != 0)
         {
             _cacheImage.reset();
+            _cacheImageData.reset();
         }
 
         update();
@@ -335,7 +338,7 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
 
         if (_cacheImage == 0)
         {
-            _cacheImage = convertImage();
+            convertImage();
         }
 
         int imgW = _fits->getWidth();
@@ -451,7 +454,7 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
     }
 }
 
-std::shared_ptr<QImage> FITSWidget::convertImage() const
+void FITSWidget::convertImage()
 {
     switch (_fits->getBitDepth())
     {
@@ -459,40 +462,43 @@ std::shared_ptr<QImage> FITSWidget::convertImage() const
     {
         ToQImageVisitor<uint8_t> visitor(_stfParms, _lutInUse, _numHistogramPoints);
         _fits->visitPixels(&visitor);
-        return visitor.getImage();
+        _cacheImageData = visitor.getImageData();
+        _cacheImage = visitor.getImage();
     }
     break;
     case ELS::FITS::BD_INT_16:
     {
         ToQImageVisitor<uint16_t> visitor(_stfParms, _lutInUse, _numHistogramPoints);
         _fits->visitPixels(&visitor);
-        return visitor.getImage();
+        _cacheImageData = visitor.getImageData();
+        _cacheImage = visitor.getImage();
     }
     break;
     case ELS::FITS::BD_INT_32:
     {
         ToQImageVisitor<uint32_t> visitor(_stfParms, _lutInUse, _numHistogramPoints);
         _fits->visitPixels(&visitor);
-        return visitor.getImage();
+        _cacheImageData = visitor.getImageData();
+        _cacheImage = visitor.getImage();
     }
     break;
     case ELS::FITS::BD_FLOAT:
     {
         ToQImageVisitor<float> visitor(_stfParms, _lutInUse, _numHistogramPoints);
         _fits->visitPixels(&visitor);
-        return visitor.getImage();
+        _cacheImageData = visitor.getImageData();
+        _cacheImage = visitor.getImage();
     }
     break;
     case ELS::FITS::BD_DOUBLE:
     {
         ToQImageVisitor<double> visitor(_stfParms, _lutInUse, _numHistogramPoints);
         _fits->visitPixels(&visitor);
-        return visitor.getImage();
+        _cacheImageData = visitor.getImageData();
+        _cacheImage = visitor.getImage();
     }
     break;
     }
-
-    return 0;
 }
 
 void FITSWidget::_internalSetZoom(float zoom)

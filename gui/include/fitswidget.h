@@ -56,7 +56,7 @@ protected:
     virtual void wheelEvent(QWheelEvent *event) override;
     virtual void paintEvent(QPaintEvent *event) override;
 
-    std::shared_ptr<QImage> convertImage() const;
+    void convertImage();
 
 protected:
     enum ZoomAdjustStrategy
@@ -84,6 +84,7 @@ private:
                         int lutPoints);
         ~ToQImageVisitor();
 
+        std::shared_ptr<uint32_t[]> getImageData();
         std::shared_ptr<QImage> getImage();
 
     public:
@@ -100,6 +101,9 @@ private:
 
     private:
         int _width;
+        int _height;
+        int _pixCount;
+        std::shared_ptr<uint32_t[]> _qiData;
         int _stride;
         ELS::PixSTFParms _stfParms;
         std::shared_ptr<QImage> _qi;
@@ -112,6 +116,7 @@ private:
     char _filename[500];
     ELS::FITSImage *_fits;
     std::shared_ptr<QImage> _cacheImage;
+    std::shared_ptr<uint32_t[]> _cacheImageData;
     bool _showStretched;
     float _zoom;
     float _actualZoom;
@@ -137,6 +142,9 @@ FITSWidget::ToQImageVisitor<PixelT>::ToQImageVisitor(ELS::PixSTFParms stfParms,
                                                      uint8_t *lut,
                                                      int lutPoints)
     : _width(0),
+      _height(0),
+      _pixCount(0),
+      _qiData(),
       _stride(0),
       _stfParms(stfParms),
       _qi(),
@@ -148,6 +156,12 @@ FITSWidget::ToQImageVisitor<PixelT>::ToQImageVisitor(ELS::PixSTFParms stfParms,
 template <typename PixelT>
 FITSWidget::ToQImageVisitor<PixelT>::~ToQImageVisitor()
 {
+}
+
+template <typename PixelT>
+std::shared_ptr<uint32_t[]> FITSWidget::ToQImageVisitor<PixelT>::getImageData()
+{
+    return _qiData;
 }
 
 template <typename PixelT>
@@ -167,7 +181,10 @@ void FITSWidget::ToQImageVisitor<PixelT>::dimensions(int width,
                                                      int height)
 {
     _width = width;
-    _qi.reset(new QImage(width, height, QImage::Format_ARGB32));
+    _height = height;
+    _pixCount = _width * _height;
+
+    _qiData.reset(new uint32_t[_pixCount]);
 }
 
 template <typename PixelT>
@@ -180,12 +197,16 @@ template <typename PixelT>
 void FITSWidget::ToQImageVisitor<PixelT>::rowGray(int y,
                                                   const PixelT *k)
 {
+    int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
     {
         uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
         uint8_t val = _lut[tmp];
 
-        _qi->setPixelColor(x, y, QColor::fromRgb(val, val, val));
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (val << 16) |
+                                 (val << 8) |
+                                 (val);
     }
 }
 
@@ -195,6 +216,7 @@ void FITSWidget::ToQImageVisitor<PixelT>::rowRgb(int y,
                                                  const PixelT *g,
                                                  const PixelT *b)
 {
+    int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
     {
         uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
@@ -206,14 +228,17 @@ void FITSWidget::ToQImageVisitor<PixelT>::rowRgb(int y,
         tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
         uint8_t blue = _lut[tmp];
 
-        _qi->setPixelColor(x, y, QColor::fromRgb(red, green, blue));
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (red << 16) |
+                                 (green << 8) |
+                                 (blue);
     }
 }
 
 template <typename PixelT>
 void FITSWidget::ToQImageVisitor<PixelT>::done()
 {
-    // Cool
+    _qi.reset(new QImage((const uchar *)_qiData.get(), _width, _height, QImage::Format_ARGB32));
 }
 
 #endif // FITSWIDGET_H
