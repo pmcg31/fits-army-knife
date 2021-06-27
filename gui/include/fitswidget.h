@@ -99,12 +99,8 @@ private:
         virtual void done() override;
 
     private:
-        bool _isColor;
         int _width;
         int _stride;
-        int _rIdx;
-        int _gIdx;
-        int _bIdx;
         ELS::PixSTFParms _stfParms;
         std::shared_ptr<QImage> _qi;
         uint8_t *_lut;
@@ -141,12 +137,8 @@ template <typename PixelT>
 FITSWidget::ToQImageVisitor<PixelT>::ToQImageVisitor(ELS::PixSTFParms stfParms,
                                                      uint8_t *lut,
                                                      int lutPoints)
-    : _isColor(false),
-      _width(0),
+    : _width(0),
       _stride(0),
-      _rIdx(0),
-      _gIdx(-1),
-      _bIdx(-1),
       _stfParms(stfParms),
       _qi(),
       _lut(lut),
@@ -168,27 +160,9 @@ std::shared_ptr<QImage> FITSWidget::ToQImageVisitor<PixelT>::getImage()
 template <typename PixelT>
 void FITSWidget::ToQImageVisitor<PixelT>::pixelFormat(ELS::FITS::PixelFormat pf)
 {
-    _isColor = true;
-    switch (pf)
-    {
-    case ELS::FITS::PF_GRAY:
-        _isColor = false;
-        _rIdx = 0;
-        _gIdx = -1;
-        _bIdx = -1;
-        break;
-    case ELS::FITS::PF_RGB:
-        _rIdx = 0;
-        _gIdx = 1;
-        _bIdx = 2;
-        break;
-    case ELS::FITS::PF_BGR:
-        _rIdx = 2;
-        _gIdx = 1;
-        _bIdx = 0;
-        break;
-    }
+    (void)pf;
 }
+
 template <typename PixelT>
 void FITSWidget::ToQImageVisitor<PixelT>::dimensions(int width,
                                                      int height)

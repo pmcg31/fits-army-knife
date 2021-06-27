@@ -34,11 +34,9 @@ namespace ELS
         virtual void done() override;
 
     private:
+        bool _isColor;
         int _width;
         int _stride;
-        int _rIdx;
-        int _gIdx;
-        int _bIdx;
         bool _isFirstPixel;
         int64_t _pixelCount;
         std::shared_ptr<uint32_t[]> _histogram;
@@ -50,11 +48,9 @@ namespace ELS
 
     template <typename PixelT>
     StatisticsVisitor<PixelT>::StatisticsVisitor()
-        : _width(0),
+        : _isColor(false),
+          _width(0),
           _stride(0),
-          _rIdx(0),
-          _gIdx(-1),
-          _bIdx(-1),
           _isFirstPixel(true),
           _histogram(0),
           _accumulator{0.0, 0.0, 0.0},
@@ -87,26 +83,7 @@ namespace ELS
     void StatisticsVisitor<PixelT>::pixelFormat(ELS::FITS::PixelFormat pf)
     {
         int totalHistogramPoints = PixUtils::g_histogramPoints;
-        bool isColor = true;
-        switch (pf)
-        {
-        case ELS::FITS::PF_GRAY:
-            isColor = false;
-            _rIdx = 0;
-            _gIdx = -1;
-            _bIdx = -1;
-            break;
-        case ELS::FITS::PF_RGB:
-            _rIdx = 0;
-            _gIdx = 1;
-            _bIdx = 2;
-            break;
-        case ELS::FITS::PF_BGR:
-            _rIdx = 2;
-            _gIdx = 1;
-            _bIdx = 0;
-            break;
-        }
+        _isColor = pf != ELS::FITS::PF_GRAY;
 
         _isFirstPixel = true;
         _accumulator[0] = 0;
@@ -114,7 +91,7 @@ namespace ELS
         _accumulator[2] = 0;
         _pixelCount = 0;
 
-        if (isColor)
+        if (_isColor)
         {
             totalHistogramPoints *= 3;
         }
@@ -123,7 +100,7 @@ namespace ELS
         for (int i = 0; i < PixUtils::g_histogramPoints; i++)
         {
             _histogram[i] = 0;
-            if (isColor)
+            if (_isColor)
             {
                 _histogram[PixUtils::g_histogramPoints + i] = 0;
                 _histogram[PixUtils::g_histogramPoints * 2 + i] = 0;
@@ -245,7 +222,7 @@ namespace ELS
         _statistics.setMinVal(0, _minVal[0]);
         _statistics.setMaxVal(0, _maxVal[0]);
         _statistics.setMeanVal(0, (PixelT)(_accumulator[0] / _pixelCount));
-        if (_gIdx != -1)
+        if (_isColor)
         {
             _statistics.setMinVal(1, _minVal[1]);
             _statistics.setMinVal(2, _minVal[2]);
@@ -254,8 +231,6 @@ namespace ELS
             _statistics.setMeanVal(1, (PixelT)(_accumulator[1] / _pixelCount));
             _statistics.setMeanVal(2, (PixelT)(_accumulator[2] / _pixelCount));
         }
-
-        bool isColor = _gIdx != -1;
 
         int64_t halfway = _pixelCount / 2;
         int64_t pointCount[3] = {0, 0, 0};
@@ -281,7 +256,7 @@ namespace ELS
                 }
             }
 
-            if (isColor)
+            if (_isColor)
             {
                 if (pointCount[1] < halfway)
                 {
@@ -317,7 +292,7 @@ namespace ELS
             }
         }
 
-        int totalHistogramPoints = isColor ? PixUtils::g_histogramPoints * 3 : PixUtils::g_histogramPoints;
+        int totalHistogramPoints = _isColor ? PixUtils::g_histogramPoints * 3 : PixUtils::g_histogramPoints;
         uint32_t *tmp = new uint32_t[totalHistogramPoints];
         for (int i = 0; i < totalHistogramPoints; i++)
         {
@@ -328,7 +303,7 @@ namespace ELS
             uint16_t val = i > medHist[0] ? i - medHist[0] : medHist[0] - i;
             tmp[val] += _histogram[i];
 
-            if (isColor)
+            if (_isColor)
             {
                 val = i > medHist[1] ? i - medHist[1] : medHist[1] - i;
                 tmp[gOffset + val] += _histogram[gOffset + i];
@@ -361,7 +336,7 @@ namespace ELS
                 }
             }
 
-            if (isColor)
+            if (_isColor)
             {
                 if (pointCount[1] < halfway)
                 {
