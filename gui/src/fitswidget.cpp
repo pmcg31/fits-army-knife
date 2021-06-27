@@ -47,6 +47,8 @@ FITSWidget::FITSWidget(QWidget *parent)
     setAutoFillBackground(true);
 
     setSizePolicy(_sizePolicy);
+
+    setCursor(Qt::OpenHandCursor);
 }
 
 FITSWidget::~FITSWidget()
@@ -272,6 +274,7 @@ void FITSWidget::mousePressEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton)
     {
         _mouseDragLast = event->pos();
+        setCursor(Qt::ClosedHandCursor);
     }
 }
 
@@ -280,6 +283,7 @@ void FITSWidget::mouseReleaseEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton)
     {
         _mouseDragLast = QPoint(-1, -1);
+        setCursor(Qt::OpenHandCursor);
     }
 }
 
