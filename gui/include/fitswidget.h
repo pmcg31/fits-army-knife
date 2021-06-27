@@ -120,6 +120,10 @@ private:
     uint8_t *_identityLUT;
     uint8_t *_lutInUse;
     QPoint _mouseDragLast;
+    QRect _source;
+    QRect _target;
+    QPoint _imageZoomLockPoint;
+    QPoint _windowZoomLockPoint;
 
 private:
     static const float g_validZooms[];

@@ -37,7 +37,11 @@ FITSWidget::FITSWidget(QWidget *parent)
       _stfLUT(0),
       _identityLUT(0),
       _lutInUse(_identityLUT),
-      _mouseDragLast(-1, -1)
+      _mouseDragLast(-1, -1),
+      _source(0, 0, 0, 0),
+      _target(0, 0, 0, 0),
+      _imageZoomLockPoint(-1, -1),
+      _windowZoomLockPoint(-1, -1)
 {
     setBackgroundRole(QPalette::Dark);
     setAutoFillBackground(true);
@@ -244,60 +248,22 @@ void FITSWidget::mouseMoveEvent(QMouseEvent *event)
     if (_mouseDragLast != QPoint(-1, -1))
     {
         QPoint deltas = _mouseDragLast - event->pos();
-        deltas /= _zoom;
 
-        _centerPoint += deltas;
+        QPoint newLockPointZoomed = (_imageZoomLockPoint * _actualZoom) + deltas;
 
-        int realWidth = width();
-        int realHeight = height();
-        int border = 1;
-        int w = realWidth - (border * 2);
-        int h = realHeight - (border * 2);
-        int imgW = _fits->getWidth();
-        int imgH = _fits->getHeight();
-        int imgZoomW = imgW;
-        int imgZoomH = imgH;
-        QPoint centerPointZoom = _centerPoint;
-        if (_zoom != -1.0)
-        {
-            imgZoomW *= _zoom;
-            imgZoomH *= _zoom;
-            centerPointZoom *= _zoom;
-        }
-        QPoint imgCenterZoom(imgZoomW / 2, imgZoomH / 2);
-        QPoint centerDeltaZoom = imgCenterZoom - centerPointZoom;
-        int widthXtra = imgZoomW - w;
-        int heightXtra = imgZoomH - h;
+        int imgZoomW = _fits->getWidth() * _actualZoom;
+        int imgZoomH = _fits->getHeight() * _actualZoom;
+        newLockPointZoomed.setX(std::max(_windowZoomLockPoint.x(),
+                                         std::min(imgZoomW - (_target.width() - _windowZoomLockPoint.x()),
+                                                  newLockPointZoomed.x())));
+        newLockPointZoomed.setY(std::max(_windowZoomLockPoint.y(),
+                                         std::min(imgZoomH - (_target.height() - _windowZoomLockPoint.y()),
+                                                  newLockPointZoomed.y())));
 
-        int xTmp = centerDeltaZoom.x();
-        int maxXDelta = widthXtra / 2;
-        if (xTmp > maxXDelta)
-        {
-            centerPointZoom.setX(imgCenterZoom.x() - maxXDelta);
-        }
-        else if (xTmp < -maxXDelta)
-        {
-            centerPointZoom.setX(imgCenterZoom.x() + maxXDelta);
-        }
-
-        int yTmp = centerDeltaZoom.y();
-        int maxYDelta = heightXtra / 2;
-        if (yTmp > maxYDelta)
-        {
-            centerPointZoom.setY(imgCenterZoom.y() - maxYDelta);
-        }
-        else if (yTmp < -maxYDelta)
-        {
-            centerPointZoom.setY(imgCenterZoom.y() + maxYDelta);
-        }
-
-        _centerPoint = centerPointZoom / _zoom;
+        _imageZoomLockPoint = newLockPointZoomed / _actualZoom;
 
         _mouseDragLast = event->pos();
         update();
-
-        printf("center point (%d, %d)\n", _centerPoint.x(), _centerPoint.y());
-        fflush(stdout);
     }
 }
 
@@ -306,8 +272,6 @@ void FITSWidget::mousePressEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton)
     {
         _mouseDragLast = event->pos();
-        printf("center point (%d, %d)\n", _centerPoint.x(), _centerPoint.y());
-        fflush(stdout);
     }
 }
 
@@ -316,14 +280,19 @@ void FITSWidget::mouseReleaseEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton)
     {
         _mouseDragLast = QPoint(-1, -1);
-        printf("weighed anchor!\n");
-        fflush(stdout);
     }
 }
 
 void FITSWidget::wheelEvent(QWheelEvent *event)
 {
     QPoint numSteps = event->angleDelta() / 120;
+
+    if (!_source.isNull())
+    {
+        _windowZoomLockPoint = event->pos();
+        QPoint sourceTopLeftZoomed = _source.topLeft() * _actualZoom;
+        _imageZoomLockPoint = (sourceTopLeftZoomed + (_windowZoomLockPoint - _target.topLeft())) / _actualZoom;
+    }
 
     float zoom = _actualZoom;
     if (numSteps.y() >= 1)
@@ -349,7 +318,10 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
         int realWidth = width();
         int realHeight = height();
 
-        // painter.drawRect(0, 0, realWidth, realHeight);
+        if (_windowZoomLockPoint == QPoint(-1, -1))
+        {
+            _windowZoomLockPoint = QPoint(realWidth / 2, realHeight / 2);
+        }
 
         int border = 1;
 
@@ -363,6 +335,12 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
 
         int imgW = _fits->getWidth();
         int imgH = _fits->getHeight();
+
+        if (_imageZoomLockPoint == QPoint(-1, -1))
+        {
+            _imageZoomLockPoint = QPoint(imgW / 2, imgH / 2);
+        }
+
         int imgZoomW = imgW;
         int imgZoomH = imgH;
         QPoint centerPointZoom = _centerPoint;
@@ -374,15 +352,14 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
         }
         QPoint imgCenterZoom(imgZoomW / 2, imgZoomH / 2);
 
-        QRect target;
-        QRect source(0, 0, imgW, imgH);
+        _source = QRect(0, 0, imgW, imgH);
         float zoomNow = _zoom;
         if ((imgZoomW < w) && (imgZoomH < h))
         {
-            target.setLeft((w - imgZoomW) / 2);
-            target.setTop((h - imgZoomH) / 2);
-            target.setWidth(imgZoomW);
-            target.setHeight(imgZoomH);
+            _target.setLeft((w - imgZoomW) / 2);
+            _target.setTop((h - imgZoomH) / 2);
+            _target.setWidth(imgZoomW);
+            _target.setHeight(imgZoomH);
         }
         else
         {
@@ -393,72 +370,68 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
 
                 if (imgAspect >= winAspect)
                 {
-                    target.setLeft(border);
-                    target.setWidth(w);
+                    _target.setLeft(border);
+                    _target.setWidth(w);
                     int targetHeight = (int)(w / imgAspect);
-                    target.setTop((h - targetHeight) / 2 + border);
-                    target.setHeight(targetHeight);
+                    _target.setTop((h - targetHeight) / 2 + border);
+                    _target.setHeight(targetHeight);
                 }
                 else
                 {
-                    target.setTop(border);
-                    target.setHeight(h);
+                    _target.setTop(border);
+                    _target.setHeight(h);
                     int targetWidth = (int)(h * imgAspect);
-                    target.setLeft((w - targetWidth) / 2 + border);
-                    target.setWidth(targetWidth);
+                    _target.setLeft((w - targetWidth) / 2 + border);
+                    _target.setWidth(targetWidth);
                 }
 
-                zoomNow = (float)target.width() / (float)imgW;
+                zoomNow = (float)_target.width() / (float)imgW;
             }
             else
             {
                 int widthXtra = imgZoomW - w;
                 int heightXtra = imgZoomH - h;
 
+                QPoint imgZoomLockPointZoomed = _imageZoomLockPoint * _zoom;
+                QPoint sourceZoomedTopLeft = imgZoomLockPointZoomed - _windowZoomLockPoint;
+
                 QRect sourceZoom(0, 0, 0, 0);
-                QPoint centerDeltaZoom = imgCenterZoom - centerPointZoom;
-                printf("centerDeltaZoom (%d, %d)\n", centerDeltaZoom.x(), centerDeltaZoom.y());
                 if (widthXtra < 0)
                 {
-                    target.setLeft((w - imgZoomW) / 2 + border);
-                    target.setWidth(imgZoomW);
+                    _target.setLeft((w - imgZoomW) / 2 + border);
+                    _target.setWidth(imgZoomW);
                     sourceZoom.setLeft(0);
                     sourceZoom.setWidth(imgZoomW);
                 }
                 else
                 {
-                    target.setLeft(border);
-                    target.setWidth(w);
-                    int left = std::max(0, std::min((widthXtra / 2) - centerDeltaZoom.x(), widthXtra));
-                    printf("left: %d would have been: %d\n", left, widthXtra / 2);
+                    _target.setLeft(border);
+                    _target.setWidth(w);
+                    int left = std::max(0, std::min(sourceZoomedTopLeft.x(), widthXtra));
                     sourceZoom.setLeft(left);
                     sourceZoom.setWidth(w);
                 }
 
                 if (heightXtra < 0)
                 {
-                    target.setTop((h - imgZoomH) / 2 + border);
-                    target.setHeight(imgZoomH);
+                    _target.setTop((h - imgZoomH) / 2 + border);
+                    _target.setHeight(imgZoomH);
                     sourceZoom.setTop(0);
                     sourceZoom.setHeight(imgZoomH);
                 }
                 else
                 {
-                    target.setTop(border);
-                    target.setHeight(h);
-                    int top = std::max(0, std::min((heightXtra / 2) - centerDeltaZoom.y(), heightXtra));
-                    printf("top: %d would have been: %d\n", top, heightXtra / 2);
+                    _target.setTop(border);
+                    _target.setHeight(h);
+                    int top = std::max(0, std::min(sourceZoomedTopLeft.y(), heightXtra));
                     sourceZoom.setTop(top);
                     sourceZoom.setHeight(h);
                 }
 
-                source.setLeft(sourceZoom.left() / _zoom);
-                source.setWidth(sourceZoom.width() / _zoom);
-                source.setTop(sourceZoom.top() / _zoom);
-                source.setHeight(sourceZoom.height() / _zoom);
-
-                printf("source: (%d, %d) %dx%d\n", source.left(), source.top(), source.width(), source.height());
-                fflush(stdout);
+                _source.setLeft(sourceZoom.left() / _zoom);
+                _source.setWidth(sourceZoom.width() / _zoom);
+                _source.setTop(sourceZoom.top() / _zoom);
+                _source.setHeight(sourceZoom.height() / _zoom);
             }
         }
 
@@ -471,7 +444,7 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
 
         painter.setRenderHints(QPainter::SmoothPixmapTransform |
                                QPainter::Antialiasing);
-        painter.drawImage(target, *_cacheImage, source);
+        painter.drawImage(_target, *_cacheImage, _source);
     }
 }
 

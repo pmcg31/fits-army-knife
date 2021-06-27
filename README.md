@@ -12,8 +12,10 @@ will become such a tool.
 
 Current features:
 
-- Zoom with scroll wheel (centered only for now)
+- Zoom with scroll wheel
+  - Image position under mouse pointer is maintained (i.e., zoom what is pointed at)
   - Buttons for 1:1 and zoom-to-fit
+- Drag image position
 - Histogram
 - Statistics (min/mean/median/max)
 - Integrated screen transfer function
@@ -23,7 +25,7 @@ Feature ideas:
 
 - Quick option to see center and corners at 1:1
 - Option to highlight the brightest and/or darkest pixels
-- Histogram refinements
+- Histogram refinements?
 
 Those are the key ones, and some nice to haves:
 
