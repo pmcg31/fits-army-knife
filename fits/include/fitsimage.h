@@ -58,19 +58,15 @@ namespace ELS
     void FITSImage::visitPixels(FITSPixelVisitor<PixelT> *visitor) const
     {
         PixelT *ptPixels = (PixelT *)_pixels;
-        PixelT vals[3] = {0, 0, 0};
 
         if (!_isColor)
         {
             visitor->pixelFormat(ELS::FITS::PF_GRAY);
             visitor->dimensions(_width, _height);
+            visitor->rowInfo(1);
             for (int y = 0; y < _height; y++)
             {
-                for (int x = 0; x < _width; x++)
-                {
-                    vals[0] = ptPixels[y * _width + x];
-                    visitor->pixel(x, y, vals);
-                }
+                visitor->rowGray(y, &ptPixels[y * _width]);
             }
             visitor->done();
         }
@@ -78,25 +74,34 @@ namespace ELS
         {
             visitor->pixelFormat(ELS::FITS::PF_RGB);
             visitor->dimensions(_width, _height);
+            switch (_format)
+            {
+            case ELS::FITS::RF_INTERLEAVED:
+                visitor->rowInfo(3);
+                break;
+            case ELS::FITS::RF_PLANAR:
+                visitor->rowInfo(1);
+                break;
+            }
+            int gOffset = _width * _height;
+            int bOffset = gOffset * 2;
             for (int y = 0; y < _height; y++)
             {
-                for (int x = 0; x < _width; x++)
+                int rowOffset = y * _width;
+                switch (_format)
                 {
-                    switch (_format)
-                    {
-                    case ELS::FITS::RF_INTERLEAVED:
-                        vals[0] = ptPixels[3 * (x + _width * y) + 0];
-                        vals[1] = ptPixels[3 * (x + _width * y) + 1];
-                        vals[2] = ptPixels[3 * (x + _width * y) + 2];
-                        break;
-                    case ELS::FITS::RF_STRIDED:
-                        vals[0] = ptPixels[x + _width * y + 0 * _width * _height];
-                        vals[1] = ptPixels[x + _width * y + 1 * _width * _height];
-                        vals[2] = ptPixels[x + _width * y + 2 * _width * _height];
-                        break;
-                    }
-
-                    visitor->pixel(x, y, vals);
+                case ELS::FITS::RF_INTERLEAVED:
+                    visitor->rowRgb(y,
+                                    &ptPixels[3 * rowOffset + 0],
+                                    &ptPixels[3 * rowOffset + 1],
+                                    &ptPixels[3 * rowOffset + 2]);
+                    break;
+                case ELS::FITS::RF_PLANAR:
+                    visitor->rowRgb(y,
+                                    &ptPixels[rowOffset],
+                                    &ptPixels[gOffset + rowOffset],
+                                    &ptPixels[bOffset + rowOffset]);
+                    break;
                 }
             }
             visitor->done();

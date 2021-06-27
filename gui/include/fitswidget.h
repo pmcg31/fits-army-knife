@@ -89,11 +89,19 @@ private:
     public:
         virtual void pixelFormat(ELS::FITS::PixelFormat pf) override;
         virtual void dimensions(int width, int height) override;
-        virtual void pixel(int x, int y, const PixelT *pixelVals) override;
+        virtual void rowInfo(int stride) override;
+        virtual void rowGray(int y,
+                             const PixelT *k) override;
+        virtual void rowRgb(int y,
+                            const PixelT *r,
+                            const PixelT *g,
+                            const PixelT *b) override;
         virtual void done() override;
 
     private:
         bool _isColor;
+        int _width;
+        int _stride;
         int _rIdx;
         int _gIdx;
         int _bIdx;
@@ -134,6 +142,8 @@ FITSWidget::ToQImageVisitor<PixelT>::ToQImageVisitor(ELS::PixSTFParms stfParms,
                                                      uint8_t *lut,
                                                      int lutPoints)
     : _isColor(false),
+      _width(0),
+      _stride(0),
       _rIdx(0),
       _gIdx(-1),
       _bIdx(-1),
@@ -183,32 +193,47 @@ template <typename PixelT>
 void FITSWidget::ToQImageVisitor<PixelT>::dimensions(int width,
                                                      int height)
 {
+    _width = width;
     _qi.reset(new QImage(width, height, QImage::Format_ARGB32));
 }
 
 template <typename PixelT>
-void FITSWidget::ToQImageVisitor<PixelT>::pixel(int x,
-                                                int y,
-                                                const PixelT *pixelVals)
+void FITSWidget::ToQImageVisitor<PixelT>::rowInfo(int stride)
 {
-    if (_isColor)
-    {
-        uint8_t newVals[3];
-        int chanIdx[3] = {_rIdx, _gIdx, _bIdx};
-        for (int chan = 0; chan < 3; chan++)
-        {
-            uint16_t tmp = ELS::PixUtils::convertRangeToHist(pixelVals[chanIdx[chan]]);
-            newVals[chan] = _lut[tmp];
-        }
+    _stride = stride;
+}
 
-        _qi->setPixelColor(x, y, QColor::fromRgb(newVals[0], newVals[1], newVals[2]));
-    }
-    else
+template <typename PixelT>
+void FITSWidget::ToQImageVisitor<PixelT>::rowGray(int y,
+                                                  const PixelT *k)
+{
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
     {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(pixelVals[0]);
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
         uint8_t val = _lut[tmp];
 
         _qi->setPixelColor(x, y, QColor::fromRgb(val, val, val));
+    }
+}
+
+template <typename PixelT>
+void FITSWidget::ToQImageVisitor<PixelT>::rowRgb(int y,
+                                                 const PixelT *r,
+                                                 const PixelT *g,
+                                                 const PixelT *b)
+{
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
+        uint8_t red = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
+        uint8_t green = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
+        uint8_t blue = _lut[tmp];
+
+        _qi->setPixelColor(x, y, QColor::fromRgb(red, green, blue));
     }
 }
 

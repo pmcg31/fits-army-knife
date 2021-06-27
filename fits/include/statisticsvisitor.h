@@ -24,12 +24,18 @@ namespace ELS
     public:
         virtual void pixelFormat(ELS::FITS::PixelFormat pf) override;
         virtual void dimensions(int width, int height) override;
-        virtual void pixel(int x, int y, const PixelT *pixelVals) override;
+        virtual void rowInfo(int stride) override;
+        virtual void rowGray(int y,
+                             const PixelT *k) override;
+        virtual void rowRgb(int y,
+                            const PixelT *r,
+                            const PixelT *g,
+                            const PixelT *b) override;
         virtual void done() override;
 
     private:
         int _width;
-        int _height;
+        int _stride;
         int _rIdx;
         int _gIdx;
         int _bIdx;
@@ -45,7 +51,7 @@ namespace ELS
     template <typename PixelT>
     StatisticsVisitor<PixelT>::StatisticsVisitor()
         : _width(0),
-          _height(0),
+          _stride(0),
           _rIdx(0),
           _gIdx(-1),
           _bIdx(-1),
@@ -114,7 +120,6 @@ namespace ELS
         }
 
         _histogram = std::shared_ptr<uint32_t[]>(new uint32_t[totalHistogramPoints]);
-        // _histogram = new uint32_t[totalHistogramPoints];
         for (int i = 0; i < PixUtils::g_histogramPoints; i++)
         {
             _histogram[i] = 0;
@@ -130,90 +135,104 @@ namespace ELS
     void StatisticsVisitor<PixelT>::dimensions(int width, int height)
     {
         _width = width;
-        _height = height;
+        (void)height;
     }
 
     template <typename PixelT>
-    void StatisticsVisitor<PixelT>::pixel(int x, int y, const PixelT *pixelVals)
+    void StatisticsVisitor<PixelT>::rowInfo(int stride)
     {
-        (void)x;
+        _stride = stride;
+    }
+
+    template <typename PixelT>
+    void StatisticsVisitor<PixelT>::rowGray(int y,
+                                            const PixelT *k)
+    {
         (void)y;
-
-        _pixelCount++;
-
-        if (_gIdx != -1)
+        for (int i = 0, dataIdx = 0; i < _width; i++, dataIdx += _stride)
         {
-            // Color
+            _pixelCount++;
+
             if (_isFirstPixel)
             {
                 _isFirstPixel = false;
-                _minVal[0] = pixelVals[_rIdx];
-                _minVal[1] = pixelVals[_gIdx];
-                _minVal[2] = pixelVals[_bIdx];
-                _maxVal[0] = pixelVals[_rIdx];
-                _maxVal[1] = pixelVals[_gIdx];
-                _maxVal[2] = pixelVals[_bIdx];
+                _minVal[0] = k[dataIdx];
+                _maxVal[0] = k[dataIdx];
             }
             else
             {
-                if (pixelVals[_rIdx] < _minVal[0])
+                if (k[dataIdx] < _minVal[0])
                 {
-                    _minVal[0] = pixelVals[_rIdx];
+                    _minVal[0] = k[dataIdx];
                 }
-                if (pixelVals[_gIdx] < _minVal[1])
+                if (k[dataIdx] > _maxVal[0])
                 {
-                    _minVal[1] = pixelVals[_gIdx];
+                    _maxVal[0] = k[dataIdx];
                 }
-                if (pixelVals[_bIdx] < _minVal[2])
-                {
-                    _minVal[2] = pixelVals[_bIdx];
-                }
-                if (pixelVals[_rIdx] > _maxVal[0])
-                {
-                    _maxVal[0] = pixelVals[_rIdx];
-                }
-                if (pixelVals[_gIdx] > _maxVal[1])
-                {
-                    _maxVal[1] = pixelVals[_gIdx];
-                }
-                if (pixelVals[_bIdx] > _maxVal[2])
-                {
-                    _maxVal[2] = pixelVals[_bIdx];
-                }
-
-                _accumulator[0] += pixelVals[_rIdx];
-                _accumulator[1] += pixelVals[_gIdx];
-                _accumulator[2] += pixelVals[_bIdx];
-
-                _histogram[PixUtils::convertRangeToHist(pixelVals[_rIdx])]++;
-                _histogram[PixUtils::g_histogramPoints + PixUtils::convertRangeToHist(pixelVals[_gIdx])]++;
-                _histogram[PixUtils::g_histogramPoints * 2 + PixUtils::convertRangeToHist(pixelVals[_bIdx])]++;
             }
+
+            _accumulator[0] += k[dataIdx];
+
+            _histogram[PixUtils::convertRangeToHist(k[dataIdx])]++;
         }
-        else
+    }
+
+    template <typename PixelT>
+    void StatisticsVisitor<PixelT>::rowRgb(int y,
+                                           const PixelT *r,
+                                           const PixelT *g,
+                                           const PixelT *b)
+    {
+        (void)y;
+        for (int i = 0, dataIdx = 0; i < _width; i++, dataIdx += _stride)
         {
-            // Grayscale
+            _pixelCount++;
+
             if (_isFirstPixel)
             {
                 _isFirstPixel = false;
-                _minVal[0] = pixelVals[0];
-                _maxVal[0] = pixelVals[0];
+                _minVal[0] = r[dataIdx];
+                _minVal[1] = g[dataIdx];
+                _minVal[2] = b[dataIdx];
+                _maxVal[0] = r[dataIdx];
+                _maxVal[1] = g[dataIdx];
+                _maxVal[2] = b[dataIdx];
             }
             else
             {
-                if (pixelVals[0] < _minVal[0])
+                if (r[dataIdx] < _minVal[0])
                 {
-                    _minVal[0] = pixelVals[0];
+                    _minVal[0] = r[dataIdx];
                 }
-                if (pixelVals[0] > _maxVal[0])
+                if (g[dataIdx] < _minVal[1])
                 {
-                    _maxVal[0] = pixelVals[0];
+                    _minVal[1] = g[dataIdx];
                 }
+                if (b[dataIdx] < _minVal[2])
+                {
+                    _minVal[2] = b[dataIdx];
+                }
+                if (r[dataIdx] > _maxVal[0])
+                {
+                    _maxVal[0] = r[dataIdx];
+                }
+                if (g[dataIdx] > _maxVal[1])
+                {
+                    _maxVal[1] = g[dataIdx];
+                }
+                if (b[dataIdx] > _maxVal[2])
+                {
+                    _maxVal[2] = b[dataIdx];
+                }
+
+                _accumulator[0] += r[dataIdx];
+                _accumulator[1] += g[dataIdx];
+                _accumulator[2] += b[dataIdx];
+
+                _histogram[PixUtils::convertRangeToHist(r[dataIdx])]++;
+                _histogram[PixUtils::g_histogramPoints + PixUtils::convertRangeToHist(g[dataIdx])]++;
+                _histogram[PixUtils::g_histogramPoints * 2 + PixUtils::convertRangeToHist(b[dataIdx])]++;
             }
-
-            _accumulator[0] += pixelVals[0];
-
-            _histogram[PixUtils::convertRangeToHist(pixelVals[0])]++;
         }
     }
 

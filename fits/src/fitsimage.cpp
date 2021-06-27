@@ -44,7 +44,7 @@ namespace ELS
         if (numAxis == 2)
         {
             isColor = false;
-            format = FITS::RF_STRIDED;
+            format = FITS::RF_PLANAR;
             width = axLengths[0];
             height = axLengths[1];
         }
@@ -53,7 +53,7 @@ namespace ELS
             isColor = true;
             if (axLengths[2] == 3)
             {
-                format = FITS::RF_STRIDED;
+                format = FITS::RF_PLANAR;
                 width = axLengths[0];
                 height = axLengths[1];
             }

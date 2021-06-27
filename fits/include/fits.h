@@ -18,7 +18,7 @@ namespace ELS
         enum RasterFormat
         {
             RF_INTERLEAVED,
-            RF_STRIDED
+            RF_PLANAR
         };
 
         enum PixelFormat
