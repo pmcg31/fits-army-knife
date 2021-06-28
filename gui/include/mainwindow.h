@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QFileInfo>
 
 #include "pixstatistics.h"
 #include "pixstfparms.h"
@@ -24,7 +25,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QList<QFileInfo> fileList,
+               QWidget *parent = nullptr);
     ~MainWindow();
 
 signals:
@@ -43,7 +45,7 @@ private:
     void zoom100Clicked(bool isChecked);
 
 private:
-    char filename[1000];
+    QList<QFileInfo> fileList;
     bool showingStretched;
     QWidget mainPane;
     QVBoxLayout layout;

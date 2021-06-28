@@ -7,9 +7,10 @@
 #include "statisticsvisitor.h"
 #include "mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QList<QFileInfo> fileList,
+                       QWidget *parent)
     : QMainWindow(parent),
-      filename(""),
+      fileList(fileList),
       showingStretched(false),
       mainPane(),
       layout(&mainPane),
@@ -110,34 +111,10 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(&zoom100Btn, &QPushButton::clicked,
                      this, &MainWindow::zoom100Clicked);
 
-    QStringList args = QApplication::arguments();
-    if (args.length() < 2)
-    {
-        printf("No file specified\n");
-        fflush(stdout);
-    }
-    else
-    {
-        if (args.length() == 2)
-        {
-            QString qfname = args.at(1);
-            QByteArray qfnameBytes = qfname.toLocal8Bit();
-            int size = qfnameBytes.size();
-            for (int i = 0; i < size; i++)
-            {
-                filename[i] = qfnameBytes.at(i);
-            }
-            filename[size] = 0;
-            printf("Setting file %s\n", filename);
-            fflush(stdout);
-            fitsWidget.setFile(filename);
-        }
-        else
-        {
-            fprintf(stderr, "Your plethora of arguments has confused me\n");
-            fflush(stderr);
-        }
-    }
+    const char *filename = fileList.first().absoluteFilePath().toLocal8Bit().constData();
+    printf("Setting file 1 of %d: %s\n", fileList.size(), filename);
+    fflush(stdout);
+    fitsWidget.setFile(filename);
 }
 
 MainWindow::~MainWindow()
