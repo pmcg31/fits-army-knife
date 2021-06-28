@@ -117,6 +117,12 @@ void FITSWidget::setFile(const char *filename)
                 delete _fits;
             }
 
+            if (_cacheImage != 0)
+            {
+                _cacheImage.reset();
+                _cacheImageData.reset();
+            }
+
             strcpy(_filename, filename);
             _fits = tmpFits;
 

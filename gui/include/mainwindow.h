@@ -44,8 +44,14 @@ private:
     void zoomFitClicked(bool isChecked);
     void zoom100Clicked(bool isChecked);
 
+    void prevClicked(bool isChecked);
+    void nextClicked(bool isChecked);
+
+    void syncFileIdx();
+
 private:
     QList<QFileInfo> fileList;
+    int currentFileIdx;
     bool showingStretched;
     QWidget mainPane;
     QVBoxLayout layout;
@@ -64,6 +70,9 @@ private:
     QPushButton stretchBtn;
     QPushButton zoomFitBtn;
     QPushButton zoom100Btn;
+    QPushButton prevBtn;
+    QPushButton nextBtn;
+    QLabel fileListPosLabel;
     ELS::PixSTFParms stfParms;
 };
 #endif // MAINWINDOW_H

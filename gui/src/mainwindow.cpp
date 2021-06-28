@@ -11,6 +11,7 @@ MainWindow::MainWindow(QList<QFileInfo> fileList,
                        QWidget *parent)
     : QMainWindow(parent),
       fileList(fileList),
+      currentFileIdx(0),
       showingStretched(false),
       mainPane(),
       layout(&mainPane),
@@ -29,6 +30,9 @@ MainWindow::MainWindow(QList<QFileInfo> fileList,
       stretchBtn(offIcon, ""),
       zoomFitBtn("fit"),
       zoom100Btn("1:1"),
+      prevBtn(" ◀ "),
+      nextBtn(" ▶ "),
+      fileListPosLabel(" -- of -- "),
       stfParms()
 {
     const QSize iconSize(20, 20);
@@ -48,6 +52,14 @@ MainWindow::MainWindow(QList<QFileInfo> fileList,
     zoom100Btn.setStyleSheet(btnStyle);
     zoom100Btn.setMinimumSize(btnSize);
     zoom100Btn.setMaximumSize(btnSize);
+    prevBtn.setEnabled(true);
+    prevBtn.setStyleSheet(btnStyle);
+    prevBtn.setMinimumSize(btnSize);
+    prevBtn.setMaximumSize(btnSize);
+    nextBtn.setEnabled(true);
+    nextBtn.setStyleSheet(btnStyle);
+    nextBtn.setMinimumSize(btnSize);
+    nextBtn.setMaximumSize(btnSize);
 
     currentZoom.setStyleSheet(lblStyle);
     currentZoom.setAlignment(Qt::AlignCenter);
@@ -74,7 +86,16 @@ MainWindow::MainWindow(QList<QFileInfo> fileList,
     maxLabel.setMinimumHeight(height);
     maxLabel.setMaximumHeight(height);
 
+    fileListPosLabel.setStyleSheet(lblStyle);
+    fileListPosLabel.setAlignment(Qt::AlignCenter);
+    fileListPosLabel.setMinimumHeight(height);
+    fileListPosLabel.setMaximumHeight(height);
+
     bottomLayout.addWidget(&stretchBtn);
+    bottomLayout.addStretch(1);
+    bottomLayout.addWidget(&prevBtn);
+    bottomLayout.addWidget(&fileListPosLabel);
+    bottomLayout.addWidget(&nextBtn);
     bottomLayout.addStretch(1);
     bottomLayout.addWidget(&zoomFitBtn);
     bottomLayout.addWidget(&zoom100Btn);
@@ -110,11 +131,12 @@ MainWindow::MainWindow(QList<QFileInfo> fileList,
                      this, &MainWindow::zoomFitClicked);
     QObject::connect(&zoom100Btn, &QPushButton::clicked,
                      this, &MainWindow::zoom100Clicked);
+    QObject::connect(&prevBtn, &QPushButton::clicked,
+                     this, &MainWindow::prevClicked);
+    QObject::connect(&nextBtn, &QPushButton::clicked,
+                     this, &MainWindow::nextClicked);
 
-    const char *filename = fileList.first().absoluteFilePath().toLocal8Bit().constData();
-    printf("Setting file 1 of %d: %s\n", fileList.size(), filename);
-    fflush(stdout);
-    fitsWidget.setFile(filename);
+    syncFileIdx();
 }
 
 MainWindow::~MainWindow()
@@ -361,6 +383,8 @@ void MainWindow::fitsFileChanged(const char *filename)
     printf("%s\n", image->getImageType());
     printf("%s\n", image->getSizeAndColor());
     fflush(stdout);
+
+    update();
 }
 
 void MainWindow::fitsFileFailed(const char *filename,
@@ -405,4 +429,49 @@ void MainWindow::zoomFitClicked(bool /* isChecked */)
 void MainWindow::zoom100Clicked(bool /* isChecked */)
 {
     fitsWidget.setZoom(1.0);
+}
+
+void MainWindow::prevClicked(bool isChecked)
+{
+    (void)isChecked;
+
+    if (currentFileIdx > 0)
+    {
+        currentFileIdx--;
+        syncFileIdx();
+    }
+}
+
+void MainWindow::nextClicked(bool isChecked)
+{
+    (void)isChecked;
+
+    if ((currentFileIdx + 1) < fileList.size())
+    {
+        currentFileIdx++;
+        syncFileIdx();
+    }
+}
+
+void MainWindow::syncFileIdx()
+{
+    char tmp[50];
+
+    const char *filename = fileList.at(currentFileIdx)
+                               .absoluteFilePath()
+                               .toLocal8Bit()
+                               .constData();
+
+    sprintf(tmp, " %d of %d ",
+            currentFileIdx + 1,
+            fileList.size());
+    fileListPosLabel.setText(tmp);
+
+    printf("Setting file %d of %d: %s\n",
+           currentFileIdx + 1,
+           fileList.size(),
+           filename);
+    fflush(stdout);
+
+    fitsWidget.setFile(filename);
 }
