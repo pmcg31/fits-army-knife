@@ -78,23 +78,14 @@ int main(int argc, char *argv[])
         }
     }
 
-    printf("\nFile list:\n");
-    QList<QFileInfo>::iterator i;
-    int idx = 1;
-    for (i = fileList.begin(); i != fileList.end(); ++i, ++idx)
-    {
-        printf("\t%d: %s | %s\n", idx,
-               i->absolutePath().toLocal8Bit().constData(),
-               i->fileName().toLocal8Bit().constData());
-    }
-
     QApplication a(noargc, argv);
-    MainWindow w(fileList);
-
-    if (w.startServer())
+    QTcpServer server;
+    if (server.listen(QHostAddress::LocalHost, 2112))
     {
         if (!fileList.isEmpty())
         {
+            MainWindow w(server, fileList);
+
             w.show();
 
             return a.exec();
@@ -109,9 +100,6 @@ int main(int argc, char *argv[])
             QDataStream out(&socket);
 
             qint32 numFiles = fileList.size();
-            printf("Sending %d absolute paths\n", numFiles);
-            fflush(stdout);
-
             out << numFiles;
 
             QList<QFileInfo>::iterator i;

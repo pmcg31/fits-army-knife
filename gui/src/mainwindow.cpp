@@ -9,10 +9,11 @@
 #include "statisticsvisitor.h"
 #include "mainwindow.h"
 
-MainWindow::MainWindow(QList<QFileInfo> fileList,
+MainWindow::MainWindow(QTcpServer &server,
+                       QList<QFileInfo> fileList,
                        QWidget *parent)
     : QMainWindow(parent),
-      server(this),
+      server(server),
       clients(),
       fileList(fileList),
       currentFileIdx(0),
@@ -149,11 +150,6 @@ MainWindow::MainWindow(QList<QFileInfo> fileList,
 
 MainWindow::~MainWindow()
 {
-}
-
-bool MainWindow::startServer()
-{
-    return server.listen(QHostAddress::LocalHost, 2112);
 }
 
 void MainWindow::fitsFileChanged(const char *filename)
@@ -468,15 +464,9 @@ void MainWindow::nextClicked(bool isChecked)
 
 void MainWindow::newConnection()
 {
-    printf("New connection!\n");
-    fflush(stdout);
     QTcpSocket *sock = server.nextPendingConnection();
 
-    int idx = clients.size();
     clients.append(sock);
-
-    printf("client[%d] accepted\n", idx);
-    fflush(stdout);
 
     QObject::connect(sock, &QTcpSocket::disconnected,
                      this, &MainWindow::disconnected);
@@ -494,28 +484,18 @@ void MainWindow::acceptError(QAbstractSocket::SocketError error)
 
 void MainWindow::readyRead()
 {
-    printf("Ready read\n");
-
     QList<QTcpSocket *>::iterator i;
     int idx;
     for (idx = 0, i = clients.begin(); i != clients.end(); ++i, ++idx)
     {
         qint64 bytesAvailable = (*i)->bytesAvailable();
-        printf("client[%d]: %lld bytes available\n", idx, bytesAvailable);
-        fflush(stdout);
 
         if (bytesAvailable)
         {
             QDataStream in(*i);
 
-            printf("datastream\n");
-            fflush(stdout);
-
             qint32 numFiles = 0;
             in >> numFiles;
-
-            printf("numFiles: %d\n", numFiles);
-            fflush(stdout);
 
             QList<QString> absoluteFilePaths;
             for (int i = 0; i < numFiles; i++)
@@ -525,12 +505,7 @@ void MainWindow::readyRead()
                 absoluteFilePaths.append(absoluteFilePath);
             }
 
-            printf("stream read\n");
-            fflush(stdout);
-
-            // (*i)->close();
-
-            printf("socket closed; list has %d items\n", absoluteFilePaths.size());
+            printf("Added %d files\n", absoluteFilePaths.size());
             fflush(stdout);
 
             addFilesToList(absoluteFilePaths);
@@ -546,13 +521,9 @@ void MainWindow::disconnected()
     {
         if ((*i)->state() == QAbstractSocket::UnconnectedState)
         {
-            printf("clients[%d] disconnected\n", idx);
-            fflush(stdout);
-
             QTcpSocket *tmp = *i;
             tmp->close();
             i = clients.erase(i);
-            // delete tmp;
 
             if (i == clients.end())
             {
@@ -564,8 +535,6 @@ void MainWindow::disconnected()
 
 void MainWindow::syncFileIdx()
 {
-    char tmp[50];
-
     QByteArray local8 = fileList.at(currentFileIdx)
                             .absoluteFilePath()
                             .toLocal8Bit()
@@ -577,10 +546,7 @@ void MainWindow::syncFileIdx()
     }
     filename[len] = '\0';
 
-    sprintf(tmp, " %d of %d ",
-            currentFileIdx + 1,
-            fileList.size());
-    fileListPosLabel.setText(tmp);
+    syncFileCount();
 
     printf("Setting file %d of %d: %s\n",
            currentFileIdx + 1,
@@ -591,13 +557,28 @@ void MainWindow::syncFileIdx()
     fitsWidget.setFile(filename);
 }
 
+void MainWindow::syncFileCount()
+{
+    char tmp[50];
+
+    sprintf(tmp, " %d of %d ",
+            currentFileIdx + 1,
+            fileList.size());
+    fileListPosLabel.setText(tmp);
+}
+
 void MainWindow::addFilesToList(QList<QString> absoluteFilePaths)
 {
     QList<QString>::iterator i;
     for (i = absoluteFilePaths.begin(); i != absoluteFilePaths.end(); ++i)
     {
-        fileList.append(QFileInfo(*i));
+        QFileInfo info(*i);
+
+        if (!fileList.contains(info))
+        {
+            fileList.append(info);
+        }
     }
 
-    syncFileIdx();
+    syncFileCount();
 }

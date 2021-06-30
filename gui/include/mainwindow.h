@@ -26,11 +26,10 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QList<QFileInfo> fileList,
+    MainWindow(QTcpServer &server,
+               QList<QFileInfo> fileList,
                QWidget *parent = nullptr);
     ~MainWindow();
-
-    bool startServer();
 
 signals:
     void showStretched(ELS::PixSTFParms stfParms);
@@ -56,11 +55,12 @@ private:
     void disconnected();
 
     void syncFileIdx();
+    void syncFileCount();
 
     void addFilesToList(QList<QString> absoluteFilePaths);
 
 private:
-    QTcpServer server;
+    QTcpServer &server;
     QList<QTcpSocket *> clients;
     QList<QFileInfo> fileList;
     char filename[1000];
