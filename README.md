@@ -20,6 +20,11 @@ Current features:
 - Statistics (min/mean/median/max)
 - Integrated screen transfer function
   - From [PixInsight Reference Documentation](https://pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html#__XISF_Data_Objects_:_XISF_Image_:_Display_Function__)
+- Multi-file support
+  - First invocation shows user interface, subsequent invocations exit after passing arguments to running instance (adding files to its list)
+  - At least one file or folder must be given on first invocation
+  - Subsequent invocations can add files and/or folders using same syntax as first invocation
+  - Implemented using QSockets for platform independence
 
 Feature ideas:
 
