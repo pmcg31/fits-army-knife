@@ -1,4 +1,6 @@
 #include <QApplication>
+#include <QTcpSocket>
+#include <QDataStream>
 
 #include <memory>
 
@@ -10,6 +12,8 @@
 MainWindow::MainWindow(QList<QFileInfo> fileList,
                        QWidget *parent)
     : QMainWindow(parent),
+      server(this),
+      clients(),
       fileList(fileList),
       currentFileIdx(0),
       showingStretched(false),
@@ -135,12 +139,21 @@ MainWindow::MainWindow(QList<QFileInfo> fileList,
                      this, &MainWindow::prevClicked);
     QObject::connect(&nextBtn, &QPushButton::clicked,
                      this, &MainWindow::nextClicked);
+    QObject::connect(&server, &QTcpServer::newConnection,
+                     this, &MainWindow::newConnection);
+    QObject::connect(&server, &QTcpServer::acceptError,
+                     this, &MainWindow::acceptError);
 
     syncFileIdx();
 }
 
 MainWindow::~MainWindow()
 {
+}
+
+bool MainWindow::startServer()
+{
+    return server.listen(QHostAddress::LocalHost, 2112);
 }
 
 void MainWindow::fitsFileChanged(const char *filename)
@@ -453,14 +466,116 @@ void MainWindow::nextClicked(bool isChecked)
     }
 }
 
+void MainWindow::newConnection()
+{
+    printf("New connection!\n");
+    fflush(stdout);
+    QTcpSocket *sock = server.nextPendingConnection();
+
+    int idx = clients.size();
+    clients.append(sock);
+
+    printf("client[%d] accepted\n", idx);
+    fflush(stdout);
+
+    QObject::connect(sock, &QTcpSocket::disconnected,
+                     this, &MainWindow::disconnected);
+    QObject::connect(sock, &QIODevice::readyRead,
+                     this, &MainWindow::readyRead);
+}
+
+void MainWindow::acceptError(QAbstractSocket::SocketError error)
+{
+    (void)error;
+    fprintf(stderr, "Problem accepting tcp connection: %s\n",
+            server.errorString().toLocal8Bit().constData());
+    fflush(stderr);
+}
+
+void MainWindow::readyRead()
+{
+    printf("Ready read\n");
+
+    QList<QTcpSocket *>::iterator i;
+    int idx;
+    for (idx = 0, i = clients.begin(); i != clients.end(); ++i, ++idx)
+    {
+        qint64 bytesAvailable = (*i)->bytesAvailable();
+        printf("client[%d]: %lld bytes available\n", idx, bytesAvailable);
+        fflush(stdout);
+
+        if (bytesAvailable)
+        {
+            QDataStream in(*i);
+
+            printf("datastream\n");
+            fflush(stdout);
+
+            qint32 numFiles = 0;
+            in >> numFiles;
+
+            printf("numFiles: %d\n", numFiles);
+            fflush(stdout);
+
+            QList<QString> absoluteFilePaths;
+            for (int i = 0; i < numFiles; i++)
+            {
+                QString absoluteFilePath;
+                in >> absoluteFilePath;
+                absoluteFilePaths.append(absoluteFilePath);
+            }
+
+            printf("stream read\n");
+            fflush(stdout);
+
+            // (*i)->close();
+
+            printf("socket closed; list has %d items\n", absoluteFilePaths.size());
+            fflush(stdout);
+
+            addFilesToList(absoluteFilePaths);
+        }
+    }
+}
+
+void MainWindow::disconnected()
+{
+    QList<QTcpSocket *>::iterator i;
+    int idx;
+    for (idx = 0, i = clients.begin(); i != clients.end(); ++i, ++idx)
+    {
+        if ((*i)->state() == QAbstractSocket::UnconnectedState)
+        {
+            printf("clients[%d] disconnected\n", idx);
+            fflush(stdout);
+
+            QTcpSocket *tmp = *i;
+            tmp->close();
+            i = clients.erase(i);
+            // delete tmp;
+
+            if (i == clients.end())
+            {
+                break;
+            }
+        }
+    }
+}
+
 void MainWindow::syncFileIdx()
 {
     char tmp[50];
 
-    const char *filename = fileList.at(currentFileIdx)
-                               .absoluteFilePath()
-                               .toLocal8Bit()
-                               .constData();
+    QByteArray local8 = fileList.at(currentFileIdx)
+                            .absoluteFilePath()
+                            .toLocal8Bit()
+                            .constData();
+    int len = local8.size();
+    for (int i = 0; i < len; i++)
+    {
+        filename[i] = local8[i];
+    }
+    filename[len] = '\0';
 
     sprintf(tmp, " %d of %d ",
             currentFileIdx + 1,
@@ -474,4 +589,15 @@ void MainWindow::syncFileIdx()
     fflush(stdout);
 
     fitsWidget.setFile(filename);
+}
+
+void MainWindow::addFilesToList(QList<QString> absoluteFilePaths)
+{
+    QList<QString>::iterator i;
+    for (i = absoluteFilePaths.begin(); i != absoluteFilePaths.end(); ++i)
+    {
+        fileList.append(QFileInfo(*i));
+    }
+
+    syncFileIdx();
 }

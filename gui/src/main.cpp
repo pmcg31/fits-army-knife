@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 
 #include <QApplication>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QDataStream>
 #include <QFileInfo>
 #include <QDir>
 #include <QFile>
@@ -11,6 +14,8 @@ static bool checkFile(QFileInfo info, char *error);
 int main(int argc, char *argv[])
 {
     char error[2048];
+
+    int noargc = 1;
 
     QList<QFileInfo> fileList;
     QList<QDir> dirList;
@@ -83,14 +88,41 @@ int main(int argc, char *argv[])
                i->fileName().toLocal8Bit().constData());
     }
 
-    if (!fileList.isEmpty())
+    QApplication a(noargc, argv);
+    MainWindow w(fileList);
+
+    if (w.startServer())
     {
-        QApplication a(argc, argv);
-        MainWindow w(fileList);
+        if (!fileList.isEmpty())
+        {
+            w.show();
 
-        w.show();
+            return a.exec();
+        }
+    }
+    else
+    {
+        QTcpSocket socket;
+        socket.connectToHost("localhost", 2112);
+        if (socket.waitForConnected())
+        {
+            QDataStream out(&socket);
 
-        return a.exec();
+            qint32 numFiles = fileList.size();
+            printf("Sending %d absolute paths\n", numFiles);
+            fflush(stdout);
+
+            out << numFiles;
+
+            QList<QFileInfo>::iterator i;
+            for (i = fileList.begin(); i != fileList.end(); ++i)
+            {
+                out << i->absoluteFilePath();
+            }
+
+            socket.flush();
+            socket.close();
+        }
     }
 
     return 1;

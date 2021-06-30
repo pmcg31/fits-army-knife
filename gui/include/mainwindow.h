@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QFileInfo>
+#include <QTcpServer>
 
 #include "pixstatistics.h"
 #include "pixstfparms.h"
@@ -29,6 +30,8 @@ public:
                QWidget *parent = nullptr);
     ~MainWindow();
 
+    bool startServer();
+
 signals:
     void showStretched(ELS::PixSTFParms stfParms);
     void clearStretched();
@@ -47,10 +50,20 @@ private:
     void prevClicked(bool isChecked);
     void nextClicked(bool isChecked);
 
+    void newConnection();
+    void acceptError(QAbstractSocket::SocketError error);
+    void readyRead();
+    void disconnected();
+
     void syncFileIdx();
 
+    void addFilesToList(QList<QString> absoluteFilePaths);
+
 private:
+    QTcpServer server;
+    QList<QTcpSocket *> clients;
     QList<QFileInfo> fileList;
+    char filename[1000];
     int currentFileIdx;
     bool showingStretched;
     QWidget mainPane;
