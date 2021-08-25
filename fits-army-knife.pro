@@ -4,34 +4,49 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17 
 
-LIBS += -lcfitsio
+# PixInsight Class Library
+PCL_RELEASE_DIR = $$(PCLDIR)/src/pcl/linux/g++/x64/Release
+PCL_RFC6234_RELEASE_DIR = $$(PCLDIR)/src/3rdparty/RFC6234/linux/g++/x64/Release
+PCL_INCLUDE_DIR = $$(PCLDIR)/include
+
+LIBS += \
+    $$PCL_RELEASE_DIR/libPCL-pxi.a \
+    $$PCL_RFC6234_RELEASE_DIR/libRFC6234-pxi.a \
+    -lz \
+    -llz4 \
+    -llcms2 \
+    -lcrypto \
+    -lcfitsio
 
 INCLUDEPATH += \
-    fits/include \
-    gui/include \
-    raster/include
+    image/fits/include \
+    $$PCL_INCLUDE_DIR \
+    image/raster/include \
+    gui/include
 
 SOURCES += \
-    fits/src/fitsexception.cpp \
-    fits/src/fitsimage.cpp \
-    fits/src/fitstantrum.cpp \
-    raster/src/pixutils.cpp \
-    raster/src/pixstfparms.cpp \
+    image/fits/src/fitsexception.cpp \
+    image/fits/src/fitsimage.cpp \
+    image/fits/src/fitstantrum.cpp \
+    image/raster/src/pixutils.cpp \
+    image/raster/src/pixstfparms.cpp \
     gui/src/main.cpp \
     gui/src/mainwindow.cpp \
     gui/src/fitswidget.cpp \
     gui/src/histogramwidget.cpp
 
 HEADERS += \
-    fits/include/fits.h \
-    fits/include/fitsexception.h \
-    fits/include/fitstantrum.h \
-    fits/include/fitsimage.h \
-    fits/include/fitspixelvisitor.h \
-    fits/include/statisticsvisitor.h \
-    raster/include/pixutils.h \
-    raster/include/pixstatistics.h \
-    raster/include/pixstfparms.h \
+    image/fits/include/fits.h \
+    image/fits/include/fitsexception.h \
+    image/fits/include/fitstantrum.h \
+    image/fits/include/fitsimage.h \
+    $$PCL_INCLUDE_DIR/pcl/XISF.h \
+    image/raster/include/pixelformat.h \
+    image/raster/include/pixelvisitor.h \
+    image/raster/include/pixutils.h \
+    image/raster/include/pixstatistics.h \
+    image/raster/include/pixstfparms.h \
+    image/raster/include/statisticsvisitor.h \
     gui/include/mainwindow.h \
     gui/include/fitswidget.h \
     gui/include/histogramwidget.h

@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/gui/include",
+                "${workspaceFolder}/fits/include",
+                "${workspaceFolder}/raster/include",
+                "/usr/include/qt",
+                "/usr/include/qt/QtWidgets",
+                "/usr/include/qt/QtGui",
+                "/usr/include/qt/QtNetwork",
+                "/usr/include/qt/QtCore",
+                "/usr/lib/qt/mkspecs/linux-g++"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/g++",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}

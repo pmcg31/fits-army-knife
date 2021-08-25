@@ -21,13 +21,6 @@ namespace ELS
             RF_PLANAR
         };
 
-        enum PixelFormat
-        {
-            PF_GRAY,
-            PF_BGR,
-            PF_RGB
-        };
-
     }
 
 }

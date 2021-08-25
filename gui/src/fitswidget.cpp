@@ -303,7 +303,7 @@ void FITSWidget::wheelEvent(QWheelEvent *event)
 
     if (!_source.isNull())
     {
-        _windowZoomLockPoint = event->pos();
+        _windowZoomLockPoint = event->position().toPoint();
         QPoint sourceTopLeftZoomed = _source.topLeft() * _actualZoom;
         _imageZoomLockPoint = (sourceTopLeftZoomed + (_windowZoomLockPoint - _target.topLeft())) / _actualZoom;
     }

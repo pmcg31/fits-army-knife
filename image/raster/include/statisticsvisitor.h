@@ -4,13 +4,13 @@
 #include <inttypes.h>
 #include "pixutils.h"
 #include "pixstatistics.h"
-#include "fitspixelvisitor.h"
+#include "pixelvisitor.h"
 
 namespace ELS
 {
 
     template <typename PixelT>
-    class StatisticsVisitor : public ELS::FITSPixelVisitor<PixelT>
+    class StatisticsVisitor : public ELS::PixelVisitor<PixelT>
     {
     public:
         StatisticsVisitor();
@@ -22,7 +22,7 @@ namespace ELS
                               std::shared_ptr<uint32_t[]> *data);
 
     public:
-        virtual void pixelFormat(ELS::FITS::PixelFormat pf) override;
+        virtual void pixelFormat(ELS::PixelFormat pf) override;
         virtual void dimensions(int width, int height) override;
         virtual void rowInfo(int stride) override;
         virtual void rowGray(int y,
@@ -80,10 +80,10 @@ namespace ELS
     }
 
     template <typename PixelT>
-    void StatisticsVisitor<PixelT>::pixelFormat(ELS::FITS::PixelFormat pf)
+    void StatisticsVisitor<PixelT>::pixelFormat(ELS::PixelFormat pf)
     {
         int totalHistogramPoints = PixUtils::g_histogramPoints;
-        _isColor = pf != ELS::FITS::PF_GRAY;
+        _isColor = pf != ELS::PF_GRAY;
 
         _isFirstPixel = true;
         _accumulator[0] = 0;

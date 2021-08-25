@@ -1,15 +1,15 @@
 #pragma once
 
-#include "fits.h"
+#include "pixelformat.h"
 
 namespace ELS
 {
 
     template <typename PixelT>
-    class FITSPixelVisitor
+    class PixelVisitor
     {
     public:
-        virtual void pixelFormat(FITS::PixelFormat pf) = 0;
+        virtual void pixelFormat(ELS::PixelFormat pf) = 0;
         virtual void dimensions(int width, int height) = 0;
         virtual void rowInfo(int stride) = 0;
         virtual void rowGray(int y,
@@ -18,7 +18,6 @@ namespace ELS
                             const PixelT *r,
                             const PixelT *g,
                             const PixelT *b) = 0;
-        // virtual void pixel(int x, int y, const PixelT *pixelVals) = 0;
         virtual void done() = 0;
     };
 

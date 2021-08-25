@@ -11,7 +11,7 @@
 
 #include "fits.h"
 #include "fitsimage.h"
-#include "fitspixelvisitor.h"
+#include "pixelvisitor.h"
 #include "pixutils.h"
 #include "pixstatistics.h"
 #include "pixstfparms.h"
@@ -76,7 +76,7 @@ private:
 
 private:
     template <typename PixelT>
-    class ToQImageVisitor : public ELS::FITSPixelVisitor<PixelT>
+    class ToQImageVisitor : public ELS::PixelVisitor<PixelT>
     {
     public:
         ToQImageVisitor(ELS::PixSTFParms stfParms,
@@ -88,7 +88,7 @@ private:
         std::shared_ptr<QImage> getImage();
 
     public:
-        virtual void pixelFormat(ELS::FITS::PixelFormat pf) override;
+        virtual void pixelFormat(ELS::PixelFormat pf) override;
         virtual void dimensions(int width, int height) override;
         virtual void rowInfo(int stride) override;
         virtual void rowGray(int y,
@@ -171,7 +171,7 @@ std::shared_ptr<QImage> FITSWidget::ToQImageVisitor<PixelT>::getImage()
 }
 
 template <typename PixelT>
-void FITSWidget::ToQImageVisitor<PixelT>::pixelFormat(ELS::FITS::PixelFormat pf)
+void FITSWidget::ToQImageVisitor<PixelT>::pixelFormat(ELS::PixelFormat pf)
 {
     (void)pf;
 }

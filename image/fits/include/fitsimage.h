@@ -3,7 +3,8 @@
 #include <inttypes.h>
 #include <fitsio.h>
 #include "fits.h"
-#include "fitspixelvisitor.h"
+#include "pixelvisitor.h"
+
 namespace ELS
 {
 
@@ -28,7 +29,7 @@ namespace ELS
         const void *getPixels() const;
 
         template <typename PixelT>
-        void visitPixels(FITSPixelVisitor<PixelT> *visitor) const;
+        void visitPixels(PixelVisitor<PixelT> *visitor) const;
 
     private:
         FITSImage(FITS::BitDepth bitDepth,
@@ -55,13 +56,13 @@ namespace ELS
     };
 
     template <typename PixelT>
-    void FITSImage::visitPixels(FITSPixelVisitor<PixelT> *visitor) const
+    void FITSImage::visitPixels(PixelVisitor<PixelT> *visitor) const
     {
         PixelT *ptPixels = (PixelT *)_pixels;
 
         if (!_isColor)
         {
-            visitor->pixelFormat(ELS::FITS::PF_GRAY);
+            visitor->pixelFormat(ELS::PF_GRAY);
             visitor->dimensions(_width, _height);
             visitor->rowInfo(1);
             for (int y = 0; y < _height; y++)
@@ -72,7 +73,7 @@ namespace ELS
         }
         else
         {
-            visitor->pixelFormat(ELS::FITS::PF_RGB);
+            visitor->pixelFormat(ELS::PF_RGB);
             visitor->dimensions(_width, _height);
             switch (_format)
             {
