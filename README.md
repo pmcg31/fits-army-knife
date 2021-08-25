@@ -2,7 +2,7 @@
   FITS Army Knife
 </h1>
 
-Contains a FITS file viewer implemented using the cftisio library and Qt. Qt should enable cross-platform support, but I have only built and run on linux (Ubuntu 20.10) so far.
+Contains a FITS file viewer implemented using the cftisio library and Qt. Qt should enable cross-platform support, but I have only built and run on linux so far.
 
 It is unlikely I would have achieved success without [this code example](https://github.com/richmit/ex-CFITSIO/blob/master/fits2tga.c). The
 [cfitsio documention](https://heasarc.gsfc.nasa.gov/docs/software/fitsio/c/c_user/cfitsio.html) does not really make things obvious. So, thank you Mitch Richling!
