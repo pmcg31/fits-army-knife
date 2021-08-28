@@ -1,8 +1,150 @@
-#include "image.h"
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#include "imageloadexception.h"
+#include "image.h"
+#include "fitsimage.h"
 
 namespace ELS
 {
+
+    const char* Image::g_fileTypeStr[] = {
+        "Unknown",
+        "FITS",
+        "XISF",
+    };
+
+    Image::ExtInfo Image::g_extInfo[] = {
+        {".fits", 5, FT_FITS},
+        {".fit", 4, FT_FITS},
+        {".fts", 4, FT_FITS},
+        {".xisf", 5, FT_XISF},
+        {0, 0, FT_UNKNOWN},
+    };
+
+    Image::MagicInfo Image::g_fitsMagic = {"SIMPLE", 6, FT_FITS};
+    Image::MagicInfo Image::g_xisfMagic = {"XISF", 4, FT_XISF};
+
+    const int Image::g_maxMagicLen = 6;
+
+    /* static */
+    Image* Image::load(const char* filename)
+    {
+        FileType fileType = fileTypeFromFilename(filename);
+        printf("%s FileType: %d\n", filename, fileType);
+
+        switch (fileType)
+        {
+        case FT_FITS:
+            return FITSImage::load(filename);
+        case FT_XISF:
+            throw new ImageLoadException("XISF support not quite here yet!");
+        case FT_UNKNOWN:
+        default:
+            throw new ImageLoadException("Could not determine image type from filename extension");
+        }
+    }
+
+    /* static */
+    bool Image::isSupportedFile(const char* filename,
+                                char* error /* = 0 */)
+    {
+        FileType fileType = fileTypeFromFilename(filename);
+        printf("%s FileType: %d\n", filename, fileType);
+
+        switch (fileType)
+        {
+        case FT_FITS:
+            return checkMagic(filename, &g_fitsMagic, error);
+        case FT_XISF:
+            if (error != 0)
+            {
+                sprintf(error, "XISF support coming soon!");
+            }
+            return false;
+        case FT_UNKNOWN:
+        default:
+            return false;
+        }
+    }
+
+    /* static */
+    Image::FileType Image::fileTypeFromFilename(const char* filename)
+    {
+        size_t len = strlen(filename);
+
+        for (int i = 0; g_extInfo[i].ext != 0; i++)
+        {
+            int fnIdx = len - g_extInfo[i].extLen;
+            bool match = true;
+            for (int exIdx = 0; exIdx < g_extInfo[i].extLen; exIdx++, fnIdx++)
+            {
+                if (tolower(filename[fnIdx]) != g_extInfo[i].ext[exIdx])
+                {
+                    match = false;
+                    break;
+                }
+            }
+
+            if (match)
+            {
+                return g_extInfo[i].fileType;
+            }
+        }
+
+        return FT_UNKNOWN;
+    }
+
+    /* static */
+    bool Image::checkMagic(const char* filename,
+                           MagicInfo* magic,
+                           char* error /* = 0 */)
+    {
+        char buf[g_maxMagicLen];
+
+        FILE* fp = fopen(filename, "r");
+        if (fp != NULL)
+        {
+            size_t readCount = fread(buf, 1, magic->magicLen, fp);
+            fclose(fp);
+
+            if (readCount == magic->magicLen)
+            {
+                for (size_t i = 0; i < magic->magicLen; i++)
+                {
+                    if (magic->magic[i] != buf[i])
+                    {
+                        if (error != 0)
+                        {
+                            sprintf(error, "File does not start with %s magic characters",
+                                    g_fileTypeStr[magic->fileType]);
+                        }
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                if (error != 0)
+                {
+                    sprintf(error, "File does not start with %s magic characters",
+                            g_fileTypeStr[magic->fileType]);
+                }
+            }
+        }
+        else
+        {
+            if (error != 0)
+            {
+                sprintf(error, "File is not readable");
+            }
+        }
+
+        return false;
+    }
 
     Image::~Image() {}
 

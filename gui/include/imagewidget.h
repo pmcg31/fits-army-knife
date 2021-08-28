@@ -154,7 +154,7 @@ private:
 private:
     QSizePolicy _sizePolicy;
     char _filename[500];
-    ELS::Image* _fits;
+    ELS::Image* _image;
     std::shared_ptr<QImage> _cacheImage;
     std::shared_ptr<uint32_t[]> _cacheImageData;
     bool _showStretched;

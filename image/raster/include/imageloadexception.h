@@ -1,20 +1,20 @@
 #pragma once
 
-#include "imageloadexception.h"
+#include <exception>
 
 namespace ELS
 {
 
-    class FITSException : public ImageLoadException
+    class ImageLoadException : public std::exception
     {
     public:
-        FITSException(const char* errText);
-        virtual ~FITSException();
+        ImageLoadException(const char* errText);
+        virtual ~ImageLoadException();
 
         virtual const char* getErrText() const;
 
     protected:
-        FITSException();
+        ImageLoadException();
 
     protected:
         static const int g_bufSize = 200;

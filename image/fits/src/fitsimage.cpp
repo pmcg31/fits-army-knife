@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <fitsio.h>
 
 #include "fitsimage.h"

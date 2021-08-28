@@ -1,7 +1,6 @@
 #include <QPainter>
 
-#include "fitsimage.h"
-#include "fitstantrum.h"
+#include "imageloadexception.h"
 #include "imagewidget.h"
 
 /* static */
@@ -19,13 +18,14 @@ const float ImageWidget::g_validZooms[] = {
     1.667,
     1.750,
     2.000,
-    -1.0};
+    -1.0,
+};
 
 ImageWidget::ImageWidget(QWidget* parent)
     : QWidget(parent),
       _sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding),
       _filename(""),
-      _fits(0),
+      _image(0),
       _cacheImage(),
       _cacheImageData(),
       _showStretched(false),
@@ -54,10 +54,10 @@ ImageWidget::ImageWidget(QWidget* parent)
 
 ImageWidget::~ImageWidget()
 {
-    if (_fits != 0)
+    if (_image != 0)
     {
-        delete _fits;
-        _fits = 0;
+        delete _image;
+        _image = 0;
     }
 
     if (_identityLUT != 0)
@@ -87,7 +87,7 @@ QSize ImageWidget::minimumSizeHint() const
 
 const ELS::Image* ImageWidget::getImage() const
 {
-    return _fits;
+    return _image;
 }
 
 const char* ImageWidget::getFilename() const
@@ -111,11 +111,11 @@ void ImageWidget::setFile(const char* filename)
     {
         try
         {
-            ELS::FITSImage* tmpFits = ELS::FITSImage::load(filename);
+            ELS::Image* tmp = ELS::Image::load(filename);
 
-            if (_fits != 0)
+            if (_image != 0)
             {
-                delete _fits;
+                delete _image;
             }
 
             if (_cacheImage != 0)
@@ -125,13 +125,13 @@ void ImageWidget::setFile(const char* filename)
             }
 
             strcpy(_filename, filename);
-            _fits = tmpFits;
+            _image = tmp;
 
             emit fileChanged(_filename);
         }
-        catch (ELS::FITSException* e)
+        catch (ELS::ImageLoadException* e)
         {
-            fprintf(stderr, "FITSException: %s for file %s\n", e->getErrText(), filename);
+            fprintf(stderr, "ImageLoadException: %s for file %s\n", e->getErrText(), filename);
             delete e;
         }
     }
@@ -189,7 +189,7 @@ void ImageWidget::setZoom(float zoom)
     else
     {
         _windowZoomLockPoint = QPoint(width() / 2, height() / 2);
-        _imageZoomLockPoint = QPoint(_fits->getWidth() / 2, _fits->getHeight() / 2);
+        _imageZoomLockPoint = QPoint(_image->getWidth() / 2, _image->getHeight() / 2);
     }
 
     if (_zoom != zoom)
@@ -264,8 +264,8 @@ void ImageWidget::mouseMoveEvent(QMouseEvent* event)
 
         QPoint newLockPointZoomed = (_imageZoomLockPoint * _actualZoom) + deltas;
 
-        int imgZoomW = _fits->getWidth() * _actualZoom;
-        int imgZoomH = _fits->getHeight() * _actualZoom;
+        int imgZoomW = _image->getWidth() * _actualZoom;
+        int imgZoomH = _image->getHeight() * _actualZoom;
         newLockPointZoomed.setX(std::max(_windowZoomLockPoint.x(),
                                          std::min(imgZoomW - (_target.width() - _windowZoomLockPoint.x()),
                                                   newLockPointZoomed.x())));
@@ -346,14 +346,14 @@ void ImageWidget::paintEvent(QPaintEvent* /* event */)
         if (_cacheImage == 0)
         {
             ToQImageVisitor visitor(_stfParms, _lutInUse, _numHistogramPoints);
-            _fits->visitPixels(&visitor);
+            _image->visitPixels(&visitor);
             _cacheImageData = visitor.getImageData();
             _cacheImage = visitor.getImage();
             // convertImage();
         }
 
-        int imgW = _fits->getWidth();
-        int imgH = _fits->getHeight();
+        int imgW = _image->getWidth();
+        int imgH = _image->getHeight();
 
         if (_imageZoomLockPoint == QPoint(-1, -1))
         {
