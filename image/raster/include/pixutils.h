@@ -52,14 +52,14 @@ namespace ELS
         static uint16_t convertRangeToHist(float val);
         static uint16_t convertRangeToHist(double val);
 
-        static void convertRangeFromHist(uint16_t hist, int8_t *val);
-        static void convertRangeFromHist(uint16_t hist, int16_t *val);
-        static void convertRangeFromHist(uint16_t hist, int32_t *val);
-        static void convertRangeFromHist(uint16_t hist, uint8_t *val);
-        static void convertRangeFromHist(uint16_t hist, uint16_t *val);
-        static void convertRangeFromHist(uint16_t hist, uint32_t *val);
-        static void convertRangeFromHist(uint16_t hist, float *val);
-        static void convertRangeFromHist(uint16_t hist, double *val);
+        static void convertRangeFromHist(uint16_t hist, int8_t* val);
+        static void convertRangeFromHist(uint16_t hist, int16_t* val);
+        static void convertRangeFromHist(uint16_t hist, int32_t* val);
+        static void convertRangeFromHist(uint16_t hist, uint8_t* val);
+        static void convertRangeFromHist(uint16_t hist, uint16_t* val);
+        static void convertRangeFromHist(uint16_t hist, uint32_t* val);
+        static void convertRangeFromHist(uint16_t hist, float* val);
+        static void convertRangeFromHist(uint16_t hist, double* val);
 
     public:
         static const int g_histogramPoints;

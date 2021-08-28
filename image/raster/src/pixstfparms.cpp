@@ -12,7 +12,7 @@ namespace ELS
     {
     }
 
-    PixSTFParms::PixSTFParms(const PixSTFParms &copyFrom)
+    PixSTFParms::PixSTFParms(const PixSTFParms& copyFrom)
         : _mBal{copyFrom._mBal[0], copyFrom._mBal[1], copyFrom._mBal[2]},
           _sClip{copyFrom._sClip[0], copyFrom._sClip[1], copyFrom._sClip[2]},
           _hClip{copyFrom._hClip[0], copyFrom._hClip[1], copyFrom._hClip[2]},
@@ -21,7 +21,7 @@ namespace ELS
     {
     }
 
-    PixSTFParms &PixSTFParms::operator=(const PixSTFParms &rhs)
+    PixSTFParms& PixSTFParms::operator=(const PixSTFParms& rhs)
     {
         for (int chan = 0; chan < 3; chan++)
         {
@@ -35,7 +35,7 @@ namespace ELS
         return *this;
     }
 
-    bool PixSTFParms::operator==(const PixSTFParms &rhs) const
+    bool PixSTFParms::operator==(const PixSTFParms& rhs) const
     {
         for (int chan = 0; chan < 3; chan++)
         {
@@ -64,7 +64,7 @@ namespace ELS
         return true;
     }
 
-    bool PixSTFParms::operator!=(const PixSTFParms &rhs) const
+    bool PixSTFParms::operator!=(const PixSTFParms& rhs) const
     {
         return !(*this == rhs);
     }
@@ -94,11 +94,11 @@ namespace ELS
         return _hExp[chan];
     }
 
-    void PixSTFParms::getAll(double *mBal,
-                             double *sClip,
-                             double *hClip,
-                             double *sExp,
-                             double *hExp,
+    void PixSTFParms::getAll(double* mBal,
+                             double* sClip,
+                             double* hClip,
+                             double* sExp,
+                             double* hExp,
                              int chan /* = 0 */) const
     {
         *mBal = _mBal[chan];

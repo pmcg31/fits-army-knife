@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <inttypes.h>
 
-#include "pixutils.h"
 #include "pixstfparms.h"
+#include "pixutils.h"
 
 namespace ELS
 {
@@ -14,26 +14,26 @@ namespace ELS
     {
     public:
         PixStatistics();
-        PixStatistics(const PixelT *minVal,
-                      const PixelT *maxVal,
-                      const PixelT *medVal,
-                      const PixelT *meanval,
-                      const PixelT *madn);
-        PixStatistics(const PixStatistics &copyFrom);
+        PixStatistics(const PixelT* minVal,
+                      const PixelT* maxVal,
+                      const PixelT* medVal,
+                      const PixelT* meanval,
+                      const PixelT* madn);
+        PixStatistics(const PixStatistics& copyFrom);
 
-        void getMinVal(PixelT *minVal) const;
+        void getMinVal(PixelT* minVal) const;
         PixelT getMinVal(int chan = 0) const;
 
-        void getMaxVal(PixelT *maxVal) const;
+        void getMaxVal(PixelT* maxVal) const;
         PixelT getMaxVal(int chan = 0) const;
 
-        void getMedVal(PixelT *medVal) const;
+        void getMedVal(PixelT* medVal) const;
         PixelT getMedVal(int chan = 0) const;
 
-        void getMeanVal(PixelT *meanVal) const;
+        void getMeanVal(PixelT* meanVal) const;
         PixelT getMeanVal(int chan = 0) const;
 
-        void getMADN(PixelT *madn) const;
+        void getMADN(PixelT* madn) const;
         PixelT getMADN(int chan = 0) const;
 
         PixSTFParms getStretchParameters() const;
@@ -45,22 +45,22 @@ namespace ELS
         void setMADN(int chan, PixelT madn);
 
     private:
-        static PixSTFParms getStretchParameters(const int8_t *madn,
-                                                const int8_t *medVal);
-        static PixSTFParms getStretchParameters(const int16_t *madn,
-                                                const int16_t *medVal);
-        static PixSTFParms getStretchParameters(const int32_t *madn,
-                                                const int32_t *medVal);
-        static PixSTFParms getStretchParameters(const uint8_t *madn,
-                                                const uint8_t *medVal);
-        static PixSTFParms getStretchParameters(const uint16_t *madn,
-                                                const uint16_t *medVal);
-        static PixSTFParms getStretchParameters(const uint32_t *madn,
-                                                const uint32_t *medVal);
-        static PixSTFParms getStretchParameters(const float *madn,
-                                                const float *medVal);
-        static PixSTFParms getStretchParameters(const double *madn,
-                                                const double *medVal);
+        static PixSTFParms getStretchParameters(const int8_t* madn,
+                                                const int8_t* medVal);
+        static PixSTFParms getStretchParameters(const int16_t* madn,
+                                                const int16_t* medVal);
+        static PixSTFParms getStretchParameters(const int32_t* madn,
+                                                const int32_t* medVal);
+        static PixSTFParms getStretchParameters(const uint8_t* madn,
+                                                const uint8_t* medVal);
+        static PixSTFParms getStretchParameters(const uint16_t* madn,
+                                                const uint16_t* medVal);
+        static PixSTFParms getStretchParameters(const uint32_t* madn,
+                                                const uint32_t* medVal);
+        static PixSTFParms getStretchParameters(const float* madn,
+                                                const float* medVal);
+        static PixSTFParms getStretchParameters(const double* madn,
+                                                const double* medVal);
 
     private:
         PixelT _minVal[3];
@@ -85,11 +85,11 @@ namespace ELS
     }
 
     template <typename PixelT>
-    PixStatistics<PixelT>::PixStatistics(const PixelT *minVal,
-                                         const PixelT *maxVal,
-                                         const PixelT *medVal,
-                                         const PixelT *meanVal,
-                                         const PixelT *madn)
+    PixStatistics<PixelT>::PixStatistics(const PixelT* minVal,
+                                         const PixelT* maxVal,
+                                         const PixelT* medVal,
+                                         const PixelT* meanVal,
+                                         const PixelT* madn)
         : _minVal{minVal[0], minVal[1], minVal[2]},
           _maxVal{maxVal[0], maxVal[1], maxVal[2]},
           _medVal{medVal[0], medVal[1], medVal[2]},
@@ -99,7 +99,7 @@ namespace ELS
     }
 
     template <typename PixelT>
-    PixStatistics<PixelT>::PixStatistics(const PixStatistics &copyFrom)
+    PixStatistics<PixelT>::PixStatistics(const PixStatistics& copyFrom)
         : _minVal{copyFrom._minVal[0], copyFrom._minVal[1], copyFrom._minVal[2]},
           _maxVal{copyFrom._maxVal[0], copyFrom._maxVal[1], copyFrom._maxVal[2]},
           _medVal{copyFrom._medVal[0], copyFrom._medVal[1], copyFrom._medVal[2]},
@@ -109,7 +109,7 @@ namespace ELS
     }
 
     template <typename PixelT>
-    void PixStatistics<PixelT>::getMinVal(PixelT *minVal) const
+    void PixStatistics<PixelT>::getMinVal(PixelT* minVal) const
     {
         for (int chan = 0; chan < 3; chan++)
         {
@@ -124,7 +124,7 @@ namespace ELS
     }
 
     template <typename PixelT>
-    void PixStatistics<PixelT>::getMaxVal(PixelT *maxVal) const
+    void PixStatistics<PixelT>::getMaxVal(PixelT* maxVal) const
     {
         for (int chan = 0; chan < 3; chan++)
         {
@@ -139,7 +139,7 @@ namespace ELS
     }
 
     template <typename PixelT>
-    void PixStatistics<PixelT>::getMedVal(PixelT *medVal) const
+    void PixStatistics<PixelT>::getMedVal(PixelT* medVal) const
     {
         for (int chan = 0; chan < 3; chan++)
         {
@@ -154,7 +154,7 @@ namespace ELS
     }
 
     template <typename PixelT>
-    void PixStatistics<PixelT>::getMeanVal(PixelT *meanVal) const
+    void PixStatistics<PixelT>::getMeanVal(PixelT* meanVal) const
     {
         for (int chan = 0; chan < 3; chan++)
         {
@@ -169,7 +169,7 @@ namespace ELS
     }
 
     template <typename PixelT>
-    void PixStatistics<PixelT>::getMADN(PixelT *madn) const
+    void PixStatistics<PixelT>::getMADN(PixelT* madn) const
     {
         for (int chan = 0; chan < 3; chan++)
         {
@@ -222,8 +222,8 @@ namespace ELS
 
     /* static */
     template <typename PixelT>
-    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const int8_t *madn,
-                                                            const int8_t *medVal)
+    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const int8_t* madn,
+                                                            const int8_t* medVal)
     {
         double tmpMADN[3];
         double tmpMedVal[3];
@@ -238,8 +238,8 @@ namespace ELS
 
     /* static */
     template <typename PixelT>
-    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const int16_t *madn,
-                                                            const int16_t *medVal)
+    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const int16_t* madn,
+                                                            const int16_t* medVal)
     {
         double tmpMADN[3];
         double tmpMedVal[3];
@@ -254,8 +254,8 @@ namespace ELS
 
     /* static */
     template <typename PixelT>
-    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const int32_t *madn,
-                                                            const int32_t *medVal)
+    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const int32_t* madn,
+                                                            const int32_t* medVal)
     {
         double tmpMADN[3];
         double tmpMedVal[3];
@@ -270,8 +270,8 @@ namespace ELS
 
     /* static */
     template <typename PixelT>
-    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const uint8_t *madn,
-                                                            const uint8_t *medVal)
+    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const uint8_t* madn,
+                                                            const uint8_t* medVal)
     {
         double tmpMADN[3];
         double tmpMedVal[3];
@@ -286,8 +286,8 @@ namespace ELS
 
     /* static */
     template <typename PixelT>
-    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const uint16_t *madn,
-                                                            const uint16_t *medVal)
+    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const uint16_t* madn,
+                                                            const uint16_t* medVal)
     {
         double tmpMADN[3];
         double tmpMedVal[3];
@@ -302,8 +302,8 @@ namespace ELS
 
     /* static */
     template <typename PixelT>
-    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const uint32_t *madn,
-                                                            const uint32_t *medVal)
+    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const uint32_t* madn,
+                                                            const uint32_t* medVal)
     {
         double tmpMADN[3];
         double tmpMedVal[3];
@@ -318,8 +318,8 @@ namespace ELS
 
     /* static */
     template <typename PixelT>
-    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const float *madn,
-                                                            const float *medVal)
+    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const float* madn,
+                                                            const float* medVal)
     {
         double tmpMADN[3];
         double tmpMedVal[3];
@@ -334,8 +334,8 @@ namespace ELS
 
     /* static */
     template <typename PixelT>
-    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const double *madn,
-                                                            const double *medVal)
+    PixSTFParms PixStatistics<PixelT>::getStretchParameters(const double* madn,
+                                                            const double* medVal)
     {
         PixSTFParms stfParms;
 

@@ -1,8 +1,8 @@
 
 #include "mainwindow.h"
 
-MainWindow::MainWindow(QImage &image,
-                       QWidget *parent)
+MainWindow::MainWindow(QImage& image,
+                       QWidget* parent)
     : QMainWindow(parent),
       mainPane(),
       layout(&mainPane),

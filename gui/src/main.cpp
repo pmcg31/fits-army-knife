@@ -1,17 +1,17 @@
 #include "mainwindow.h"
 
 #include <QApplication>
-#include <QTcpServer>
-#include <QTcpSocket>
 #include <QDataStream>
-#include <QFileInfo>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QList>
+#include <QTcpServer>
+#include <QTcpSocket>
 
-static bool checkFile(QFileInfo info, char *error);
+static bool checkFile(QFileInfo info, char* error);
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     char error[2048];
 
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     return 1;
 }
 
-bool checkFile(QFileInfo info, char *error)
+bool checkFile(QFileInfo info, char* error)
 {
     const char magic[] = {'S', 'I', 'M', 'P', 'L', 'E'};
 

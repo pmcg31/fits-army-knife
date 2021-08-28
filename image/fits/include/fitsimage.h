@@ -1,10 +1,10 @@
 #pragma once
 
-#include <inttypes.h>
-#include <fitsio.h>
 #include "image.h"
-#include "rastertypes.h"
 #include "pixelvisitor.h"
+#include "rastertypes.h"
+#include <fitsio.h>
+#include <inttypes.h>
 
 namespace ELS
 {
@@ -12,7 +12,7 @@ namespace ELS
     class FITSImage : public Image
     {
     public:
-        static FITSImage *load(const char *filename);
+        static FITSImage* load(const char* filename);
 
     public:
         virtual ~FITSImage() override;
@@ -25,7 +25,7 @@ namespace ELS
         virtual RasterFormat getRasterFormat() const override;
         virtual SampleFormat getSampleFormat() const override;
 
-        virtual void visitPixels(PixelVisitor *visitor) const override;
+        virtual void visitPixels(PixelVisitor* visitor) const override;
 
     private:
         FITSImage(SampleFormat sampleFormat,
@@ -34,14 +34,14 @@ namespace ELS
                   int width,
                   int height,
                   int64_t pixelCount,
-                  void *pixels);
+                  void* pixels);
 
         template <typename PixelT>
-        void visitPixels(PixelT *pixels,
-                         PixelVisitor *visitor) const;
+        void visitPixels(PixelT* pixels,
+                         PixelVisitor* visitor) const;
 
     private:
-        static void *readPix(fitsfile *fits,
+        static void* readPix(fitsfile* fits,
                              SampleFormat sampleFormat,
                              int64_t pixelCount);
 
@@ -52,7 +52,7 @@ namespace ELS
         int _width;
         int _height;
         int64_t _pixelCount;
-        void *_pixels;
+        void* _pixels;
     };
 
 }

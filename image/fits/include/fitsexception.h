@@ -8,10 +8,10 @@ namespace ELS
     class FITSException : public std::exception
     {
     public:
-        FITSException(const char *errText);
+        FITSException(const char* errText);
         virtual ~FITSException();
 
-        virtual const char *getErrText() const;
+        virtual const char* getErrText() const;
 
     protected:
         FITSException();

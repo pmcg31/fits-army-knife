@@ -1,11 +1,12 @@
-#include <stdio.h>
 #include "image.h"
+#include <stdio.h>
 
 namespace ELS
 {
+
     Image::~Image() {}
 
-    const char *Image::getImageType() const
+    const char* Image::getImageType() const
     {
         SampleFormat sf = getSampleFormat();
         switch (sf)
@@ -31,13 +32,11 @@ namespace ELS
         return "Unknown";
     }
 
-    const char *Image::getSizeAndColor() const
+    const char* Image::getSizeAndColor() const
     {
         static char tmp[50];
 
-        sprintf(tmp, "%dx%d %s image",
-                getWidth(),
-                getHeight(),
+        sprintf(tmp, "%dx%d %s image", getWidth(), getHeight(),
                 isColor() ? "Color" : "Grayscale");
 
         return tmp;

@@ -14,7 +14,7 @@
 
 #include "mainwindow.h"
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     if (argc != 2)
     {
@@ -22,7 +22,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    char *filename = argv[1];
+    char* filename = argv[1];
 
     printf("File: %s\n", filename);
 
@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     pcl::ImageOptions options = reader.ImageOptions();
     pcl::ImageInfo info = reader.ImageInfo();
 
-    const char *sampleFormat = "Unknown";
+    const char* sampleFormat = "Unknown";
     if (options.ieeefpSampleFormat)
     {
         if (options.complexSample)
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
     }
     printf("Sample format: %d-bit %s\n", options.bitsPerSample, sampleFormat);
 
-    const char *colorSpace = "Unknown";
+    const char* colorSpace = "Unknown";
     switch (info.colorSpace)
     {
     case pcl::ColorSpace::Gray:
@@ -111,12 +111,12 @@ int main(int argc, char **argv)
     reader.Close();
 
     uint32_t pixCount = info.width * info.height;
-    uint32_t *imgData = new uint32_t[pixCount];
+    uint32_t* imgData = new uint32_t[pixCount];
     if (info.numberOfChannels == 1)
     {
         for (int y = 0, rowOffset = 0; y < info.height; y++, rowOffset += info.width)
         {
-            float *k = effinImage.ScanLine(y, 0);
+            float* k = effinImage.ScanLine(y, 0);
 
             for (int x = 0; x < info.width; x++)
             {
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
         for (int y = 0, rowOffset = 0; y < info.height; y++, rowOffset += info.width)
         {
 
-            float *rgb[3];
+            float* rgb[3];
             for (int chan = 0; chan < info.numberOfChannels; chan++)
             {
                 rgb[chan] = effinImage.ScanLine(y, chan);
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
         }
     }
 
-    QImage qImage((const uchar *)imgData, info.width, info.height, QImage::Format_ARGB32);
+    QImage qImage((const uchar*)imgData, info.width, info.height, QImage::Format_ARGB32);
 
     int noargc = 1;
     QApplication a(noargc, argv);

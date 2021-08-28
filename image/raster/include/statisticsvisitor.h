@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-#include <inttypes.h>
-#include "pixutils.h"
-#include "pixstatistics.h"
 #include "pixelvisitor.h"
+#include "pixstatistics.h"
+#include "pixutils.h"
+#include <inttypes.h>
+#include <memory>
 
 namespace ELS
 {
@@ -18,8 +18,8 @@ namespace ELS
 
         PixStatistics<PixelT> getStatistics() const;
 
-        void getHistogramData(int *numPoints,
-                              std::shared_ptr<uint32_t[]> *data);
+        void getHistogramData(int* numPoints,
+                              std::shared_ptr<uint32_t[]>* data);
 
     public:
         virtual void pixelFormat(ELS::PixelFormat pf) override;
@@ -27,12 +27,12 @@ namespace ELS
         virtual void rowInfo(int stride) override;
 
         virtual void rowGray(int y,
-                             const PixelT *k) override;
+                             const PixelT* k) override;
 
         virtual void rowRgb(int y,
-                            const PixelT *r,
-                            const PixelT *g,
-                            const PixelT *b) override;
+                            const PixelT* r,
+                            const PixelT* g,
+                            const PixelT* b) override;
 
         virtual void done() override;
 
@@ -75,8 +75,8 @@ namespace ELS
     }
 
     template <typename PixelT>
-    void StatisticsVisitor<PixelT>::getHistogramData(int *numPoints,
-                                                     std::shared_ptr<uint32_t[]> *data)
+    void StatisticsVisitor<PixelT>::getHistogramData(int* numPoints,
+                                                     std::shared_ptr<uint32_t[]>* data)
     {
         *numPoints = PixUtils::g_histogramPoints;
         *data = _histogram;
@@ -126,7 +126,7 @@ namespace ELS
 
     template <typename PixelT>
     void StatisticsVisitor<PixelT>::rowGray(int y,
-                                            const PixelT *k)
+                                            const PixelT* k)
     {
         (void)y;
         for (int i = 0, dataIdx = 0; i < _width; i++, dataIdx += _stride)
@@ -159,9 +159,9 @@ namespace ELS
 
     template <typename PixelT>
     void StatisticsVisitor<PixelT>::rowRgb(int y,
-                                           const PixelT *r,
-                                           const PixelT *g,
-                                           const PixelT *b)
+                                           const PixelT* r,
+                                           const PixelT* g,
+                                           const PixelT* b)
     {
         (void)y;
         for (int i = 0, dataIdx = 0; i < _width; i++, dataIdx += _stride)
@@ -296,7 +296,7 @@ namespace ELS
         }
 
         int totalHistogramPoints = _isColor ? PixUtils::g_histogramPoints * 3 : PixUtils::g_histogramPoints;
-        uint32_t *tmp = new uint32_t[totalHistogramPoints];
+        uint32_t* tmp = new uint32_t[totalHistogramPoints];
         for (int i = 0; i < totalHistogramPoints; i++)
         {
             tmp[i] = 0;

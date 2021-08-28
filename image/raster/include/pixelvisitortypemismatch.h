@@ -8,10 +8,10 @@ namespace ELS
     class PixelVisitorTypeMismatch : public std::exception
     {
     public:
-        PixelVisitorTypeMismatch(const char *errText);
+        PixelVisitorTypeMismatch(const char* errText);
         virtual ~PixelVisitorTypeMismatch();
 
-        virtual const char *getErrText() const;
+        virtual const char* getErrText() const;
 
     protected:
         PixelVisitorTypeMismatch();

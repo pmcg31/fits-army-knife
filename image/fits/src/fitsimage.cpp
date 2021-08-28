@@ -1,16 +1,16 @@
 #include <fitsio.h>
 
-#include "fitstantrum.h"
 #include "fitsimage.h"
+#include "fitstantrum.h"
 
 namespace ELS
 {
 
     /* static */
-    FITSImage *FITSImage::load(const char *filename)
+    FITSImage* FITSImage::load(const char* filename)
     {
         int status = 0;
-        fitsfile *tmpFits;
+        fitsfile* tmpFits;
 
         fits_open_file(&tmpFits, filename, READONLY, &status);
         if (status)
@@ -113,7 +113,7 @@ namespace ELS
             throw new FITSException("Unknown sample format");
         }
 
-        void *pixels = readPix(tmpFits, sampleFormat, pixelCount);
+        void* pixels = readPix(tmpFits, sampleFormat, pixelCount);
 
         fits_close_file(tmpFits, &status);
 
@@ -132,7 +132,7 @@ namespace ELS
                          int width,
                          int height,
                          int64_t pixelCount,
-                         void *pixels)
+                         void* pixels)
         : _sampleFormat(sampleFormat),
           _format(format),
           _isColor(isColor),
@@ -150,28 +150,28 @@ namespace ELS
             switch (_sampleFormat)
             {
             case SF_INT_8:
-                delete[](int8_t *) _pixels;
+                delete[](int8_t*) _pixels;
                 break;
             case SF_INT_16:
-                delete[](int16_t *) _pixels;
+                delete[](int16_t*) _pixels;
                 break;
             case SF_INT_32:
-                delete[](int32_t *) _pixels;
+                delete[](int32_t*) _pixels;
                 break;
             case SF_UINT_8:
-                delete[](uint8_t *) _pixels;
+                delete[](uint8_t*) _pixels;
                 break;
             case SF_UINT_16:
-                delete[](uint16_t *) _pixels;
+                delete[](uint16_t*) _pixels;
                 break;
             case SF_UINT_32:
-                delete[](uint32_t *) _pixels;
+                delete[](uint32_t*) _pixels;
                 break;
             case SF_FLOAT:
-                delete[](float *) _pixels;
+                delete[](float*) _pixels;
                 break;
             case SF_DOUBLE:
-                delete[](double *) _pixels;
+                delete[](double*) _pixels;
                 break;
             default:
                 break;
@@ -204,48 +204,48 @@ namespace ELS
         return _sampleFormat;
     }
 
-    void FITSImage::visitPixels(PixelVisitor *visitor) const
+    void FITSImage::visitPixels(PixelVisitor* visitor) const
     {
         switch (_sampleFormat)
         {
         case SF_INT_8:
-            visitPixels((int8_t *)_pixels,
+            visitPixels((int8_t*)_pixels,
                         visitor);
             break;
         case SF_INT_16:
-            visitPixels((int16_t *)_pixels,
+            visitPixels((int16_t*)_pixels,
                         visitor);
             break;
         case SF_INT_32:
-            visitPixels((int32_t *)_pixels,
+            visitPixels((int32_t*)_pixels,
                         visitor);
             break;
         case SF_UINT_8:
-            visitPixels((uint8_t *)_pixels,
+            visitPixels((uint8_t*)_pixels,
                         visitor);
             break;
         case SF_UINT_16:
-            visitPixels((uint16_t *)_pixels,
+            visitPixels((uint16_t*)_pixels,
                         visitor);
             break;
         case SF_UINT_32:
-            visitPixels((uint32_t *)_pixels,
+            visitPixels((uint32_t*)_pixels,
                         visitor);
             break;
         case SF_FLOAT:
-            visitPixels((float *)_pixels,
+            visitPixels((float*)_pixels,
                         visitor);
             break;
         case SF_DOUBLE:
-            visitPixels((double *)_pixels,
+            visitPixels((double*)_pixels,
                         visitor);
             break;
         }
     }
 
     template <typename PixelT>
-    void FITSImage::visitPixels(PixelT *pixels,
-                                PixelVisitor *visitor) const
+    void FITSImage::visitPixels(PixelT* pixels,
+                                PixelVisitor* visitor) const
     {
         if (!_isColor)
         {
@@ -297,7 +297,7 @@ namespace ELS
     }
 
     /* static */
-    void *FITSImage::readPix(fitsfile *fits,
+    void* FITSImage::readPix(fitsfile* fits,
                              SampleFormat sampleFormat,
                              int64_t pixelCount)
     {
@@ -305,7 +305,7 @@ namespace ELS
 
         // Allocate space for the pixels
         int fitsIOType = 0;
-        void *pixels;
+        void* pixels;
         switch (sampleFormat)
         {
         case SF_INT_8:

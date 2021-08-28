@@ -1,14 +1,14 @@
 #pragma once
 
-#include <QWidget>
 #include <QImage>
+#include <QWidget>
 
 class HistogramWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit HistogramWidget(QWidget *parent = nullptr);
+    explicit HistogramWidget(QWidget* parent = nullptr);
     ~HistogramWidget();
 
     QSize sizeHint() const override;
@@ -19,11 +19,11 @@ public:
                           std::shared_ptr<uint32_t[]> data);
 
 protected:
-    virtual void paintEvent(QPaintEvent *event) override;
+    virtual void paintEvent(QPaintEvent* event) override;
 
 private:
     bool _isColor;
     int _numPoints;
     std::shared_ptr<uint32_t[]> _data;
-    QImage *_histImage;
+    QImage* _histImage;
 };

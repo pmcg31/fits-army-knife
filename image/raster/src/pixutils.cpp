@@ -315,7 +315,7 @@ namespace ELS
     }
 
     /* static */
-    void PixUtils::convertRangeFromHist(uint16_t hist, int8_t *val)
+    void PixUtils::convertRangeFromHist(uint16_t hist, int8_t* val)
     {
         uint8_t factor = g_u8Max / g_histogramPoints;
 
@@ -323,7 +323,7 @@ namespace ELS
     }
 
     /* static */
-    void PixUtils::convertRangeFromHist(uint16_t hist, int16_t *val)
+    void PixUtils::convertRangeFromHist(uint16_t hist, int16_t* val)
     {
         uint16_t factor = g_u16Max / g_histogramPoints;
 
@@ -331,7 +331,7 @@ namespace ELS
     }
 
     /* static */
-    void PixUtils::convertRangeFromHist(uint16_t hist, int32_t *val)
+    void PixUtils::convertRangeFromHist(uint16_t hist, int32_t* val)
     {
         uint32_t factor = g_u32Max / g_histogramPoints;
 
@@ -339,7 +339,7 @@ namespace ELS
     }
 
     /* static */
-    void PixUtils::convertRangeFromHist(uint16_t hist, uint8_t *val)
+    void PixUtils::convertRangeFromHist(uint16_t hist, uint8_t* val)
     {
         uint8_t factor = g_u8Max / g_histogramPoints;
 
@@ -347,7 +347,7 @@ namespace ELS
     }
 
     /* static */
-    void PixUtils::convertRangeFromHist(uint16_t hist, uint16_t *val)
+    void PixUtils::convertRangeFromHist(uint16_t hist, uint16_t* val)
     {
         uint16_t factor = g_u16Max / g_histogramPoints;
 
@@ -355,7 +355,7 @@ namespace ELS
     }
 
     /* static */
-    void PixUtils::convertRangeFromHist(uint16_t hist, uint32_t *val)
+    void PixUtils::convertRangeFromHist(uint16_t hist, uint32_t* val)
     {
         uint32_t factor = g_u32Max / g_histogramPoints;
 
@@ -363,13 +363,13 @@ namespace ELS
     }
 
     /* static */
-    void PixUtils::convertRangeFromHist(uint16_t hist, float *val)
+    void PixUtils::convertRangeFromHist(uint16_t hist, float* val)
     {
         *val = (float)hist / g_histogramPoints;
     }
 
     /* static */
-    void PixUtils::convertRangeFromHist(uint16_t hist, double *val)
+    void PixUtils::convertRangeFromHist(uint16_t hist, double* val)
     {
         *val = (double)hist / g_histogramPoints;
     }

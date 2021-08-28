@@ -5,7 +5,7 @@
 namespace ELS
 {
 
-    PixelVisitorTypeMismatch::PixelVisitorTypeMismatch(const char *errText)
+    PixelVisitorTypeMismatch::PixelVisitorTypeMismatch(const char* errText)
     {
         strncpy(_errText, errText, g_bufSize - 1);
         _errText[g_bufSize - 1] = 0;
@@ -15,7 +15,7 @@ namespace ELS
     PixelVisitorTypeMismatch::~PixelVisitorTypeMismatch() {}
 
     /* virtual */
-    const char *PixelVisitorTypeMismatch::getErrText() const
+    const char* PixelVisitorTypeMismatch::getErrText() const
     {
         return _errText;
     }

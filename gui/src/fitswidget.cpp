@@ -1,7 +1,7 @@
 #include <QPainter>
 
-#include "fitswidget.h"
 #include "fitstantrum.h"
+#include "fitswidget.h"
 
 /* static */
 const float FITSWidget::g_validZooms[] = {
@@ -20,7 +20,7 @@ const float FITSWidget::g_validZooms[] = {
     2.000,
     -1.0};
 
-FITSWidget::FITSWidget(QWidget *parent)
+FITSWidget::FITSWidget(QWidget* parent)
     : QWidget(parent),
       _sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding),
       _filename(""),
@@ -84,12 +84,12 @@ QSize FITSWidget::minimumSizeHint() const
     return QSize(100, 100);
 }
 
-const ELS::FITSImage *FITSWidget::getImage() const
+const ELS::FITSImage* FITSWidget::getImage() const
 {
     return _fits;
 }
 
-const char *FITSWidget::getFilename() const
+const char* FITSWidget::getFilename() const
 {
     return _filename;
 }
@@ -104,13 +104,13 @@ float FITSWidget::getZoom() const
     return _zoom;
 }
 
-void FITSWidget::setFile(const char *filename)
+void FITSWidget::setFile(const char* filename)
 {
     if (strcmp(filename, _filename) != 0)
     {
         try
         {
-            ELS::FITSImage *tmpFits = ELS::FITSImage::load(filename);
+            ELS::FITSImage* tmpFits = ELS::FITSImage::load(filename);
 
             if (_fits != 0)
             {
@@ -128,7 +128,7 @@ void FITSWidget::setFile(const char *filename)
 
             emit fileChanged(_filename);
         }
-        catch (ELS::FITSException *e)
+        catch (ELS::FITSException* e)
         {
             fprintf(stderr, "FITSException: %s for file %s\n", e->getErrText(), filename);
             delete e;
@@ -255,7 +255,7 @@ void FITSWidget::setHistogramData(bool isColor,
     update();
 }
 
-void FITSWidget::mouseMoveEvent(QMouseEvent *event)
+void FITSWidget::mouseMoveEvent(QMouseEvent* event)
 {
     if (_mouseDragLast != QPoint(-1, -1))
     {
@@ -279,7 +279,7 @@ void FITSWidget::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
-void FITSWidget::mousePressEvent(QMouseEvent *event)
+void FITSWidget::mousePressEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton)
     {
@@ -288,7 +288,7 @@ void FITSWidget::mousePressEvent(QMouseEvent *event)
     }
 }
 
-void FITSWidget::mouseReleaseEvent(QMouseEvent *event)
+void FITSWidget::mouseReleaseEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton)
     {
@@ -297,7 +297,7 @@ void FITSWidget::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
-void FITSWidget::wheelEvent(QWheelEvent *event)
+void FITSWidget::wheelEvent(QWheelEvent* event)
 {
     QPoint numSteps = event->angleDelta() / 120;
 
@@ -323,7 +323,7 @@ void FITSWidget::wheelEvent(QWheelEvent *event)
     }
 }
 
-void FITSWidget::paintEvent(QPaintEvent * /* event */)
+void FITSWidget::paintEvent(QPaintEvent* /* event */)
 {
     if (_lutInUse != 0)
     {
@@ -609,7 +609,7 @@ void FITSWidget::calculateStfLUT()
 }
 
 FITSWidget::ToQImageVisitor::ToQImageVisitor(ELS::PixSTFParms stfParms,
-                                             uint8_t *lut,
+                                             uint8_t* lut,
                                              int lutPoints)
     : _width(0),
       _height(0),
@@ -658,7 +658,7 @@ void FITSWidget::ToQImageVisitor::rowInfo(int stride)
 }
 
 void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const int8_t *k)
+                                          const int8_t* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -674,7 +674,7 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const int16_t *k)
+                                          const int16_t* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -690,7 +690,7 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const int32_t *k)
+                                          const int32_t* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -706,7 +706,7 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const uint8_t *k)
+                                          const uint8_t* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -722,7 +722,7 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const uint16_t *k)
+                                          const uint16_t* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -738,7 +738,7 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const uint32_t *k)
+                                          const uint32_t* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -754,7 +754,7 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const float *k)
+                                          const float* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -770,7 +770,7 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const double *k)
+                                          const double* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -786,9 +786,9 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const int8_t *r,
-                                         const int8_t *g,
-                                         const int8_t *b)
+                                         const int8_t* r,
+                                         const int8_t* g,
+                                         const int8_t* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -810,9 +810,9 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const int16_t *r,
-                                         const int16_t *g,
-                                         const int16_t *b)
+                                         const int16_t* r,
+                                         const int16_t* g,
+                                         const int16_t* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -834,9 +834,9 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const int32_t *r,
-                                         const int32_t *g,
-                                         const int32_t *b)
+                                         const int32_t* r,
+                                         const int32_t* g,
+                                         const int32_t* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -858,9 +858,9 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const uint8_t *r,
-                                         const uint8_t *g,
-                                         const uint8_t *b)
+                                         const uint8_t* r,
+                                         const uint8_t* g,
+                                         const uint8_t* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -882,9 +882,9 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const uint16_t *r,
-                                         const uint16_t *g,
-                                         const uint16_t *b)
+                                         const uint16_t* r,
+                                         const uint16_t* g,
+                                         const uint16_t* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -906,9 +906,9 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const uint32_t *r,
-                                         const uint32_t *g,
-                                         const uint32_t *b)
+                                         const uint32_t* r,
+                                         const uint32_t* g,
+                                         const uint32_t* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -930,9 +930,9 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const float *r,
-                                         const float *g,
-                                         const float *b)
+                                         const float* r,
+                                         const float* g,
+                                         const float* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -954,9 +954,9 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
 }
 
 void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const double *r,
-                                         const double *g,
-                                         const double *b)
+                                         const double* r,
+                                         const double* g,
+                                         const double* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -979,5 +979,5 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
 
 void FITSWidget::ToQImageVisitor::done()
 {
-    _qi.reset(new QImage((const uchar *)_qiData.get(), _width, _height, QImage::Format_ARGB32));
+    _qi.reset(new QImage((const uchar*)_qiData.get(), _width, _height, QImage::Format_ARGB32));
 }

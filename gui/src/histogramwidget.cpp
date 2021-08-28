@@ -3,7 +3,7 @@
 
 #include "histogramwidget.h"
 
-HistogramWidget::HistogramWidget(QWidget *parent /* = nullptr */)
+HistogramWidget::HistogramWidget(QWidget* parent /* = nullptr */)
     : QWidget(parent),
       _isColor(false),
       _numPoints(0),
@@ -38,7 +38,7 @@ void HistogramWidget::setHistogramData(bool isColor,
     update();
 }
 
-void HistogramWidget::paintEvent(QPaintEvent *event)
+void HistogramWidget::paintEvent(QPaintEvent* event)
 {
     (void)event;
 
@@ -78,7 +78,7 @@ void HistogramWidget::paintEvent(QPaintEvent *event)
         {
             histogramSize *= 3;
         }
-        uint32_t *averagedHist = new uint32_t[histogramSize];
+        uint32_t* averagedHist = new uint32_t[histogramSize];
         for (int i = 0; i < histogramSize; i++)
         {
             averagedHist[i] = 0;

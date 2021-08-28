@@ -7,12 +7,12 @@ namespace ELS
     {
     public:
         PixSTFParms();
-        PixSTFParms(const PixSTFParms &copyFrom);
+        PixSTFParms(const PixSTFParms& copyFrom);
 
-        PixSTFParms &operator=(const PixSTFParms &rhs);
+        PixSTFParms& operator=(const PixSTFParms& rhs);
 
-        bool operator==(const PixSTFParms &rhs) const;
-        bool operator!=(const PixSTFParms &rhs) const;
+        bool operator==(const PixSTFParms& rhs) const;
+        bool operator!=(const PixSTFParms& rhs) const;
 
         double getMBal(int chan = 0) const;
         double getSClip(int chan = 0) const;
@@ -20,11 +20,11 @@ namespace ELS
         double getSExp(int chan = 0) const;
         double getHExp(int chan = 0) const;
 
-        void getAll(double *mBal,
-                    double *sClip,
-                    double *hClip,
-                    double *sExp,
-                    double *hExp,
+        void getAll(double* mBal,
+                    double* sClip,
+                    double* hClip,
+                    double* sExp,
+                    double* hExp,
                     int chan = 0) const;
 
         void setMBal(double mBal, int chan = 0);

@@ -1,16 +1,16 @@
 #include <QApplication>
-#include <QTcpSocket>
 #include <QDataStream>
+#include <QTcpSocket>
 
 #include <memory>
 
 #include "fitsimage.h"
-#include "statisticsvisitor.h"
 #include "mainwindow.h"
+#include "statisticsvisitor.h"
 
-MainWindow::MainWindow(QTcpServer &server,
+MainWindow::MainWindow(QTcpServer& server,
                        QList<QFileInfo> fileList,
-                       QWidget *parent)
+                       QWidget* parent)
     : QMainWindow(parent),
       server(server),
       clients(),
@@ -41,8 +41,8 @@ MainWindow::MainWindow(QTcpServer &server,
 {
     const QSize iconSize(20, 20);
     const QSize btnSize(30, 30);
-    const char *btnStyle = "QPushButton{border: none;border-radius: 7px;background-color: #444;}";
-    const char *lblStyle = "QLabel{border: 1px solid #666;border-radius: 7px;color: #999;}";
+    const char* btnStyle = "QPushButton{border: none;border-radius: 7px;background-color: #444;}";
+    const char* lblStyle = "QLabel{border: 1px solid #666;border-radius: 7px;color: #999;}";
     stretchBtn.setStyleSheet(btnStyle);
     stretchBtn.setIconSize(iconSize);
     stretchBtn.setMinimumSize(btnSize);
@@ -151,29 +151,29 @@ MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::fitsFileChanged(const char *filename)
+void MainWindow::fitsFileChanged(const char* filename)
 {
     printf("File loaded: %s\n", filename);
 
-    const ELS::FITSImage *image = fitsWidget.getImage();
+    const ELS::FITSImage* image = fitsWidget.getImage();
     bool isColor = image->isColor();
 
-    const char *giMinF = " min: %d ";
-    const char *giMeanF = " mean: %d ";
-    const char *giMedF = " median: %d ";
-    const char *giMaxF = " max: %d ";
-    const char *ciMinF = " min: %d | %d | %d";
-    const char *ciMeanF = " mean: %d | %d | %d";
-    const char *ciMedF = " median: %d | %d | %d ";
-    const char *ciMaxF = " max: %d | %d | %d ";
-    const char *gfMinF = " min: %d0.4f ";
-    const char *gfMeanF = " mean: %0.4f ";
-    const char *gfMedF = " median: %0.4f ";
-    const char *gfMaxF = " max: %0.4f ";
-    const char *cfMinF = " min: %0.4f | %0.4f | %0.4f";
-    const char *cfMeanF = " mean: %0.4f | %0.4f | %0.4f";
-    const char *cfMedF = " median: %0.4f | %0.4f | %0.4f ";
-    const char *cfMaxF = " max: %0.4f | %0.4f | %0.4f ";
+    const char* giMinF = " min: %d ";
+    const char* giMeanF = " mean: %d ";
+    const char* giMedF = " median: %d ";
+    const char* giMaxF = " max: %d ";
+    const char* ciMinF = " min: %d | %d | %d";
+    const char* ciMeanF = " mean: %d | %d | %d";
+    const char* ciMedF = " median: %d | %d | %d ";
+    const char* ciMaxF = " max: %d | %d | %d ";
+    const char* gfMinF = " min: %d0.4f ";
+    const char* gfMeanF = " mean: %0.4f ";
+    const char* gfMedF = " median: %0.4f ";
+    const char* gfMaxF = " max: %0.4f ";
+    const char* cfMinF = " min: %0.4f | %0.4f | %0.4f";
+    const char* cfMeanF = " mean: %0.4f | %0.4f | %0.4f";
+    const char* cfMedF = " median: %0.4f | %0.4f | %0.4f ";
+    const char* cfMaxF = " max: %0.4f | %0.4f | %0.4f ";
 
     char tmp[100];
     char tmp2[100];
@@ -515,8 +515,8 @@ void MainWindow::fitsFileChanged(const char *filename)
     update();
 }
 
-void MainWindow::fitsFileFailed(const char *filename,
-                                const char *errText)
+void MainWindow::fitsFileFailed(const char* filename,
+                                const char* errText)
 {
     printf("File failed [%s]: %s\n", errText, filename);
 }
@@ -583,7 +583,7 @@ void MainWindow::nextClicked(bool isChecked)
 
 void MainWindow::newConnection()
 {
-    QTcpSocket *sock = server.nextPendingConnection();
+    QTcpSocket* sock = server.nextPendingConnection();
 
     clients.append(sock);
 
@@ -603,7 +603,7 @@ void MainWindow::acceptError(QAbstractSocket::SocketError error)
 
 void MainWindow::readyRead()
 {
-    QList<QTcpSocket *>::iterator i;
+    QList<QTcpSocket*>::iterator i;
     int idx;
     for (idx = 0, i = clients.begin(); i != clients.end(); ++i, ++idx)
     {
@@ -634,13 +634,13 @@ void MainWindow::readyRead()
 
 void MainWindow::disconnected()
 {
-    QList<QTcpSocket *>::iterator i;
+    QList<QTcpSocket*>::iterator i;
     int idx;
     for (idx = 0, i = clients.begin(); i != clients.end(); ++i, ++idx)
     {
         if ((*i)->state() == QAbstractSocket::UnconnectedState)
         {
-            QTcpSocket *tmp = *i;
+            QTcpSocket* tmp = *i;
             tmp->close();
             i = clients.erase(i);
 

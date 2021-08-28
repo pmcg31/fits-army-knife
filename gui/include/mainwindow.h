@@ -1,18 +1,18 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QVBoxLayout>
+#include <QFileInfo>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QMainWindow>
 #include <QPushButton>
-#include <QFileInfo>
 #include <QTcpServer>
+#include <QVBoxLayout>
 
-#include "pixstatistics.h"
-#include "pixstfparms.h"
 #include "fitswidget.h"
 #include "histogramwidget.h"
+#include "pixstatistics.h"
+#include "pixstfparms.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -26,9 +26,9 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QTcpServer &server,
+    MainWindow(QTcpServer& server,
                QList<QFileInfo> fileList,
-               QWidget *parent = nullptr);
+               QWidget* parent = nullptr);
     ~MainWindow();
 
 signals:
@@ -36,9 +36,9 @@ signals:
     void clearStretched();
 
 private:
-    void fitsFileChanged(const char *filename);
-    void fitsFileFailed(const char *filename,
-                        const char *errText);
+    void fitsFileChanged(const char* filename);
+    void fitsFileFailed(const char* filename,
+                        const char* errText);
     void fitsZoomChanged(float zoom);
 
     void stretchToggled(bool isChecked);
@@ -60,8 +60,8 @@ private:
     void addFilesToList(QList<QString> absoluteFilePaths);
 
 private:
-    QTcpServer &server;
-    QList<QTcpSocket *> clients;
+    QTcpServer& server;
+    QList<QTcpSocket*> clients;
     QList<QFileInfo> fileList;
     char filename[1000];
     int currentFileIdx;

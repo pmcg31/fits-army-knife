@@ -5,10 +5,10 @@
 class FITSFileListItem
 {
 public:
-  FITSFileListItem(QFileInfo fileInfo, bool showStretched = false);
-  ~FITSFileListItem();
+    FITSFileListItem(QFileInfo fileInfo, bool showStretched = false);
+    ~FITSFileListItem();
 
 private:
-  QFileInfo _info;
-  bool _showStretched;
+    QFileInfo _info;
+    bool _showStretched;
 };
