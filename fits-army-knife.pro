@@ -36,7 +36,7 @@ SOURCES += \
     image/raster/src/pixstfparms.cpp \
     gui/src/main.cpp \
     gui/src/mainwindow.cpp \
-    gui/src/fitswidget.cpp \
+    gui/src/imagewidget.cpp \
     gui/src/histogramwidget.cpp
 
 HEADERS += \
@@ -53,7 +53,7 @@ HEADERS += \
     image/raster/include/pixstfparms.h \
     image/raster/include/statisticsvisitor.h \
     gui/include/mainwindow.h \
-    gui/include/fitswidget.h \
+    gui/include/imagewidget.h \
     gui/include/histogramwidget.h
 
 RESOURCES += \

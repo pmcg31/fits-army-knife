@@ -19,7 +19,7 @@ MainWindow::MainWindow(QTcpServer& server,
       showingStretched(false),
       mainPane(),
       layout(&mainPane),
-      fitsWidget(),
+      imageWidget(),
       histWidget(),
       bottomLayout(),
       statsHistLayout(),
@@ -113,24 +113,24 @@ MainWindow::MainWindow(QTcpServer& server,
     statsHistLayout.addLayout(&statsLayout);
     statsHistLayout.addWidget(&histWidget);
 
-    layout.addWidget(&fitsWidget);
+    layout.addWidget(&imageWidget);
     layout.addLayout(&statsHistLayout);
     layout.addLayout(&bottomLayout);
 
     setCentralWidget(&mainPane);
 
-    QObject::connect(&fitsWidget, &FITSWidget::fileChanged,
+    QObject::connect(&imageWidget, &ImageWidget::fileChanged,
                      this, &MainWindow::fitsFileChanged);
-    QObject::connect(&fitsWidget, &FITSWidget::fileFailed,
+    QObject::connect(&imageWidget, &ImageWidget::fileFailed,
                      this, &MainWindow::fitsFileFailed);
-    QObject::connect(&fitsWidget, &FITSWidget::actualZoomChanged,
+    QObject::connect(&imageWidget, &ImageWidget::actualZoomChanged,
                      this, &MainWindow::fitsZoomChanged);
     QObject::connect(&stretchBtn, &QPushButton::toggled,
                      this, &MainWindow::stretchToggled);
     QObject::connect(this, &MainWindow::showStretched,
-                     &fitsWidget, &FITSWidget::showStretched);
+                     &imageWidget, &ImageWidget::showStretched);
     QObject::connect(this, &MainWindow::clearStretched,
-                     &fitsWidget, &FITSWidget::clearStretched);
+                     &imageWidget, &ImageWidget::clearStretched);
     QObject::connect(&zoomFitBtn, &QPushButton::clicked,
                      this, &MainWindow::zoomFitClicked);
     QObject::connect(&zoom100Btn, &QPushButton::clicked,
@@ -155,7 +155,7 @@ void MainWindow::fitsFileChanged(const char* filename)
 {
     printf("File loaded: %s\n", filename);
 
-    const ELS::Image* image = fitsWidget.getImage();
+    const ELS::Image* image = imageWidget.getImage();
     bool isColor = image->isColor();
 
     const char* giMinF = " min: %d ";
@@ -506,7 +506,7 @@ void MainWindow::fitsFileChanged(const char* filename)
     }
 
     histWidget.setHistogramData(isColor, numPoints, histogram);
-    fitsWidget.setHistogramData(isColor, numPoints, histogram);
+    imageWidget.setHistogramData(isColor, numPoints, histogram);
 
     printf("%s\n", image->getImageType());
     printf("%s\n", image->getSizeAndColor());
@@ -551,12 +551,12 @@ void MainWindow::stretchToggled(bool isChecked)
 
 void MainWindow::zoomFitClicked(bool /* isChecked */)
 {
-    fitsWidget.setZoom(-1.0);
+    imageWidget.setZoom(-1.0);
 }
 
 void MainWindow::zoom100Clicked(bool /* isChecked */)
 {
-    fitsWidget.setZoom(1.0);
+    imageWidget.setZoom(1.0);
 }
 
 void MainWindow::prevClicked(bool isChecked)
@@ -673,7 +673,7 @@ void MainWindow::syncFileIdx()
            filename);
     fflush(stdout);
 
-    fitsWidget.setFile(filename);
+    imageWidget.setFile(filename);
 }
 
 void MainWindow::syncFileCount()

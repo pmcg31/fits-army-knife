@@ -1,5 +1,4 @@
-#ifndef FITSWIDGET_H
-#define FITSWIDGET_H
+#pragma once
 
 #include <memory>
 
@@ -15,13 +14,13 @@
 #include "pixstfparms.h"
 #include "pixutils.h"
 
-class FITSWidget : public QWidget
+class ImageWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit FITSWidget(QWidget* parent = nullptr);
-    ~FITSWidget();
+    explicit ImageWidget(QWidget* parent = nullptr);
+    ~ImageWidget();
 
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
@@ -177,5 +176,3 @@ private:
 private:
     static const float g_validZooms[];
 };
-
-#endif // FITSWIDGET_H

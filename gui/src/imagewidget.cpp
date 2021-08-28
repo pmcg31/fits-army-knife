@@ -2,10 +2,10 @@
 
 #include "fitsimage.h"
 #include "fitstantrum.h"
-#include "fitswidget.h"
+#include "imagewidget.h"
 
 /* static */
-const float FITSWidget::g_validZooms[] = {
+const float ImageWidget::g_validZooms[] = {
     0.125,
     0.250,
     0.333,
@@ -21,7 +21,7 @@ const float FITSWidget::g_validZooms[] = {
     2.000,
     -1.0};
 
-FITSWidget::FITSWidget(QWidget* parent)
+ImageWidget::ImageWidget(QWidget* parent)
     : QWidget(parent),
       _sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding),
       _filename(""),
@@ -52,7 +52,7 @@ FITSWidget::FITSWidget(QWidget* parent)
     setCursor(Qt::OpenHandCursor);
 }
 
-FITSWidget::~FITSWidget()
+ImageWidget::~ImageWidget()
 {
     if (_fits != 0)
     {
@@ -75,37 +75,37 @@ FITSWidget::~FITSWidget()
     _lutInUse = 0;
 }
 
-QSize FITSWidget::sizeHint() const
+QSize ImageWidget::sizeHint() const
 {
     return QSize(800, 600);
 }
 
-QSize FITSWidget::minimumSizeHint() const
+QSize ImageWidget::minimumSizeHint() const
 {
     return QSize(100, 100);
 }
 
-const ELS::Image* FITSWidget::getImage() const
+const ELS::Image* ImageWidget::getImage() const
 {
     return _fits;
 }
 
-const char* FITSWidget::getFilename() const
+const char* ImageWidget::getFilename() const
 {
     return _filename;
 }
 
-bool FITSWidget::getStretched() const
+bool ImageWidget::getStretched() const
 {
     return _showStretched;
 }
 
-float FITSWidget::getZoom() const
+float ImageWidget::getZoom() const
 {
     return _zoom;
 }
 
-void FITSWidget::setFile(const char* filename)
+void ImageWidget::setFile(const char* filename)
 {
     if (strcmp(filename, _filename) != 0)
     {
@@ -137,7 +137,7 @@ void FITSWidget::setFile(const char* filename)
     }
 }
 
-void FITSWidget::showStretched(ELS::PixSTFParms stfParms)
+void ImageWidget::showStretched(ELS::PixSTFParms stfParms)
 {
     if (_showStretched != true)
     {
@@ -160,7 +160,7 @@ void FITSWidget::showStretched(ELS::PixSTFParms stfParms)
     }
 }
 
-void FITSWidget::clearStretched()
+void ImageWidget::clearStretched()
 {
     if (_showStretched != false)
     {
@@ -179,7 +179,7 @@ void FITSWidget::clearStretched()
     }
 }
 
-void FITSWidget::setZoom(float zoom)
+void ImageWidget::setZoom(float zoom)
 {
     // Adjust zoom to the closest valid value
     if (zoom != -1.0)
@@ -198,9 +198,9 @@ void FITSWidget::setZoom(float zoom)
     }
 }
 
-void FITSWidget::setHistogramData(bool isColor,
-                                  int numPoints,
-                                  std::shared_ptr<uint32_t[]> data)
+void ImageWidget::setHistogramData(bool isColor,
+                                   int numPoints,
+                                   std::shared_ptr<uint32_t[]> data)
 {
     _isColor = isColor;
     _numHistogramPoints = numPoints;
@@ -256,7 +256,7 @@ void FITSWidget::setHistogramData(bool isColor,
     update();
 }
 
-void FITSWidget::mouseMoveEvent(QMouseEvent* event)
+void ImageWidget::mouseMoveEvent(QMouseEvent* event)
 {
     if (_mouseDragLast != QPoint(-1, -1))
     {
@@ -280,7 +280,7 @@ void FITSWidget::mouseMoveEvent(QMouseEvent* event)
     }
 }
 
-void FITSWidget::mousePressEvent(QMouseEvent* event)
+void ImageWidget::mousePressEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton)
     {
@@ -289,7 +289,7 @@ void FITSWidget::mousePressEvent(QMouseEvent* event)
     }
 }
 
-void FITSWidget::mouseReleaseEvent(QMouseEvent* event)
+void ImageWidget::mouseReleaseEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton)
     {
@@ -298,7 +298,7 @@ void FITSWidget::mouseReleaseEvent(QMouseEvent* event)
     }
 }
 
-void FITSWidget::wheelEvent(QWheelEvent* event)
+void ImageWidget::wheelEvent(QWheelEvent* event)
 {
     QPoint numSteps = event->angleDelta() / 120;
 
@@ -324,7 +324,7 @@ void FITSWidget::wheelEvent(QWheelEvent* event)
     }
 }
 
-void FITSWidget::paintEvent(QPaintEvent* /* event */)
+void ImageWidget::paintEvent(QPaintEvent* /* event */)
 {
     if (_lutInUse != 0)
     {
@@ -465,7 +465,7 @@ void FITSWidget::paintEvent(QPaintEvent* /* event */)
     }
 }
 
-void FITSWidget::_internalSetZoom(float zoom)
+void ImageWidget::_internalSetZoom(float zoom)
 {
     _zoom = zoom;
 
@@ -475,8 +475,8 @@ void FITSWidget::_internalSetZoom(float zoom)
 }
 
 /* static */
-float FITSWidget::adjustZoom(float desiredZoom,
-                             ZoomAdjustStrategy strategy /* = ZAS_CLOSEST */)
+float ImageWidget::adjustZoom(float desiredZoom,
+                              ZoomAdjustStrategy strategy /* = ZAS_CLOSEST */)
 {
     if (desiredZoom < g_validZooms[0])
     {
@@ -552,7 +552,7 @@ float FITSWidget::adjustZoom(float desiredZoom,
     return g_validZooms[0];
 }
 
-void FITSWidget::calculateStfLUT()
+void ImageWidget::calculateStfLUT()
 {
     if (_stfLUT != 0)
     {
@@ -609,9 +609,9 @@ void FITSWidget::calculateStfLUT()
     }
 }
 
-FITSWidget::ToQImageVisitor::ToQImageVisitor(ELS::PixSTFParms stfParms,
-                                             uint8_t* lut,
-                                             int lutPoints)
+ImageWidget::ToQImageVisitor::ToQImageVisitor(ELS::PixSTFParms stfParms,
+                                              uint8_t* lut,
+                                              int lutPoints)
     : _width(0),
       _height(0),
       _pixCount(0),
@@ -624,27 +624,27 @@ FITSWidget::ToQImageVisitor::ToQImageVisitor(ELS::PixSTFParms stfParms,
 {
 }
 
-FITSWidget::ToQImageVisitor::~ToQImageVisitor()
+ImageWidget::ToQImageVisitor::~ToQImageVisitor()
 {
 }
 
-std::shared_ptr<uint32_t[]> FITSWidget::ToQImageVisitor::getImageData()
+std::shared_ptr<uint32_t[]> ImageWidget::ToQImageVisitor::getImageData()
 {
     return _qiData;
 }
 
-std::shared_ptr<QImage> FITSWidget::ToQImageVisitor::getImage()
+std::shared_ptr<QImage> ImageWidget::ToQImageVisitor::getImage()
 {
     return _qi;
 }
 
-void FITSWidget::ToQImageVisitor::pixelFormat(ELS::PixelFormat pf)
+void ImageWidget::ToQImageVisitor::pixelFormat(ELS::PixelFormat pf)
 {
     (void)pf;
 }
 
-void FITSWidget::ToQImageVisitor::dimensions(int width,
-                                             int height)
+void ImageWidget::ToQImageVisitor::dimensions(int width,
+                                              int height)
 {
     _width = width;
     _height = height;
@@ -653,13 +653,13 @@ void FITSWidget::ToQImageVisitor::dimensions(int width,
     _qiData.reset(new uint32_t[_pixCount]);
 }
 
-void FITSWidget::ToQImageVisitor::rowInfo(int stride)
+void ImageWidget::ToQImageVisitor::rowInfo(int stride)
 {
     _stride = stride;
 }
 
-void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const int8_t* k)
+void ImageWidget::ToQImageVisitor::rowGray(int y,
+                                           const int8_t* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -674,8 +674,8 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const int16_t* k)
+void ImageWidget::ToQImageVisitor::rowGray(int y,
+                                           const int16_t* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -690,8 +690,8 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const int32_t* k)
+void ImageWidget::ToQImageVisitor::rowGray(int y,
+                                           const int32_t* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -706,8 +706,8 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const uint8_t* k)
+void ImageWidget::ToQImageVisitor::rowGray(int y,
+                                           const uint8_t* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -722,8 +722,8 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const uint16_t* k)
+void ImageWidget::ToQImageVisitor::rowGray(int y,
+                                           const uint16_t* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -738,8 +738,8 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const uint32_t* k)
+void ImageWidget::ToQImageVisitor::rowGray(int y,
+                                           const uint32_t* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -754,8 +754,8 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const float* k)
+void ImageWidget::ToQImageVisitor::rowGray(int y,
+                                           const float* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -770,8 +770,8 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowGray(int y,
-                                          const double* k)
+void ImageWidget::ToQImageVisitor::rowGray(int y,
+                                           const double* k)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -786,10 +786,10 @@ void FITSWidget::ToQImageVisitor::rowGray(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const int8_t* r,
-                                         const int8_t* g,
-                                         const int8_t* b)
+void ImageWidget::ToQImageVisitor::rowRgb(int y,
+                                          const int8_t* r,
+                                          const int8_t* g,
+                                          const int8_t* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -810,10 +810,10 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const int16_t* r,
-                                         const int16_t* g,
-                                         const int16_t* b)
+void ImageWidget::ToQImageVisitor::rowRgb(int y,
+                                          const int16_t* r,
+                                          const int16_t* g,
+                                          const int16_t* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -834,10 +834,10 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const int32_t* r,
-                                         const int32_t* g,
-                                         const int32_t* b)
+void ImageWidget::ToQImageVisitor::rowRgb(int y,
+                                          const int32_t* r,
+                                          const int32_t* g,
+                                          const int32_t* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -858,10 +858,10 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const uint8_t* r,
-                                         const uint8_t* g,
-                                         const uint8_t* b)
+void ImageWidget::ToQImageVisitor::rowRgb(int y,
+                                          const uint8_t* r,
+                                          const uint8_t* g,
+                                          const uint8_t* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -882,10 +882,10 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const uint16_t* r,
-                                         const uint16_t* g,
-                                         const uint16_t* b)
+void ImageWidget::ToQImageVisitor::rowRgb(int y,
+                                          const uint16_t* r,
+                                          const uint16_t* g,
+                                          const uint16_t* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -906,10 +906,10 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const uint32_t* r,
-                                         const uint32_t* g,
-                                         const uint32_t* b)
+void ImageWidget::ToQImageVisitor::rowRgb(int y,
+                                          const uint32_t* r,
+                                          const uint32_t* g,
+                                          const uint32_t* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -930,10 +930,10 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const float* r,
-                                         const float* g,
-                                         const float* b)
+void ImageWidget::ToQImageVisitor::rowRgb(int y,
+                                          const float* r,
+                                          const float* g,
+                                          const float* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -954,10 +954,10 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::rowRgb(int y,
-                                         const double* r,
-                                         const double* g,
-                                         const double* b)
+void ImageWidget::ToQImageVisitor::rowRgb(int y,
+                                          const double* r,
+                                          const double* g,
+                                          const double* b)
 {
     int rowOffset = y * _width;
     for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
@@ -978,7 +978,7 @@ void FITSWidget::ToQImageVisitor::rowRgb(int y,
     }
 }
 
-void FITSWidget::ToQImageVisitor::done()
+void ImageWidget::ToQImageVisitor::done()
 {
     _qi.reset(new QImage((const uchar*)_qiData.get(), _width, _height, QImage::Format_ARGB32));
 }

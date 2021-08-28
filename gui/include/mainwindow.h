@@ -9,7 +9,7 @@
 #include <QTcpServer>
 #include <QVBoxLayout>
 
-#include "fitswidget.h"
+#include "imagewidget.h"
 #include "histogramwidget.h"
 #include "pixstatistics.h"
 #include "pixstfparms.h"
@@ -68,7 +68,7 @@ private:
     bool showingStretched;
     QWidget mainPane;
     QVBoxLayout layout;
-    FITSWidget fitsWidget;
+    ImageWidget imageWidget;
     HistogramWidget histWidget;
     QHBoxLayout bottomLayout;
     QHBoxLayout statsHistLayout;
