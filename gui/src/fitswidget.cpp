@@ -1,5 +1,6 @@
 #include <QPainter>
 
+#include "fitsimage.h"
 #include "fitstantrum.h"
 #include "fitswidget.h"
 
@@ -84,7 +85,7 @@ QSize FITSWidget::minimumSizeHint() const
     return QSize(100, 100);
 }
 
-const ELS::FITSImage* FITSWidget::getImage() const
+const ELS::Image* FITSWidget::getImage() const
 {
     return _fits;
 }

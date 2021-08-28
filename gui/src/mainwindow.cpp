@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "fitsimage.h"
+#include "image.h"
 #include "mainwindow.h"
 #include "statisticsvisitor.h"
 
@@ -155,7 +155,7 @@ void MainWindow::fitsFileChanged(const char* filename)
 {
     printf("File loaded: %s\n", filename);
 
-    const ELS::FITSImage* image = fitsWidget.getImage();
+    const ELS::Image* image = fitsWidget.getImage();
     bool isColor = image->isColor();
 
     const char* giMinF = " min: %d ";

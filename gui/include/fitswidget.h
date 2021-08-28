@@ -9,7 +9,7 @@
 #include <QWidget>
 #include <fitsio.h>
 
-#include "fitsimage.h"
+#include "image.h"
 #include "pixelvisitor.h"
 #include "pixstatistics.h"
 #include "pixstfparms.h"
@@ -26,7 +26,7 @@ public:
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
 
-    const ELS::FITSImage* getImage() const;
+    const ELS::Image* getImage() const;
 
     const char* getFilename() const;
     bool getStretched() const;
@@ -155,7 +155,7 @@ private:
 private:
     QSizePolicy _sizePolicy;
     char _filename[500];
-    ELS::FITSImage* _fits;
+    ELS::Image* _fits;
     std::shared_ptr<QImage> _cacheImage;
     std::shared_ptr<uint32_t[]> _cacheImageData;
     bool _showStretched;
