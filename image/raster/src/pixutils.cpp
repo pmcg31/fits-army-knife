@@ -17,6 +17,30 @@ namespace ELS
     const uint32_t PixUtils::g_u32Mid = 2147483647;
 
     /* static */
+    double PixUtils::midtonesTransferFunc(int8_t pixel,
+                                          double mBal)
+    {
+        double tmpPix = (double)(pixel + PixUtils::g_u8Mid + 1) / PixUtils::g_u8Max;
+        return midtonesTransferFunc(tmpPix, mBal);
+    }
+
+    /* static */
+    double PixUtils::midtonesTransferFunc(int16_t pixel,
+                                          double mBal)
+    {
+        double tmpPix = (double)(pixel + PixUtils::g_u16Mid + 1) / PixUtils::g_u16Max;
+        return midtonesTransferFunc(tmpPix, mBal);
+    }
+
+    /* static */
+    double PixUtils::midtonesTransferFunc(int32_t pixel,
+                                          double mBal)
+    {
+        double tmpPix = (double)(pixel + PixUtils::g_u32Mid + 1) / PixUtils::g_u32Max;
+        return midtonesTransferFunc(tmpPix, mBal);
+    }
+
+    /* static */
     double PixUtils::midtonesTransferFunc(uint8_t pixel,
                                           double mBal)
     {
@@ -71,6 +95,30 @@ namespace ELS
     }
 
     /* static */
+    double PixUtils::clippingFunc(int8_t pixel, double sClip, double hClip)
+    {
+        double tmpPix = (double)(pixel + PixUtils::g_u8Mid + 1) / PixUtils::g_u8Max;
+
+        return clippingFunc(tmpPix, sClip, hClip);
+    }
+
+    /* static */
+    double PixUtils::clippingFunc(int16_t pixel, double sClip, double hClip)
+    {
+        double tmpPix = (double)(pixel + PixUtils::g_u16Mid + 1) / PixUtils::g_u16Max;
+
+        return clippingFunc(tmpPix, sClip, hClip);
+    }
+
+    /* static */
+    double PixUtils::clippingFunc(int32_t pixel, double sClip, double hClip)
+    {
+        double tmpPix = (double)(pixel + PixUtils::g_u32Mid + 1) / PixUtils::g_u16Max;
+
+        return clippingFunc(tmpPix, sClip, hClip);
+    }
+
+    /* static */
     double PixUtils::clippingFunc(uint8_t pixel, double sClip, double hClip)
     {
         double tmpPix = (double)pixel / PixUtils::g_u8Max;
@@ -118,6 +166,27 @@ namespace ELS
     }
 
     /* static */
+    double PixUtils::expansionFunc(int8_t pixel, double sExp, double hExp)
+    {
+        double tmpPix = (double)(pixel + PixUtils::g_u8Mid + 1) / PixUtils::g_u8Max;
+        return expansionFunc(tmpPix, sExp, hExp);
+    }
+
+    /* static */
+    double PixUtils::expansionFunc(int16_t pixel, double sExp, double hExp)
+    {
+        double tmpPix = (double)(pixel + PixUtils::g_u16Mid + 1) / PixUtils::g_u16Max;
+        return expansionFunc(tmpPix, sExp, hExp);
+    }
+
+    /* static */
+    double PixUtils::expansionFunc(int32_t pixel, double sExp, double hExp)
+    {
+        double tmpPix = (double)(pixel + PixUtils::g_u32Mid + 1) / PixUtils::g_u32Max;
+        return expansionFunc(tmpPix, sExp, hExp);
+    }
+
+    /* static */
     double PixUtils::expansionFunc(uint8_t pixel, double sExp, double hExp)
     {
         double tmpPix = (double)pixel / PixUtils::g_u8Max;
@@ -149,6 +218,24 @@ namespace ELS
     double PixUtils::expansionFunc(double pixel, double sExp, double hExp)
     {
         return (pixel - sExp) / (hExp - sExp);
+    }
+
+    /* static */
+    uint16_t PixUtils::convertRangeToHist(int8_t val)
+    {
+        return convertRangeToHist((uint8_t)val + PixUtils::g_u8Mid + 1);
+    }
+
+    /* static */
+    uint16_t PixUtils::convertRangeToHist(int16_t val)
+    {
+        return convertRangeToHist((uint16_t)val + PixUtils::g_u16Mid + 1);
+    }
+
+    /* static */
+    uint16_t PixUtils::convertRangeToHist(int32_t val)
+    {
+        return convertRangeToHist((uint32_t)val + PixUtils::g_u32Mid + 1);
     }
 
     /* static */
@@ -225,6 +312,30 @@ namespace ELS
         }
 
         return newVal;
+    }
+
+    /* static */
+    void PixUtils::convertRangeFromHist(uint16_t hist, int8_t *val)
+    {
+        uint8_t factor = g_u8Max / g_histogramPoints;
+
+        *val = (int8_t)(((int32_t)hist / factor) - g_u8Mid - 1);
+    }
+
+    /* static */
+    void PixUtils::convertRangeFromHist(uint16_t hist, int16_t *val)
+    {
+        uint16_t factor = g_u16Max / g_histogramPoints;
+
+        *val = (int16_t)(((int32_t)hist / factor) - g_u16Mid - 1);
+    }
+
+    /* static */
+    void PixUtils::convertRangeFromHist(uint16_t hist, int32_t *val)
+    {
+        uint32_t factor = g_u32Max / g_histogramPoints;
+
+        *val = (int32_t)(((int64_t)hist / factor) - g_u32Mid - 1);
     }
 
     /* static */

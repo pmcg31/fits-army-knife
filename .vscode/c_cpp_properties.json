@@ -4,8 +4,9 @@
       "name": "Linux",
       "includePath": [
         "${workspaceFolder}/gui/include",
-        "${workspaceFolder}/image/fits/include",
         "${workspaceFolder}/image/raster/include",
+        "${workspaceFolder}/image/fits/include",
+        "${workspaceFolder}/image/xisf/include",
         "/usr/include/qt",
         "/usr/include/qt/QtWidgets",
         "/usr/include/qt/QtGui",

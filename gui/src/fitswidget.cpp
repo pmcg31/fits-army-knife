@@ -344,7 +344,11 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
 
         if (_cacheImage == 0)
         {
-            convertImage();
+            ToQImageVisitor visitor(_stfParms, _lutInUse, _numHistogramPoints);
+            _fits->visitPixels(&visitor);
+            _cacheImageData = visitor.getImageData();
+            _cacheImage = visitor.getImage();
+            // convertImage();
         }
 
         int imgW = _fits->getWidth();
@@ -457,53 +461,6 @@ void FITSWidget::paintEvent(QPaintEvent * /* event */)
         painter.setRenderHints(QPainter::SmoothPixmapTransform |
                                QPainter::Antialiasing);
         painter.drawImage(_target, *_cacheImage, _source);
-    }
-}
-
-void FITSWidget::convertImage()
-{
-    switch (_fits->getBitDepth())
-    {
-    case ELS::FITS::BD_INT_8:
-    {
-        ToQImageVisitor<uint8_t> visitor(_stfParms, _lutInUse, _numHistogramPoints);
-        _fits->visitPixels(&visitor);
-        _cacheImageData = visitor.getImageData();
-        _cacheImage = visitor.getImage();
-    }
-    break;
-    case ELS::FITS::BD_INT_16:
-    {
-        ToQImageVisitor<uint16_t> visitor(_stfParms, _lutInUse, _numHistogramPoints);
-        _fits->visitPixels(&visitor);
-        _cacheImageData = visitor.getImageData();
-        _cacheImage = visitor.getImage();
-    }
-    break;
-    case ELS::FITS::BD_INT_32:
-    {
-        ToQImageVisitor<uint32_t> visitor(_stfParms, _lutInUse, _numHistogramPoints);
-        _fits->visitPixels(&visitor);
-        _cacheImageData = visitor.getImageData();
-        _cacheImage = visitor.getImage();
-    }
-    break;
-    case ELS::FITS::BD_FLOAT:
-    {
-        ToQImageVisitor<float> visitor(_stfParms, _lutInUse, _numHistogramPoints);
-        _fits->visitPixels(&visitor);
-        _cacheImageData = visitor.getImageData();
-        _cacheImage = visitor.getImage();
-    }
-    break;
-    case ELS::FITS::BD_DOUBLE:
-    {
-        ToQImageVisitor<double> visitor(_stfParms, _lutInUse, _numHistogramPoints);
-        _fits->visitPixels(&visitor);
-        _cacheImageData = visitor.getImageData();
-        _cacheImage = visitor.getImage();
-    }
-    break;
     }
 }
 
@@ -649,4 +606,378 @@ void FITSWidget::calculateStfLUT()
             }
         }
     }
+}
+
+FITSWidget::ToQImageVisitor::ToQImageVisitor(ELS::PixSTFParms stfParms,
+                                             uint8_t *lut,
+                                             int lutPoints)
+    : _width(0),
+      _height(0),
+      _pixCount(0),
+      _qiData(),
+      _stride(0),
+      _stfParms(stfParms),
+      _qi(),
+      _lut(lut),
+      _lutPoints(lutPoints)
+{
+}
+
+FITSWidget::ToQImageVisitor::~ToQImageVisitor()
+{
+}
+
+std::shared_ptr<uint32_t[]> FITSWidget::ToQImageVisitor::getImageData()
+{
+    return _qiData;
+}
+
+std::shared_ptr<QImage> FITSWidget::ToQImageVisitor::getImage()
+{
+    return _qi;
+}
+
+void FITSWidget::ToQImageVisitor::pixelFormat(ELS::PixelFormat pf)
+{
+    (void)pf;
+}
+
+void FITSWidget::ToQImageVisitor::dimensions(int width,
+                                             int height)
+{
+    _width = width;
+    _height = height;
+    _pixCount = _width * _height;
+
+    _qiData.reset(new uint32_t[_pixCount]);
+}
+
+void FITSWidget::ToQImageVisitor::rowInfo(int stride)
+{
+    _stride = stride;
+}
+
+void FITSWidget::ToQImageVisitor::rowGray(int y,
+                                          const int8_t *k)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
+        uint8_t val = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (val << 16) |
+                                 (val << 8) |
+                                 (val);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowGray(int y,
+                                          const int16_t *k)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
+        uint8_t val = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (val << 16) |
+                                 (val << 8) |
+                                 (val);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowGray(int y,
+                                          const int32_t *k)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
+        uint8_t val = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (val << 16) |
+                                 (val << 8) |
+                                 (val);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowGray(int y,
+                                          const uint8_t *k)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
+        uint8_t val = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (val << 16) |
+                                 (val << 8) |
+                                 (val);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowGray(int y,
+                                          const uint16_t *k)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
+        uint8_t val = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (val << 16) |
+                                 (val << 8) |
+                                 (val);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowGray(int y,
+                                          const uint32_t *k)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
+        uint8_t val = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (val << 16) |
+                                 (val << 8) |
+                                 (val);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowGray(int y,
+                                          const float *k)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
+        uint8_t val = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (val << 16) |
+                                 (val << 8) |
+                                 (val);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowGray(int y,
+                                          const double *k)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
+        uint8_t val = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (val << 16) |
+                                 (val << 8) |
+                                 (val);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowRgb(int y,
+                                         const int8_t *r,
+                                         const int8_t *g,
+                                         const int8_t *b)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
+        uint8_t red = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
+        uint8_t green = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
+        uint8_t blue = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (red << 16) |
+                                 (green << 8) |
+                                 (blue);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowRgb(int y,
+                                         const int16_t *r,
+                                         const int16_t *g,
+                                         const int16_t *b)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
+        uint8_t red = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
+        uint8_t green = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
+        uint8_t blue = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (red << 16) |
+                                 (green << 8) |
+                                 (blue);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowRgb(int y,
+                                         const int32_t *r,
+                                         const int32_t *g,
+                                         const int32_t *b)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
+        uint8_t red = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
+        uint8_t green = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
+        uint8_t blue = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (red << 16) |
+                                 (green << 8) |
+                                 (blue);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowRgb(int y,
+                                         const uint8_t *r,
+                                         const uint8_t *g,
+                                         const uint8_t *b)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
+        uint8_t red = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
+        uint8_t green = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
+        uint8_t blue = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (red << 16) |
+                                 (green << 8) |
+                                 (blue);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowRgb(int y,
+                                         const uint16_t *r,
+                                         const uint16_t *g,
+                                         const uint16_t *b)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
+        uint8_t red = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
+        uint8_t green = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
+        uint8_t blue = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (red << 16) |
+                                 (green << 8) |
+                                 (blue);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowRgb(int y,
+                                         const uint32_t *r,
+                                         const uint32_t *g,
+                                         const uint32_t *b)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
+        uint8_t red = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
+        uint8_t green = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
+        uint8_t blue = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (red << 16) |
+                                 (green << 8) |
+                                 (blue);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowRgb(int y,
+                                         const float *r,
+                                         const float *g,
+                                         const float *b)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
+        uint8_t red = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
+        uint8_t green = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
+        uint8_t blue = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (red << 16) |
+                                 (green << 8) |
+                                 (blue);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::rowRgb(int y,
+                                         const double *r,
+                                         const double *g,
+                                         const double *b)
+{
+    int rowOffset = y * _width;
+    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
+    {
+        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
+        uint8_t red = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
+        uint8_t green = _lut[tmp];
+
+        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
+        uint8_t blue = _lut[tmp];
+
+        _qiData[rowOffset + x] = (0xff << 24) |
+                                 (red << 16) |
+                                 (green << 8) |
+                                 (blue);
+    }
+}
+
+void FITSWidget::ToQImageVisitor::done()
+{
+    _qi.reset(new QImage((const uchar *)_qiData.get(), _width, _height, QImage::Format_ARGB32));
 }

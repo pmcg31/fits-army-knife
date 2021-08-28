@@ -19,15 +19,19 @@ LIBS += \
     -lcfitsio
 
 INCLUDEPATH += \
-    image/fits/include \
     $$PCL_INCLUDE_DIR \
     image/raster/include \
+    image/fits/include \
+    image/xisf/include \ 
     gui/include
 
 SOURCES += \
     image/fits/src/fitsexception.cpp \
     image/fits/src/fitsimage.cpp \
     image/fits/src/fitstantrum.cpp \
+    image/raster/src/image.cpp \
+    image/raster/src/pixelvisitortypemismatch.cpp \
+    image/raster/src/pixelvisitor.cpp \
     image/raster/src/pixutils.cpp \
     image/raster/src/pixstfparms.cpp \
     gui/src/main.cpp \
@@ -36,12 +40,13 @@ SOURCES += \
     gui/src/histogramwidget.cpp
 
 HEADERS += \
-    image/fits/include/fits.h \
     image/fits/include/fitsexception.h \
     image/fits/include/fitstantrum.h \
     image/fits/include/fitsimage.h \
     $$PCL_INCLUDE_DIR/pcl/XISF.h \
-    image/raster/include/pixelformat.h \
+    image/raster/include/image.h \
+    image/raster/include/rastertypes.h \
+    image/raster/include/pixelvisitortypemismatch.h \
     image/raster/include/pixelvisitor.h \
     image/raster/include/pixutils.h \
     image/raster/include/pixstatistics.h \

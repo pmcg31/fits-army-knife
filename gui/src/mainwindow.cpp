@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "fits.h"
 #include "fitsimage.h"
 #include "statisticsvisitor.h"
 #include "mainwindow.h"
@@ -182,9 +181,9 @@ void MainWindow::fitsFileChanged(const char *filename)
     char tmp4[100];
     int numPoints = 0;
     std::shared_ptr<uint32_t[]> histogram;
-    switch (image->getBitDepth())
+    switch (image->getSampleFormat())
     {
-    case ELS::FITS::BD_INT_8:
+    case ELS::SF_UINT_8:
     {
         ELS::StatisticsVisitor<uint8_t> visitor;
         image->visitPixels(&visitor);
@@ -224,7 +223,7 @@ void MainWindow::fitsFileChanged(const char *filename)
         visitor.getHistogramData(&numPoints, &histogram);
     }
     break;
-    case ELS::FITS::BD_INT_16:
+    case ELS::SF_UINT_16:
     {
         ELS::StatisticsVisitor<uint16_t> visitor;
         image->visitPixels(&visitor);
@@ -264,7 +263,7 @@ void MainWindow::fitsFileChanged(const char *filename)
         visitor.getHistogramData(&numPoints, &histogram);
     }
     break;
-    case ELS::FITS::BD_INT_32:
+    case ELS::SF_UINT_32:
     {
         ELS::StatisticsVisitor<uint32_t> visitor;
         image->visitPixels(&visitor);
@@ -304,7 +303,127 @@ void MainWindow::fitsFileChanged(const char *filename)
         visitor.getHistogramData(&numPoints, &histogram);
     }
     break;
-    case ELS::FITS::BD_FLOAT:
+    case ELS::SF_INT_8:
+    {
+        ELS::StatisticsVisitor<int8_t> visitor;
+        image->visitPixels(&visitor);
+        ELS::PixStatistics<int8_t> localStats = visitor.getStatistics();
+        stfParms = localStats.getStretchParameters();
+        if (!isColor)
+        {
+            sprintf(tmp, giMinF, localStats.getMinVal());
+            sprintf(tmp2, giMeanF, localStats.getMeanVal());
+            sprintf(tmp3, giMedF, localStats.getMedVal());
+            sprintf(tmp4, giMaxF, localStats.getMaxVal());
+        }
+        else
+        {
+            sprintf(tmp, ciMinF,
+                    localStats.getMinVal(0),
+                    localStats.getMinVal(1),
+                    localStats.getMinVal(2));
+            sprintf(tmp2, ciMeanF,
+                    localStats.getMeanVal(0),
+                    localStats.getMeanVal(1),
+                    localStats.getMeanVal(2));
+            sprintf(tmp3, ciMedF,
+                    localStats.getMedVal(0),
+                    localStats.getMedVal(1),
+                    localStats.getMedVal(2));
+            sprintf(tmp4, ciMaxF,
+                    localStats.getMaxVal(0),
+                    localStats.getMaxVal(1),
+                    localStats.getMaxVal(2));
+        }
+        minLabel.setText(tmp);
+        meanLabel.setText(tmp2);
+        medLabel.setText(tmp3);
+        maxLabel.setText(tmp4);
+
+        visitor.getHistogramData(&numPoints, &histogram);
+    }
+    break;
+    case ELS::SF_INT_16:
+    {
+        ELS::StatisticsVisitor<int16_t> visitor;
+        image->visitPixels(&visitor);
+        ELS::PixStatistics<int16_t> localStats = visitor.getStatistics();
+        stfParms = localStats.getStretchParameters();
+        if (!isColor)
+        {
+            sprintf(tmp, giMinF, localStats.getMinVal());
+            sprintf(tmp2, giMeanF, localStats.getMeanVal());
+            sprintf(tmp3, giMedF, localStats.getMedVal());
+            sprintf(tmp4, giMaxF, localStats.getMaxVal());
+        }
+        else
+        {
+            sprintf(tmp, ciMinF,
+                    localStats.getMinVal(0),
+                    localStats.getMinVal(1),
+                    localStats.getMinVal(2));
+            sprintf(tmp2, ciMeanF,
+                    localStats.getMeanVal(0),
+                    localStats.getMeanVal(1),
+                    localStats.getMeanVal(2));
+            sprintf(tmp3, ciMedF,
+                    localStats.getMedVal(0),
+                    localStats.getMedVal(1),
+                    localStats.getMedVal(2));
+            sprintf(tmp4, ciMaxF,
+                    localStats.getMaxVal(0),
+                    localStats.getMaxVal(1),
+                    localStats.getMaxVal(2));
+        }
+        minLabel.setText(tmp);
+        meanLabel.setText(tmp2);
+        medLabel.setText(tmp3);
+        maxLabel.setText(tmp4);
+
+        visitor.getHistogramData(&numPoints, &histogram);
+    }
+    break;
+    case ELS::SF_INT_32:
+    {
+        ELS::StatisticsVisitor<int32_t> visitor;
+        image->visitPixels(&visitor);
+        ELS::PixStatistics<int32_t> localStats = visitor.getStatistics();
+        stfParms = localStats.getStretchParameters();
+        if (!isColor)
+        {
+            sprintf(tmp, giMinF, localStats.getMinVal());
+            sprintf(tmp2, giMeanF, localStats.getMeanVal());
+            sprintf(tmp3, giMedF, localStats.getMedVal());
+            sprintf(tmp4, giMaxF, localStats.getMaxVal());
+        }
+        else
+        {
+            sprintf(tmp, ciMinF,
+                    localStats.getMinVal(0),
+                    localStats.getMinVal(1),
+                    localStats.getMinVal(2));
+            sprintf(tmp2, ciMeanF,
+                    localStats.getMeanVal(0),
+                    localStats.getMeanVal(1),
+                    localStats.getMeanVal(2));
+            sprintf(tmp3, ciMedF,
+                    localStats.getMedVal(0),
+                    localStats.getMedVal(1),
+                    localStats.getMedVal(2));
+            sprintf(tmp4, ciMaxF,
+                    localStats.getMaxVal(0),
+                    localStats.getMaxVal(1),
+                    localStats.getMaxVal(2));
+        }
+        minLabel.setText(tmp);
+        meanLabel.setText(tmp2);
+        medLabel.setText(tmp3);
+        maxLabel.setText(tmp4);
+
+        visitor.getHistogramData(&numPoints, &histogram);
+    }
+    break;
+    case ELS::SF_FLOAT:
     {
         ELS::StatisticsVisitor<float> visitor;
         image->visitPixels(&visitor);
@@ -344,7 +463,7 @@ void MainWindow::fitsFileChanged(const char *filename)
         visitor.getHistogramData(&numPoints, &histogram);
     }
     break;
-    case ELS::FITS::BD_DOUBLE:
+    case ELS::SF_DOUBLE:
     {
         ELS::StatisticsVisitor<double> visitor;
         ELS::PixStatistics<double> localStats = visitor.getStatistics();

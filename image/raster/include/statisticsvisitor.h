@@ -10,7 +10,7 @@ namespace ELS
 {
 
     template <typename PixelT>
-    class StatisticsVisitor : public ELS::PixelVisitor<PixelT>
+    class StatisticsVisitor : public ELS::PixelVisitor
     {
     public:
         StatisticsVisitor();
@@ -25,12 +25,15 @@ namespace ELS
         virtual void pixelFormat(ELS::PixelFormat pf) override;
         virtual void dimensions(int width, int height) override;
         virtual void rowInfo(int stride) override;
+
         virtual void rowGray(int y,
                              const PixelT *k) override;
+
         virtual void rowRgb(int y,
                             const PixelT *r,
                             const PixelT *g,
                             const PixelT *b) override;
+
         virtual void done() override;
 
     private:

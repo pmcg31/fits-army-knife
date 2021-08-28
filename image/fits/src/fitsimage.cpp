@@ -38,13 +38,13 @@ namespace ELS
         }
 
         bool isColor;
-        FITS::RasterFormat format;
+        RasterFormat rasterFormat;
         int width;
         int height;
         if (numAxis == 2)
         {
             isColor = false;
-            format = FITS::RF_PLANAR;
+            rasterFormat = RF_PLANAR;
             width = axLengths[0];
             height = axLengths[1];
         }
@@ -53,13 +53,13 @@ namespace ELS
             isColor = true;
             if (axLengths[2] == 3)
             {
-                format = FITS::RF_PLANAR;
+                rasterFormat = RF_PLANAR;
                 width = axLengths[0];
                 height = axLengths[1];
             }
             else if (axLengths[0] == 3)
             {
-                format = FITS::RF_INTERLEAVED;
+                rasterFormat = RF_INTERLEAVED;
                 width = axLengths[1];
                 height = axLengths[2];
             }
@@ -75,44 +75,50 @@ namespace ELS
             pixelCount *= 3;
         }
 
-        int fitsIOBitDepth;
-        fits_get_img_equivtype(tmpFits, &fitsIOBitDepth, &status);
+        int fitsIOSampleFormat;
+        fits_get_img_equivtype(tmpFits, &fitsIOSampleFormat, &status);
         if (status)
         {
             throw new FITSTantrum(status);
         }
 
-        FITS::BitDepth bitDepth;
-        switch (fitsIOBitDepth)
+        SampleFormat sampleFormat;
+        switch (fitsIOSampleFormat)
         {
         case BYTE_IMG:
+            sampleFormat = SF_UINT_8;
+            break;
         case SBYTE_IMG:
-            bitDepth = FITS::BD_INT_8;
+            sampleFormat = SF_INT_8;
             break;
         case SHORT_IMG:
+            sampleFormat = SF_INT_16;
+            break;
         case USHORT_IMG:
-            bitDepth = FITS::BD_INT_16;
+            sampleFormat = SF_UINT_16;
             break;
         case LONG_IMG:
+            sampleFormat = SF_INT_32;
+            break;
         case ULONG_IMG:
-            bitDepth = FITS::BD_INT_32;
+            sampleFormat = SF_UINT_32;
             break;
         case FLOAT_IMG:
-            bitDepth = FITS::BD_FLOAT;
+            sampleFormat = SF_FLOAT;
             break;
         case DOUBLE_IMG:
-            bitDepth = FITS::BD_DOUBLE;
+            sampleFormat = SF_DOUBLE;
             break;
         default:
-            throw new FITSException("Unknown bit depth");
+            throw new FITSException("Unknown sample format");
         }
 
-        void *pixels = readPix(tmpFits, bitDepth, pixelCount);
+        void *pixels = readPix(tmpFits, sampleFormat, pixelCount);
 
         fits_close_file(tmpFits, &status);
 
-        return new FITSImage(bitDepth,
-                             format,
+        return new FITSImage(sampleFormat,
+                             rasterFormat,
                              isColor,
                              width,
                              height,
@@ -120,14 +126,14 @@ namespace ELS
                              pixels);
     }
 
-    FITSImage::FITSImage(FITS::BitDepth bitDepth,
-                         FITS::RasterFormat format,
+    FITSImage::FITSImage(SampleFormat sampleFormat,
+                         RasterFormat format,
                          bool isColor,
                          int width,
                          int height,
                          int64_t pixelCount,
                          void *pixels)
-        : _bitDepth(bitDepth),
+        : _sampleFormat(sampleFormat),
           _format(format),
           _isColor(isColor),
           _width(width),
@@ -141,55 +147,36 @@ namespace ELS
     {
         if (_pixels != 0)
         {
-            switch (_bitDepth)
+            switch (_sampleFormat)
             {
-            case FITS::BD_INT_8:
+            case SF_INT_8:
+                delete[](int8_t *) _pixels;
+                break;
+            case SF_INT_16:
+                delete[](int16_t *) _pixels;
+                break;
+            case SF_INT_32:
+                delete[](int32_t *) _pixels;
+                break;
+            case SF_UINT_8:
                 delete[](uint8_t *) _pixels;
                 break;
-            case FITS::BD_INT_16:
+            case SF_UINT_16:
                 delete[](uint16_t *) _pixels;
                 break;
-            case FITS::BD_INT_32:
+            case SF_UINT_32:
                 delete[](uint32_t *) _pixels;
                 break;
-            case FITS::BD_FLOAT:
+            case SF_FLOAT:
                 delete[](float *) _pixels;
                 break;
-            case FITS::BD_DOUBLE:
+            case SF_DOUBLE:
                 delete[](double *) _pixels;
                 break;
             default:
                 break;
             }
         }
-    }
-
-    const char *FITSImage::getImageType() const
-    {
-        switch (_bitDepth)
-        {
-        case FITS::BD_INT_8:
-            return "8-bit integer pixels";
-        case FITS::BD_INT_16:
-            return "16-bit integer pixels";
-        case FITS::BD_INT_32:
-            return "32-bit integer pixels";
-        case FITS::BD_FLOAT:
-            return "32-bit floating point pixels";
-        case FITS::BD_DOUBLE:
-            return "64-bit floating point pixels";
-        }
-
-        return "Unknown";
-    }
-
-    const char *FITSImage::getSizeAndColor() const
-    {
-        static char tmp[50];
-
-        sprintf(tmp, "%dx%d %s image", _width, _height, _isColor ? "Color" : "Grayscale");
-
-        return tmp;
     }
 
     int FITSImage::getWidth() const
@@ -202,7 +189,7 @@ namespace ELS
         return _height;
     }
 
-    FITS::RasterFormat FITSImage::getRasterFormat() const
+    RasterFormat FITSImage::getRasterFormat() const
     {
         return _format;
     }
@@ -212,19 +199,106 @@ namespace ELS
         return _isColor;
     }
 
-    FITS::BitDepth FITSImage::getBitDepth() const
+    SampleFormat FITSImage::getSampleFormat() const
     {
-        return _bitDepth;
+        return _sampleFormat;
     }
 
-    const void *FITSImage::getPixels() const
+    void FITSImage::visitPixels(PixelVisitor *visitor) const
     {
-        return _pixels;
+        switch (_sampleFormat)
+        {
+        case SF_INT_8:
+            visitPixels((int8_t *)_pixels,
+                        visitor);
+            break;
+        case SF_INT_16:
+            visitPixels((int16_t *)_pixels,
+                        visitor);
+            break;
+        case SF_INT_32:
+            visitPixels((int32_t *)_pixels,
+                        visitor);
+            break;
+        case SF_UINT_8:
+            visitPixels((uint8_t *)_pixels,
+                        visitor);
+            break;
+        case SF_UINT_16:
+            visitPixels((uint16_t *)_pixels,
+                        visitor);
+            break;
+        case SF_UINT_32:
+            visitPixels((uint32_t *)_pixels,
+                        visitor);
+            break;
+        case SF_FLOAT:
+            visitPixels((float *)_pixels,
+                        visitor);
+            break;
+        case SF_DOUBLE:
+            visitPixels((double *)_pixels,
+                        visitor);
+            break;
+        }
+    }
+
+    template <typename PixelT>
+    void FITSImage::visitPixels(PixelT *pixels,
+                                PixelVisitor *visitor) const
+    {
+        if (!_isColor)
+        {
+            visitor->pixelFormat(ELS::PF_GRAY);
+            visitor->dimensions(_width, _height);
+            visitor->rowInfo(1);
+            for (int y = 0; y < _height; y++)
+            {
+                visitor->rowGray(y, &pixels[y * _width]);
+            }
+            visitor->done();
+        }
+        else
+        {
+            visitor->pixelFormat(ELS::PF_RGB);
+            visitor->dimensions(_width, _height);
+            switch (_format)
+            {
+            case RF_INTERLEAVED:
+                visitor->rowInfo(3);
+                break;
+            case RF_PLANAR:
+                visitor->rowInfo(1);
+                break;
+            }
+            int gOffset = _width * _height;
+            int bOffset = gOffset * 2;
+            for (int y = 0; y < _height; y++)
+            {
+                int rowOffset = y * _width;
+                switch (_format)
+                {
+                case RF_INTERLEAVED:
+                    visitor->rowRgb(y,
+                                    &pixels[3 * rowOffset + 0],
+                                    &pixels[3 * rowOffset + 1],
+                                    &pixels[3 * rowOffset + 2]);
+                    break;
+                case RF_PLANAR:
+                    visitor->rowRgb(y,
+                                    &pixels[rowOffset],
+                                    &pixels[gOffset + rowOffset],
+                                    &pixels[bOffset + rowOffset]);
+                    break;
+                }
+            }
+            visitor->done();
+        }
     }
 
     /* static */
     void *FITSImage::readPix(fitsfile *fits,
-                             FITS::BitDepth bitDepth,
+                             SampleFormat sampleFormat,
                              int64_t pixelCount)
     {
         long fpixel[3] = {1, 1, 1};
@@ -232,25 +306,37 @@ namespace ELS
         // Allocate space for the pixels
         int fitsIOType = 0;
         void *pixels;
-        switch (bitDepth)
+        switch (sampleFormat)
         {
-        case FITS::BD_INT_8:
+        case SF_INT_8:
+            fitsIOType = TSBYTE;
+            pixels = new int8_t[pixelCount];
+            break;
+        case SF_INT_16:
+            fitsIOType = TSHORT;
+            pixels = new int16_t[pixelCount];
+            break;
+        case SF_INT_32:
+            fitsIOType = TINT;
+            pixels = new int32_t[pixelCount];
+            break;
+        case SF_UINT_8:
             fitsIOType = TBYTE;
             pixels = new uint8_t[pixelCount];
             break;
-        case FITS::BD_INT_16:
+        case SF_UINT_16:
             fitsIOType = TUSHORT;
             pixels = new uint16_t[pixelCount];
             break;
-        case FITS::BD_INT_32:
+        case SF_UINT_32:
             fitsIOType = TUINT;
             pixels = new uint32_t[pixelCount];
             break;
-        case FITS::BD_FLOAT:
+        case SF_FLOAT:
             fitsIOType = TFLOAT;
             pixels = new float[pixelCount];
             break;
-        case FITS::BD_DOUBLE:
+        case SF_DOUBLE:
             fitsIOType = TDOUBLE;
             pixels = new double[pixelCount];
             break;
