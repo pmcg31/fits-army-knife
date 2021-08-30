@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QFileInfo>
 #include <QHBoxLayout>
@@ -9,6 +8,7 @@
 #include <QTcpServer>
 #include <QVBoxLayout>
 
+#include "imagefilelistitem.h"
 #include "imagewidget.h"
 #include "histogramwidget.h"
 #include "pixstatistics.h"
@@ -27,19 +27,15 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QTcpServer& server,
-               QList<QFileInfo> fileList,
+               QList<ImageFileListItem> fileList,
                QWidget* parent = nullptr);
     ~MainWindow();
 
-signals:
-    void showStretched(ELS::PixSTFParms stfParms);
-    void clearStretched();
-
 private:
-    void fitsFileChanged(const char* filename);
-    void fitsFileFailed(const char* filename,
-                        const char* errText);
-    void fitsZoomChanged(float zoom);
+    // void fitsFileChanged(const char* filename);
+    // void fitsFileFailed(const char* filename,
+    //                     const char* errText);
+    void imageZoomChanged(float zoom);
 
     void stretchToggled(bool isChecked);
 
@@ -56,14 +52,15 @@ private:
 
     void syncFileIdx();
     void syncFileCount();
+    void syncStretch();
 
-    void addFilesToList(QList<QString> absoluteFilePaths);
+    // void addFilesToList(QList<QString> absoluteFilePaths);
 
 private:
     QTcpServer& server;
     QList<QTcpSocket*> clients;
-    QList<QFileInfo> fileList;
-    char filename[1000];
+    QList<ImageFileListItem> fileList;
+    QString filename;
     int currentFileIdx;
     bool showingStretched;
     QWidget mainPane;
@@ -86,6 +83,5 @@ private:
     QPushButton prevBtn;
     QPushButton nextBtn;
     QLabel fileListPosLabel;
-    ELS::PixSTFParms stfParms;
+    // ELS::PixSTFParms stfParms;
 };
-#endif // MAINWINDOW_H

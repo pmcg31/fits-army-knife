@@ -32,8 +32,15 @@ namespace ELS
     Image* Image::load(const char* filename)
     {
         FileType fileType = fileTypeFromFilename(filename);
-        printf("%s FileType: %d\n", filename, fileType);
+        printf("%s FileType: %s\n", filename, g_fileTypeStr[fileType]);
 
+        return load(filename, fileType);
+    }
+
+    /* static */
+    Image* Image::load(const char* filename,
+                       FileType fileType)
+    {
         switch (fileType)
         {
         case FT_FITS:
@@ -47,26 +54,31 @@ namespace ELS
     }
 
     /* static */
-    bool Image::isSupportedFile(const char* filename,
-                                char* error /* = 0 */)
+    Image::FileType Image::isSupportedFile(const char* filename,
+                                           char* error /* = 0 */)
     {
         FileType fileType = fileTypeFromFilename(filename);
-        printf("%s FileType: %d\n", filename, fileType);
 
         switch (fileType)
         {
         case FT_FITS:
-            return checkMagic(filename, &g_fitsMagic, error);
+            if (checkMagic(filename, &g_fitsMagic, error))
+            {
+                return FT_FITS;
+            }
+            break;
         case FT_XISF:
             if (error != 0)
             {
                 sprintf(error, "XISF support coming soon!");
             }
-            return false;
+            break;
         case FT_UNKNOWN:
         default:
-            return false;
+            break;
         }
+
+        return FT_UNKNOWN;
     }
 
     /* static */

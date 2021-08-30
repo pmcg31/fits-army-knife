@@ -9,6 +9,7 @@
 #include <QTcpSocket>
 
 #include "image.h"
+#include "imagefilelistitem.h"
 #include "mainwindow.h"
 
 int main(int argc, char* argv[])
@@ -17,7 +18,7 @@ int main(int argc, char* argv[])
 
     int noargc = 1;
 
-    QList<QFileInfo> fileList;
+    QList<ImageFileListItem> fileList;
     QList<QDir> dirList;
     for (int i = 1; i < argc; i++)
     {
@@ -38,13 +39,14 @@ int main(int argc, char* argv[])
         else
         {
             QByteArray ba = info.absoluteFilePath().toLocal8Bit();
-            const char* fname = ba.data();
-            printf("Filename: %s\n", fname);
-            if (ELS::Image::isSupportedFile(fname, error))
+            const char* absPath = ba.data();
+            ELS::Image::FileType fileType = ELS::Image::isSupportedFile(absPath, error);
+            if (fileType != ELS::Image::FT_UNKNOWN)
             {
-                if (!fileList.contains(info))
+                ImageFileListItem item(absPath, fileType, true);
+                if (!fileList.contains(item))
                 {
-                    fileList.append(info);
+                    fileList.append(item);
                 }
             }
             else
@@ -63,14 +65,14 @@ int main(int argc, char* argv[])
         for (k = dirFiles.begin(); k != dirFiles.end(); ++k)
         {
             QByteArray ba = k->absoluteFilePath().toLocal8Bit();
-            const char* fname = ba.data();
-            printf("Filename: %s\n", fname);
-
-            if (ELS::Image::isSupportedFile(fname, error))
+            const char* absPath = ba.data();
+            ELS::Image::FileType fileType = ELS::Image::isSupportedFile(absPath, error);
+            if (fileType != ELS::Image::FT_UNKNOWN)
             {
-                if (!fileList.contains(*k))
+                ImageFileListItem item(absPath, fileType, true);
+                if (!fileList.contains(item))
                 {
-                    fileList.append(*k);
+                    fileList.append(item);
                 }
             }
             else
@@ -105,10 +107,10 @@ int main(int argc, char* argv[])
             qint32 numFiles = fileList.size();
             out << numFiles;
 
-            QList<QFileInfo>::iterator i;
+            QList<ImageFileListItem>::iterator i;
             for (i = fileList.begin(); i != fileList.end(); ++i)
             {
-                out << i->absoluteFilePath();
+                out << *i;
             }
 
             socket.flush();
@@ -118,53 +120,3 @@ int main(int argc, char* argv[])
 
     return 1;
 }
-
-// bool checkFile(QFileInfo info, char* error)
-// {
-//     const char magic[] = {'S', 'I', 'M', 'P', 'L', 'E'};
-
-//     if (info.exists())
-//     {
-//         QFile f(info.absoluteFilePath());
-//         if (!f.open(QIODevice::ReadOnly))
-//         {
-//             sprintf(error, "File '%s' is not readable; ignored",
-//                     qPrintable(info.filePath()));
-//             return false;
-//         }
-//         else
-//         {
-//             char fileMagic[6];
-//             if (f.read(fileMagic, 6) != 6)
-//             {
-//                 sprintf(error, "File '%s': small read short or failed verifying magic; ignored",
-//                         qPrintable(info.filePath()));
-//                 f.close();
-//                 return false;
-//             }
-//             else
-//             {
-//                 for (int i = 0; i < 6; i++)
-//                 {
-//                     if (magic[i] != fileMagic[i])
-//                     {
-//                         sprintf(error, "File '%s': not a FITS file (bad magic); ignored",
-//                                 qPrintable(info.filePath()));
-//                         f.close();
-//                         return false;
-//                     }
-//                 }
-//             }
-
-//             f.close();
-//         }
-//     }
-//     else
-//     {
-//         sprintf(error, "File '%s' doesn't exist; ignored",
-//                 qPrintable(info.filePath()));
-//         return false;
-//     }
-
-//     return true;
-// }

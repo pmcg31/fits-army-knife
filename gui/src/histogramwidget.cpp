@@ -29,7 +29,7 @@ QSize HistogramWidget::minimumSizeHint() const
 
 void HistogramWidget::setHistogramData(bool isColor,
                                        int numPoints,
-                                       std::shared_ptr<uint32_t[]> data)
+                                       std::shared_ptr<const uint32_t[]> data)
 {
     _isColor = isColor;
     _numPoints = numPoints;

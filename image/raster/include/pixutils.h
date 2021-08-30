@@ -1,6 +1,7 @@
 #pragma once
 
 #include <inttypes.h>
+#include "pixstfparms.h"
 
 namespace ELS
 {
@@ -37,11 +38,7 @@ namespace ELS
 
         template <typename PixelT>
         static double screenTransferFunc(PixelT pixel,
-                                         double mBal,
-                                         double sClip,
-                                         double hClip,
-                                         double sExp,
-                                         double hExp);
+                                         PixSTFParms* stfParms);
 
         static uint16_t convertRangeToHist(int8_t val);
         static uint16_t convertRangeToHist(int16_t val);
@@ -79,17 +76,18 @@ namespace ELS
     /* static */
     template <typename PixelT>
     double PixUtils::screenTransferFunc(PixelT pixel,
-                                        double mBal,
-                                        double sClip,
-                                        double hClip,
-                                        double sExp,
-                                        double hExp)
+                                        PixSTFParms* stfParms)
     {
-        double tmpPix = PixUtils::clippingFunc(pixel, sClip, hClip);
+        double tmpPix = PixUtils::clippingFunc(pixel,
+                                               stfParms->getSClip(),
+                                               stfParms->getHClip());
 
-        tmpPix = PixUtils::midtonesTransferFunc(tmpPix, mBal);
+        tmpPix = PixUtils::midtonesTransferFunc(tmpPix,
+                                                stfParms->getMBal());
 
-        return PixUtils::expansionFunc(tmpPix, sExp, hExp);
+        return PixUtils::expansionFunc(tmpPix,
+                                       stfParms->getSExp(),
+                                       stfParms->getHExp());
     }
 
 }

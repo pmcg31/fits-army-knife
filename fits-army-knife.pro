@@ -37,6 +37,7 @@ SOURCES += \
     image/raster/src/pixstfparms.cpp \
     gui/src/main.cpp \
     gui/src/mainwindow.cpp \
+    gui/src/imagefilelistitem.cpp \
     gui/src/imagewidget.cpp \
     gui/src/histogramwidget.cpp
 
@@ -55,6 +56,7 @@ HEADERS += \
     image/raster/include/pixstfparms.h \
     image/raster/include/statisticsvisitor.h \
     gui/include/mainwindow.h \
+    gui/include/imagefilelistitem.h \
     gui/include/imagewidget.h \
     gui/include/histogramwidget.h
 

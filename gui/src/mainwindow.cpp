@@ -9,7 +9,7 @@
 #include "statisticsvisitor.h"
 
 MainWindow::MainWindow(QTcpServer& server,
-                       QList<QFileInfo> fileList,
+                       QList<ImageFileListItem> fileList,
                        QWidget* parent)
     : QMainWindow(parent),
       server(server),
@@ -36,8 +36,7 @@ MainWindow::MainWindow(QTcpServer& server,
       zoom100Btn("1:1"),
       prevBtn(" ◀ "),
       nextBtn(" ▶ "),
-      fileListPosLabel(" -- of -- "),
-      stfParms()
+      fileListPosLabel(" -- of -- ")
 {
     const QSize iconSize(20, 20);
     const QSize btnSize(30, 30);
@@ -119,18 +118,18 @@ MainWindow::MainWindow(QTcpServer& server,
 
     setCentralWidget(&mainPane);
 
-    QObject::connect(&imageWidget, &ImageWidget::fileChanged,
-                     this, &MainWindow::fitsFileChanged);
-    QObject::connect(&imageWidget, &ImageWidget::fileFailed,
-                     this, &MainWindow::fitsFileFailed);
+    // QObject::connect(&imageWidget, &ImageWidget::fileChanged,
+    //                  this, &MainWindow::fitsFileChanged);
+    // QObject::connect(&imageWidget, &ImageWidget::fileFailed,
+    //                  this, &MainWindow::fitsFileFailed);
     QObject::connect(&imageWidget, &ImageWidget::actualZoomChanged,
-                     this, &MainWindow::fitsZoomChanged);
+                     this, &MainWindow::imageZoomChanged);
     QObject::connect(&stretchBtn, &QPushButton::toggled,
                      this, &MainWindow::stretchToggled);
-    QObject::connect(this, &MainWindow::showStretched,
-                     &imageWidget, &ImageWidget::showStretched);
-    QObject::connect(this, &MainWindow::clearStretched,
-                     &imageWidget, &ImageWidget::clearStretched);
+    // QObject::connect(this, &MainWindow::showStretched,
+    //                  &imageWidget, &ImageWidget::showStretched);
+    // QObject::connect(this, &MainWindow::clearStretched,
+    //                  &imageWidget, &ImageWidget::clearStretched);
     QObject::connect(&zoomFitBtn, &QPushButton::clicked,
                      this, &MainWindow::zoomFitClicked);
     QObject::connect(&zoom100Btn, &QPushButton::clicked,
@@ -151,377 +150,30 @@ MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::fitsFileChanged(const char* filename)
-{
-    printf("File loaded: %s\n", filename);
+// void MainWindow::fitsFileChanged(const char* filename)
+// {
+//     printf("File loaded: %s\n", filename);
 
-    const ELS::Image* image = imageWidget.getImage();
-    bool isColor = image->isColor();
+//     const ELS::Image* image = imageWidget.getImage();
 
-    const char* giMinF = " min: %d ";
-    const char* giMeanF = " mean: %d ";
-    const char* giMedF = " median: %d ";
-    const char* giMaxF = " max: %d ";
-    const char* ciMinF = " min: %d | %d | %d";
-    const char* ciMeanF = " mean: %d | %d | %d";
-    const char* ciMedF = " median: %d | %d | %d ";
-    const char* ciMaxF = " max: %d | %d | %d ";
-    const char* gfMinF = " min: %d0.4f ";
-    const char* gfMeanF = " mean: %0.4f ";
-    const char* gfMedF = " median: %0.4f ";
-    const char* gfMaxF = " max: %0.4f ";
-    const char* cfMinF = " min: %0.4f | %0.4f | %0.4f";
-    const char* cfMeanF = " mean: %0.4f | %0.4f | %0.4f";
-    const char* cfMedF = " median: %0.4f | %0.4f | %0.4f ";
-    const char* cfMaxF = " max: %0.4f | %0.4f | %0.4f ";
+//     minLabel.setText(tmp);
+//     meanLabel.setText(tmp2);
+//     medLabel.setText(tmp3);
+//     maxLabel.setText(tmp4);
 
-    char tmp[100];
-    char tmp2[100];
-    char tmp3[100];
-    char tmp4[100];
-    int numPoints = 0;
-    std::shared_ptr<uint32_t[]> histogram;
-    switch (image->getSampleFormat())
-    {
-    case ELS::SF_UINT_8:
-    {
-        ELS::StatisticsVisitor<uint8_t> visitor;
-        image->visitPixels(&visitor);
-        ELS::PixStatistics<uint8_t> localStats = visitor.getStatistics();
-        stfParms = localStats.getStretchParameters();
-        if (!isColor)
-        {
-            sprintf(tmp, giMinF, localStats.getMinVal());
-            sprintf(tmp2, giMeanF, localStats.getMeanVal());
-            sprintf(tmp3, giMedF, localStats.getMedVal());
-            sprintf(tmp4, giMaxF, localStats.getMaxVal());
-        }
-        else
-        {
-            sprintf(tmp, ciMinF,
-                    localStats.getMinVal(0),
-                    localStats.getMinVal(1),
-                    localStats.getMinVal(2));
-            sprintf(tmp2, ciMeanF,
-                    localStats.getMeanVal(0),
-                    localStats.getMeanVal(1),
-                    localStats.getMeanVal(2));
-            sprintf(tmp3, ciMedF,
-                    localStats.getMedVal(0),
-                    localStats.getMedVal(1),
-                    localStats.getMedVal(2));
-            sprintf(tmp4, ciMaxF,
-                    localStats.getMaxVal(0),
-                    localStats.getMaxVal(1),
-                    localStats.getMaxVal(2));
-        }
-        minLabel.setText(tmp);
-        meanLabel.setText(tmp2);
-        medLabel.setText(tmp3);
-        maxLabel.setText(tmp4);
+//     histWidget.setHistogramData(isColor, numPoints, histogram);
+//     imageWidget.setHistogramData(isColor, numPoints, histogram);
 
-        visitor.getHistogramData(&numPoints, &histogram);
-    }
-    break;
-    case ELS::SF_UINT_16:
-    {
-        ELS::StatisticsVisitor<uint16_t> visitor;
-        image->visitPixels(&visitor);
-        ELS::PixStatistics<uint16_t> localStats = visitor.getStatistics();
-        stfParms = localStats.getStretchParameters();
-        if (!isColor)
-        {
-            sprintf(tmp, giMinF, localStats.getMinVal());
-            sprintf(tmp2, giMeanF, localStats.getMeanVal());
-            sprintf(tmp3, giMedF, localStats.getMedVal());
-            sprintf(tmp4, giMaxF, localStats.getMaxVal());
-        }
-        else
-        {
-            sprintf(tmp, ciMinF,
-                    localStats.getMinVal(0),
-                    localStats.getMinVal(1),
-                    localStats.getMinVal(2));
-            sprintf(tmp2, ciMeanF,
-                    localStats.getMeanVal(0),
-                    localStats.getMeanVal(1),
-                    localStats.getMeanVal(2));
-            sprintf(tmp3, ciMedF,
-                    localStats.getMedVal(0),
-                    localStats.getMedVal(1),
-                    localStats.getMedVal(2));
-            sprintf(tmp4, ciMaxF,
-                    localStats.getMaxVal(0),
-                    localStats.getMaxVal(1),
-                    localStats.getMaxVal(2));
-        }
-        minLabel.setText(tmp);
-        meanLabel.setText(tmp2);
-        medLabel.setText(tmp3);
-        maxLabel.setText(tmp4);
+//     update();
+// }
 
-        visitor.getHistogramData(&numPoints, &histogram);
-    }
-    break;
-    case ELS::SF_UINT_32:
-    {
-        ELS::StatisticsVisitor<uint32_t> visitor;
-        image->visitPixels(&visitor);
-        ELS::PixStatistics<uint32_t> localStats = visitor.getStatistics();
-        stfParms = localStats.getStretchParameters();
-        if (!isColor)
-        {
-            sprintf(tmp, giMinF, localStats.getMinVal());
-            sprintf(tmp2, giMeanF, localStats.getMeanVal());
-            sprintf(tmp3, giMedF, localStats.getMedVal());
-            sprintf(tmp4, giMaxF, localStats.getMaxVal());
-        }
-        else
-        {
-            sprintf(tmp, ciMinF,
-                    localStats.getMinVal(0),
-                    localStats.getMinVal(1),
-                    localStats.getMinVal(2));
-            sprintf(tmp2, ciMeanF,
-                    localStats.getMeanVal(0),
-                    localStats.getMeanVal(1),
-                    localStats.getMeanVal(2));
-            sprintf(tmp3, ciMedF,
-                    localStats.getMedVal(0),
-                    localStats.getMedVal(1),
-                    localStats.getMedVal(2));
-            sprintf(tmp4, ciMaxF,
-                    localStats.getMaxVal(0),
-                    localStats.getMaxVal(1),
-                    localStats.getMaxVal(2));
-        }
-        minLabel.setText(tmp);
-        meanLabel.setText(tmp2);
-        medLabel.setText(tmp3);
-        maxLabel.setText(tmp4);
+// void MainWindow::fitsFileFailed(const char* filename,
+//                                 const char* errText)
+// {
+//     printf("File failed [%s]: %s\n", errText, filename);
+// }
 
-        visitor.getHistogramData(&numPoints, &histogram);
-    }
-    break;
-    case ELS::SF_INT_8:
-    {
-        ELS::StatisticsVisitor<int8_t> visitor;
-        image->visitPixels(&visitor);
-        ELS::PixStatistics<int8_t> localStats = visitor.getStatistics();
-        stfParms = localStats.getStretchParameters();
-        if (!isColor)
-        {
-            sprintf(tmp, giMinF, localStats.getMinVal());
-            sprintf(tmp2, giMeanF, localStats.getMeanVal());
-            sprintf(tmp3, giMedF, localStats.getMedVal());
-            sprintf(tmp4, giMaxF, localStats.getMaxVal());
-        }
-        else
-        {
-            sprintf(tmp, ciMinF,
-                    localStats.getMinVal(0),
-                    localStats.getMinVal(1),
-                    localStats.getMinVal(2));
-            sprintf(tmp2, ciMeanF,
-                    localStats.getMeanVal(0),
-                    localStats.getMeanVal(1),
-                    localStats.getMeanVal(2));
-            sprintf(tmp3, ciMedF,
-                    localStats.getMedVal(0),
-                    localStats.getMedVal(1),
-                    localStats.getMedVal(2));
-            sprintf(tmp4, ciMaxF,
-                    localStats.getMaxVal(0),
-                    localStats.getMaxVal(1),
-                    localStats.getMaxVal(2));
-        }
-        minLabel.setText(tmp);
-        meanLabel.setText(tmp2);
-        medLabel.setText(tmp3);
-        maxLabel.setText(tmp4);
-
-        visitor.getHistogramData(&numPoints, &histogram);
-    }
-    break;
-    case ELS::SF_INT_16:
-    {
-        ELS::StatisticsVisitor<int16_t> visitor;
-        image->visitPixels(&visitor);
-        ELS::PixStatistics<int16_t> localStats = visitor.getStatistics();
-        stfParms = localStats.getStretchParameters();
-        if (!isColor)
-        {
-            sprintf(tmp, giMinF, localStats.getMinVal());
-            sprintf(tmp2, giMeanF, localStats.getMeanVal());
-            sprintf(tmp3, giMedF, localStats.getMedVal());
-            sprintf(tmp4, giMaxF, localStats.getMaxVal());
-        }
-        else
-        {
-            sprintf(tmp, ciMinF,
-                    localStats.getMinVal(0),
-                    localStats.getMinVal(1),
-                    localStats.getMinVal(2));
-            sprintf(tmp2, ciMeanF,
-                    localStats.getMeanVal(0),
-                    localStats.getMeanVal(1),
-                    localStats.getMeanVal(2));
-            sprintf(tmp3, ciMedF,
-                    localStats.getMedVal(0),
-                    localStats.getMedVal(1),
-                    localStats.getMedVal(2));
-            sprintf(tmp4, ciMaxF,
-                    localStats.getMaxVal(0),
-                    localStats.getMaxVal(1),
-                    localStats.getMaxVal(2));
-        }
-        minLabel.setText(tmp);
-        meanLabel.setText(tmp2);
-        medLabel.setText(tmp3);
-        maxLabel.setText(tmp4);
-
-        visitor.getHistogramData(&numPoints, &histogram);
-    }
-    break;
-    case ELS::SF_INT_32:
-    {
-        ELS::StatisticsVisitor<int32_t> visitor;
-        image->visitPixels(&visitor);
-        ELS::PixStatistics<int32_t> localStats = visitor.getStatistics();
-        stfParms = localStats.getStretchParameters();
-        if (!isColor)
-        {
-            sprintf(tmp, giMinF, localStats.getMinVal());
-            sprintf(tmp2, giMeanF, localStats.getMeanVal());
-            sprintf(tmp3, giMedF, localStats.getMedVal());
-            sprintf(tmp4, giMaxF, localStats.getMaxVal());
-        }
-        else
-        {
-            sprintf(tmp, ciMinF,
-                    localStats.getMinVal(0),
-                    localStats.getMinVal(1),
-                    localStats.getMinVal(2));
-            sprintf(tmp2, ciMeanF,
-                    localStats.getMeanVal(0),
-                    localStats.getMeanVal(1),
-                    localStats.getMeanVal(2));
-            sprintf(tmp3, ciMedF,
-                    localStats.getMedVal(0),
-                    localStats.getMedVal(1),
-                    localStats.getMedVal(2));
-            sprintf(tmp4, ciMaxF,
-                    localStats.getMaxVal(0),
-                    localStats.getMaxVal(1),
-                    localStats.getMaxVal(2));
-        }
-        minLabel.setText(tmp);
-        meanLabel.setText(tmp2);
-        medLabel.setText(tmp3);
-        maxLabel.setText(tmp4);
-
-        visitor.getHistogramData(&numPoints, &histogram);
-    }
-    break;
-    case ELS::SF_FLOAT:
-    {
-        ELS::StatisticsVisitor<float> visitor;
-        image->visitPixels(&visitor);
-        ELS::PixStatistics<float> localStats = visitor.getStatistics();
-        stfParms = localStats.getStretchParameters();
-        if (!isColor)
-        {
-            sprintf(tmp, gfMinF, localStats.getMinVal());
-            sprintf(tmp2, gfMeanF, localStats.getMeanVal());
-            sprintf(tmp3, gfMedF, localStats.getMedVal());
-            sprintf(tmp4, gfMaxF, localStats.getMaxVal());
-        }
-        else
-        {
-            sprintf(tmp, cfMinF,
-                    localStats.getMinVal(0),
-                    localStats.getMinVal(1),
-                    localStats.getMinVal(2));
-            sprintf(tmp2, cfMeanF,
-                    localStats.getMeanVal(0),
-                    localStats.getMeanVal(1),
-                    localStats.getMeanVal(2));
-            sprintf(tmp3, cfMedF,
-                    localStats.getMedVal(0),
-                    localStats.getMedVal(1),
-                    localStats.getMedVal(2));
-            sprintf(tmp4, cfMaxF,
-                    localStats.getMaxVal(0),
-                    localStats.getMaxVal(1),
-                    localStats.getMaxVal(2));
-        }
-        minLabel.setText(tmp);
-        meanLabel.setText(tmp2);
-        medLabel.setText(tmp3);
-        maxLabel.setText(tmp4);
-
-        visitor.getHistogramData(&numPoints, &histogram);
-    }
-    break;
-    case ELS::SF_DOUBLE:
-    {
-        ELS::StatisticsVisitor<double> visitor;
-        ELS::PixStatistics<double> localStats = visitor.getStatistics();
-        stfParms = localStats.getStretchParameters();
-        image->visitPixels(&visitor);
-        if (!isColor)
-        {
-            sprintf(tmp, gfMinF, localStats.getMinVal());
-            sprintf(tmp2, gfMeanF, localStats.getMeanVal());
-            sprintf(tmp3, gfMedF, localStats.getMedVal());
-            sprintf(tmp4, gfMaxF, localStats.getMaxVal());
-        }
-        else
-        {
-            sprintf(tmp, cfMinF,
-                    localStats.getMinVal(0),
-                    localStats.getMinVal(1),
-                    localStats.getMinVal(2));
-            sprintf(tmp2, cfMeanF,
-                    localStats.getMeanVal(0),
-                    localStats.getMeanVal(1),
-                    localStats.getMeanVal(2));
-            sprintf(tmp3, cfMedF,
-                    localStats.getMedVal(0),
-                    localStats.getMedVal(1),
-                    localStats.getMedVal(2));
-            sprintf(tmp4, cfMaxF,
-                    localStats.getMaxVal(0),
-                    localStats.getMaxVal(1),
-                    localStats.getMaxVal(2));
-        }
-        minLabel.setText(tmp);
-        meanLabel.setText(tmp2);
-        medLabel.setText(tmp3);
-        maxLabel.setText(tmp4);
-
-        visitor.getHistogramData(&numPoints, &histogram);
-    }
-    break;
-    }
-
-    histWidget.setHistogramData(isColor, numPoints, histogram);
-    imageWidget.setHistogramData(isColor, numPoints, histogram);
-
-    printf("%s\n", image->getImageType());
-    printf("%s\n", image->getSizeAndColor());
-    fflush(stdout);
-
-    update();
-}
-
-void MainWindow::fitsFileFailed(const char* filename,
-                                const char* errText)
-{
-    printf("File failed [%s]: %s\n", errText, filename);
-}
-
-void MainWindow::fitsZoomChanged(float zoom)
+void MainWindow::imageZoomChanged(float zoom)
 {
     char tmp[10];
 
@@ -535,17 +187,10 @@ void MainWindow::stretchToggled(bool isChecked)
     {
         showingStretched = isChecked;
 
-        stretchBtn.setChecked(showingStretched);
-        if (showingStretched)
-        {
-            stretchBtn.setIcon(onIcon);
-            emit showStretched(stfParms);
-        }
-        else
-        {
-            stretchBtn.setIcon(offIcon);
-            emit clearStretched();
-        }
+        syncStretch();
+
+        fileList[currentFileIdx].setShowStretched(showingStretched);
+        imageWidget.setImage(fileList[currentFileIdx].getQImage());
     }
 }
 
@@ -616,18 +261,23 @@ void MainWindow::readyRead()
             qint32 numFiles = 0;
             in >> numFiles;
 
-            QList<QString> absoluteFilePaths;
+            int newFileCount = 0;
             for (int i = 0; i < numFiles; i++)
             {
-                QString absoluteFilePath;
-                in >> absoluteFilePath;
-                absoluteFilePaths.append(absoluteFilePath);
+                ImageFileListItem item;
+                in >> item;
+                if (!fileList.contains(item))
+                {
+                    fileList.append(item);
+                    newFileCount++;
+                    syncFileCount();
+                }
             }
 
-            printf("Added %d files\n", absoluteFilePaths.size());
+            printf("Added %d files\n", newFileCount);
             fflush(stdout);
 
-            addFilesToList(absoluteFilePaths);
+            // addFilesToList(absoluteFilePaths);
         }
     }
 }
@@ -654,26 +304,37 @@ void MainWindow::disconnected()
 
 void MainWindow::syncFileIdx()
 {
-    QByteArray local8 = fileList.at(currentFileIdx)
-                            .absoluteFilePath()
-                            .toLocal8Bit()
-                            .constData();
-    int len = local8.size();
-    for (int i = 0; i < len; i++)
+    ImageFileListItem* item = &(fileList[currentFileIdx]);
+    filename = item->absolutePath();
+
+    if (!item->isLoaded())
     {
-        filename[i] = local8[i];
+        printf("Loading %s\n", qPrintable(filename));
+        fflush(stdout);
+        item->load();
     }
-    filename[len] = '\0';
+
+    minLabel.setText(item->getMin());
+    meanLabel.setText(item->getMean());
+    medLabel.setText(item->getMedian());
+    maxLabel.setText(item->getMax());
+
+    histWidget.setHistogramData(item->isColor(),
+                                item->getNumHistogramPoints(),
+                                item->getHistogram());
+
+    showingStretched = item->showStretched();
+    syncStretch();
 
     syncFileCount();
 
     printf("Setting file %d of %d: %s\n",
            currentFileIdx + 1,
            fileList.size(),
-           filename);
+           qPrintable(filename));
     fflush(stdout);
 
-    imageWidget.setFile(filename);
+    imageWidget.setImage(fileList[currentFileIdx].getQImage());
 }
 
 void MainWindow::syncFileCount()
@@ -686,18 +347,31 @@ void MainWindow::syncFileCount()
     fileListPosLabel.setText(tmp);
 }
 
-void MainWindow::addFilesToList(QList<QString> absoluteFilePaths)
+void MainWindow::syncStretch()
 {
-    QList<QString>::iterator i;
-    for (i = absoluteFilePaths.begin(); i != absoluteFilePaths.end(); ++i)
+    stretchBtn.setChecked(showingStretched);
+    if (showingStretched)
     {
-        QFileInfo info(*i);
-
-        if (!fileList.contains(info))
-        {
-            fileList.append(info);
-        }
+        stretchBtn.setIcon(onIcon);
     }
-
-    syncFileCount();
+    else
+    {
+        stretchBtn.setIcon(offIcon);
+    }
 }
+
+// void MainWindow::addFilesToList(QList<QString> absoluteFilePaths)
+// {
+//     QList<QString>::iterator i;
+//     for (i = absoluteFilePaths.begin(); i != absoluteFilePaths.end(); ++i)
+//     {
+//         QFileInfo info(*i);
+
+//         if (!fileList.contains(info))
+//         {
+//             fileList.append(info);
+//         }
+//     }
+
+//     syncFileCount();
+// }

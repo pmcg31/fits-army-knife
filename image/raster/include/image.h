@@ -9,9 +9,19 @@ namespace ELS
     class Image
     {
     public:
+        enum FileType
+        {
+            FT_UNKNOWN,
+            FT_FITS,
+            FT_XISF
+        };
+
+    public:
         static Image* load(const char* filename);
-        static bool isSupportedFile(const char* filename,
-                                    char* error = 0);
+        static Image* load(const char* filename,
+                           FileType fileType);
+        static FileType isSupportedFile(const char* filename,
+                                        char* error = 0);
 
     public:
         virtual ~Image();
@@ -28,14 +38,6 @@ namespace ELS
 
         const char* getImageType() const;
         const char* getSizeAndColor() const;
-
-    private:
-        enum FileType
-        {
-            FT_UNKNOWN,
-            FT_FITS,
-            FT_XISF
-        };
 
     private:
         struct ExtInfo

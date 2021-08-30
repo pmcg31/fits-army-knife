@@ -25,19 +25,19 @@ ImageWidget::ImageWidget(QWidget* parent)
     : QWidget(parent),
       _sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding),
       _filename(""),
-      _image(0),
-      _cacheImage(),
-      _cacheImageData(),
-      _showStretched(false),
+      _image(),
+      //   _cacheImage(),
+      //   _cacheImageData(),
+      //   _showStretched(false),
       _zoom(-1.0),
       _actualZoom(-1.0),
-      _stfParms(),
-      _isColor(false),
-      _numHistogramPoints(0),
-      _histogramData(),
-      _stfLUT(0),
-      _identityLUT(0),
-      _lutInUse(_identityLUT),
+      //   _stfParms(),
+      //   _isColor(false),
+      //   _numHistogramPoints(0),
+      //   _histogramData(),
+      //   _stfLUT(0),
+      //   _identityLUT(0),
+      //   _lutInUse(_identityLUT),
       _mouseDragLast(-1, -1),
       _source(0, 0, 0, 0),
       _target(0, 0, 0, 0),
@@ -54,25 +54,25 @@ ImageWidget::ImageWidget(QWidget* parent)
 
 ImageWidget::~ImageWidget()
 {
-    if (_image != 0)
-    {
-        delete _image;
-        _image = 0;
-    }
+    // if (_image != 0)
+    // {
+    //     delete _image;
+    //     _image = 0;
+    // }
 
-    if (_identityLUT != 0)
-    {
-        delete[] _identityLUT;
-        _identityLUT = 0;
-    }
+    // if (_identityLUT != 0)
+    // {
+    //     delete[] _identityLUT;
+    //     _identityLUT = 0;
+    // }
 
-    if (_stfLUT != 0)
-    {
-        delete[] _stfLUT;
-        _stfLUT = 0;
-    }
+    // if (_stfLUT != 0)
+    // {
+    //     delete[] _stfLUT;
+    //     _stfLUT = 0;
+    // }
 
-    _lutInUse = 0;
+    // _lutInUse = 0;
 }
 
 QSize ImageWidget::sizeHint() const
@@ -85,98 +85,110 @@ QSize ImageWidget::minimumSizeHint() const
     return QSize(100, 100);
 }
 
-const ELS::Image* ImageWidget::getImage() const
-{
-    return _image;
-}
+// const ELS::Image* ImageWidget::getImage() const
+// {
+//     return _image;
+// }
 
-const char* ImageWidget::getFilename() const
-{
-    return _filename;
-}
+// const char* ImageWidget::getFilename() const
+// {
+//     return _filename;
+// }
 
-bool ImageWidget::getStretched() const
-{
-    return _showStretched;
-}
+// bool ImageWidget::getStretched() const
+// {
+//     return _showStretched;
+// }
 
 float ImageWidget::getZoom() const
 {
     return _zoom;
 }
 
-void ImageWidget::setFile(const char* filename)
+// void ImageWidget::setFile(const char* filename)
+// {
+//     if (strcmp(filename, _filename) != 0)
+//     {
+//         try
+//         {
+//             ELS::Image* tmp = ELS::Image::load(filename);
+
+//             if (_image != 0)
+//             {
+//                 delete _image;
+//             }
+
+//             if (_cacheImage != 0)
+//             {
+//                 _cacheImage.reset();
+//                 _cacheImageData.reset();
+//             }
+
+//             strcpy(_filename, filename);
+//             _image = tmp;
+
+//             emit fileChanged(_filename);
+//         }
+//         catch (ELS::ImageLoadException* e)
+//         {
+//             fprintf(stderr, "ImageLoadException: %s for file %s\n", e->getErrText(), filename);
+//             delete e;
+//         }
+//     }
+// }
+
+// void ImageWidget::showStretched(ELS::PixSTFParms stfParms)
+// {
+//     if (_showStretched != true)
+//     {
+//         _showStretched = true;
+
+//         if ((_stfLUT == 0) || (_stfParms != stfParms))
+//         {
+//             _stfParms = stfParms;
+//             calculateStfLUT();
+//         }
+//         _lutInUse = _stfLUT;
+
+//         if (_cacheImage != 0)
+//         {
+//             _cacheImage.reset();
+//             _cacheImageData.reset();
+//         }
+
+//         update();
+//     }
+// }
+
+// void ImageWidget::clearStretched()
+// {
+//     if (_showStretched != false)
+//     {
+//         _showStretched = false;
+
+//         _stfParms = ELS::PixSTFParms();
+//         _lutInUse = _identityLUT;
+
+//         if (_cacheImage != 0)
+//         {
+//             _cacheImage.reset();
+//             _cacheImageData.reset();
+//         }
+
+//         update();
+//     }
+// }
+
+void ImageWidget::setImage(std::shared_ptr<const QImage> image)
 {
-    if (strcmp(filename, _filename) != 0)
+    _image = image;
+
+    if (_zoom != -1.0)
     {
-        try
-        {
-            ELS::Image* tmp = ELS::Image::load(filename);
-
-            if (_image != 0)
-            {
-                delete _image;
-            }
-
-            if (_cacheImage != 0)
-            {
-                _cacheImage.reset();
-                _cacheImageData.reset();
-            }
-
-            strcpy(_filename, filename);
-            _image = tmp;
-
-            emit fileChanged(_filename);
-        }
-        catch (ELS::ImageLoadException* e)
-        {
-            fprintf(stderr, "ImageLoadException: %s for file %s\n", e->getErrText(), filename);
-            delete e;
-        }
+        _internalSetZoom(-1.0);
     }
-}
 
-void ImageWidget::showStretched(ELS::PixSTFParms stfParms)
-{
-    if (_showStretched != true)
-    {
-        _showStretched = true;
-
-        if ((_stfLUT == 0) || (_stfParms != stfParms))
-        {
-            _stfParms = stfParms;
-            calculateStfLUT();
-        }
-        _lutInUse = _stfLUT;
-
-        if (_cacheImage != 0)
-        {
-            _cacheImage.reset();
-            _cacheImageData.reset();
-        }
-
-        update();
-    }
-}
-
-void ImageWidget::clearStretched()
-{
-    if (_showStretched != false)
-    {
-        _showStretched = false;
-
-        _stfParms = ELS::PixSTFParms();
-        _lutInUse = _identityLUT;
-
-        if (_cacheImage != 0)
-        {
-            _cacheImage.reset();
-            _cacheImageData.reset();
-        }
-
-        update();
-    }
+    update();
 }
 
 void ImageWidget::setZoom(float zoom)
@@ -189,7 +201,7 @@ void ImageWidget::setZoom(float zoom)
     else
     {
         _windowZoomLockPoint = QPoint(width() / 2, height() / 2);
-        _imageZoomLockPoint = QPoint(_image->getWidth() / 2, _image->getHeight() / 2);
+        _imageZoomLockPoint = QPoint(_image->width() / 2, _image->height() / 2);
     }
 
     if (_zoom != zoom)
@@ -198,63 +210,48 @@ void ImageWidget::setZoom(float zoom)
     }
 }
 
-void ImageWidget::setHistogramData(bool isColor,
-                                   int numPoints,
-                                   std::shared_ptr<uint32_t[]> data)
-{
-    _isColor = isColor;
-    _numHistogramPoints = numPoints;
-    _histogramData = data;
+// void ImageWidget::setHistogramData(bool isColor,
+//                                    int numPoints,
+//                                    std::shared_ptr<uint32_t[]> data)
+// {
+//     _isColor = isColor;
+//     _numHistogramPoints = numPoints;
+//     _histogramData = data;
 
-    int totalHistogramPoints = _numHistogramPoints;
-    if (_isColor)
-    {
-        totalHistogramPoints *= 3;
-    }
-    _identityLUT = new uint8_t[totalHistogramPoints];
-    _lutInUse = _identityLUT;
+//     int totalHistogramPoints = _numHistogramPoints;
+//     if (_isColor)
+//     {
+//         totalHistogramPoints *= 3;
+//     }
+//     _identityLUT = new uint8_t[totalHistogramPoints];
+//     _lutInUse = _identityLUT;
 
-    ELS::PixSTFParms stfParms;
-    double mBal = 0.5;
-    double sClip = 0.0;
-    double hClip = 1.0;
-    double sExp = 0.0;
-    double hExp = 1.0;
-    for (uint16_t i = 0; i < _numHistogramPoints; i++)
-    {
-        if (_isColor)
-        {
-            int chanOffset[3] = {
-                0,
-                _numHistogramPoints,
-                _numHistogramPoints * 2};
-            for (int chan = 0; chan < 3; chan++)
-            {
-                stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp, chan);
-                _identityLUT[chanOffset[chan] + i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
-                                                                                                 mBal,
-                                                                                                 sClip,
-                                                                                                 hClip,
-                                                                                                 sExp,
-                                                                                                 hExp) *
-                                                               ELS::PixUtils::g_u8Max);
-            }
-        }
-        else
-        {
-            stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp);
-            _identityLUT[i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
-                                                                          mBal,
-                                                                          sClip,
-                                                                          hClip,
-                                                                          sExp,
-                                                                          hExp) *
-                                        ELS::PixUtils::g_u8Max);
-        }
-    }
+//     ELS::PixSTFParms stfParms;
+//     for (uint16_t i = 0; i < _numHistogramPoints; i++)
+//     {
+//         if (_isColor)
+//         {
+//             int chanOffset[3] = {
+//                 0,
+//                 _numHistogramPoints,
+//                 _numHistogramPoints * 2};
+//             for (int chan = 0; chan < 3; chan++)
+//             {
+//                 _identityLUT[chanOffset[chan] + i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
+//                                                                                                  &stfParms) *
+//                                                                ELS::PixUtils::g_u8Max);
+//             }
+//         }
+//         else
+//         {
+//             _identityLUT[i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
+//                                                                           &stfParms) *
+//                                         ELS::PixUtils::g_u8Max);
+//         }
+//     }
 
-    update();
-}
+//     update();
+// }
 
 void ImageWidget::mouseMoveEvent(QMouseEvent* event)
 {
@@ -264,8 +261,8 @@ void ImageWidget::mouseMoveEvent(QMouseEvent* event)
 
         QPoint newLockPointZoomed = (_imageZoomLockPoint * _actualZoom) + deltas;
 
-        int imgZoomW = _image->getWidth() * _actualZoom;
-        int imgZoomH = _image->getHeight() * _actualZoom;
+        int imgZoomW = _image->width() * _actualZoom;
+        int imgZoomH = _image->height() * _actualZoom;
         newLockPointZoomed.setX(std::max(_windowZoomLockPoint.x(),
                                          std::min(imgZoomW - (_target.width() - _windowZoomLockPoint.x()),
                                                   newLockPointZoomed.x())));
@@ -326,7 +323,7 @@ void ImageWidget::wheelEvent(QWheelEvent* event)
 
 void ImageWidget::paintEvent(QPaintEvent* /* event */)
 {
-    if (_lutInUse != 0)
+    if (_image != 0)
     {
         QPainter painter(this);
 
@@ -343,17 +340,17 @@ void ImageWidget::paintEvent(QPaintEvent* /* event */)
         int w = realWidth - (border * 2);
         int h = realHeight - (border * 2);
 
-        if (_cacheImage == 0)
-        {
-            ToQImageVisitor visitor(_stfParms, _lutInUse, _numHistogramPoints);
-            _image->visitPixels(&visitor);
-            _cacheImageData = visitor.getImageData();
-            _cacheImage = visitor.getImage();
-            // convertImage();
-        }
+        // if (_cacheImage == 0)
+        // {
+        //     ToQImageVisitor visitor(_stfParms, _lutInUse, _numHistogramPoints);
+        //     _image->visitPixels(&visitor);
+        //     _cacheImageData = visitor.getImageData();
+        //     _cacheImage = visitor.getImage();
+        //     // convertImage();
+        // }
 
-        int imgW = _image->getWidth();
-        int imgH = _image->getHeight();
+        int imgW = _image->width();
+        int imgH = _image->height();
 
         if (_imageZoomLockPoint == QPoint(-1, -1))
         {
@@ -461,7 +458,7 @@ void ImageWidget::paintEvent(QPaintEvent* /* event */)
 
         painter.setRenderHints(QPainter::SmoothPixmapTransform |
                                QPainter::Antialiasing);
-        painter.drawImage(_target, *_cacheImage, _source);
+        painter.drawImage(_target, *_image, _source);
     }
 }
 
@@ -552,433 +549,59 @@ float ImageWidget::adjustZoom(float desiredZoom,
     return g_validZooms[0];
 }
 
-void ImageWidget::calculateStfLUT()
-{
-    if (_stfLUT != 0)
-    {
-        delete[] _stfLUT;
-    }
+// void ImageWidget::calculateStfLUT()
+// {
+//     if (_stfLUT != 0)
+//     {
+//         delete[] _stfLUT;
+//     }
 
-    int totalHistogramPoints = _numHistogramPoints;
-    if (_isColor)
-    {
-        totalHistogramPoints *= 3;
-    }
-    _stfLUT = new uint8_t[totalHistogramPoints];
+//     int totalHistogramPoints = _numHistogramPoints;
+//     if (_isColor)
+//     {
+//         totalHistogramPoints *= 3;
+//     }
+//     _stfLUT = new uint8_t[totalHistogramPoints];
 
-    double mBal = 0.5;
-    double sClip = 0.0;
-    double hClip = 1.0;
-    double sExp = 0.0;
-    double hExp = 1.0;
-    for (uint16_t i = 0; i < _numHistogramPoints; i++)
-    {
-        // Only calculate points that are in the image
-        if (_histogramData[i] != 0)
-        {
-            if (_isColor)
-            {
-                int chanOffset[3] = {
-                    0,
-                    _numHistogramPoints,
-                    _numHistogramPoints * 2};
-                for (int chan = 0; chan < 3; chan++)
-                {
-                    _stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp, chan);
-                    _stfLUT[chanOffset[chan] + i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
-                                                                                                mBal,
-                                                                                                sClip,
-                                                                                                hClip,
-                                                                                                sExp,
-                                                                                                hExp) *
-                                                              ELS::PixUtils::g_u8Max);
-                }
-            }
-            else
-            {
-                _stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp);
-                _stfLUT[i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
-                                                                         mBal,
-                                                                         sClip,
-                                                                         hClip,
-                                                                         sExp,
-                                                                         hExp) *
-                                       ELS::PixUtils::g_u8Max);
-            }
-        }
-    }
-}
-
-ImageWidget::ToQImageVisitor::ToQImageVisitor(ELS::PixSTFParms stfParms,
-                                              uint8_t* lut,
-                                              int lutPoints)
-    : _width(0),
-      _height(0),
-      _pixCount(0),
-      _qiData(),
-      _stride(0),
-      _stfParms(stfParms),
-      _qi(),
-      _lut(lut),
-      _lutPoints(lutPoints)
-{
-}
-
-ImageWidget::ToQImageVisitor::~ToQImageVisitor()
-{
-}
-
-std::shared_ptr<uint32_t[]> ImageWidget::ToQImageVisitor::getImageData()
-{
-    return _qiData;
-}
-
-std::shared_ptr<QImage> ImageWidget::ToQImageVisitor::getImage()
-{
-    return _qi;
-}
-
-void ImageWidget::ToQImageVisitor::pixelFormat(ELS::PixelFormat pf)
-{
-    (void)pf;
-}
-
-void ImageWidget::ToQImageVisitor::dimensions(int width,
-                                              int height)
-{
-    _width = width;
-    _height = height;
-    _pixCount = _width * _height;
-
-    _qiData.reset(new uint32_t[_pixCount]);
-}
-
-void ImageWidget::ToQImageVisitor::rowInfo(int stride)
-{
-    _stride = stride;
-}
-
-void ImageWidget::ToQImageVisitor::rowGray(int y,
-                                           const int8_t* k)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
-        uint8_t val = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (val << 16) |
-                                 (val << 8) |
-                                 (val);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowGray(int y,
-                                           const int16_t* k)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
-        uint8_t val = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (val << 16) |
-                                 (val << 8) |
-                                 (val);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowGray(int y,
-                                           const int32_t* k)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
-        uint8_t val = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (val << 16) |
-                                 (val << 8) |
-                                 (val);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowGray(int y,
-                                           const uint8_t* k)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
-        uint8_t val = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (val << 16) |
-                                 (val << 8) |
-                                 (val);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowGray(int y,
-                                           const uint16_t* k)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
-        uint8_t val = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (val << 16) |
-                                 (val << 8) |
-                                 (val);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowGray(int y,
-                                           const uint32_t* k)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
-        uint8_t val = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (val << 16) |
-                                 (val << 8) |
-                                 (val);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowGray(int y,
-                                           const float* k)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
-        uint8_t val = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (val << 16) |
-                                 (val << 8) |
-                                 (val);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowGray(int y,
-                                           const double* k)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(k[dataIdx]);
-        uint8_t val = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (val << 16) |
-                                 (val << 8) |
-                                 (val);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowRgb(int y,
-                                          const int8_t* r,
-                                          const int8_t* g,
-                                          const int8_t* b)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
-        uint8_t red = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (red << 16) |
-                                 (green << 8) |
-                                 (blue);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowRgb(int y,
-                                          const int16_t* r,
-                                          const int16_t* g,
-                                          const int16_t* b)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
-        uint8_t red = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (red << 16) |
-                                 (green << 8) |
-                                 (blue);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowRgb(int y,
-                                          const int32_t* r,
-                                          const int32_t* g,
-                                          const int32_t* b)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
-        uint8_t red = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (red << 16) |
-                                 (green << 8) |
-                                 (blue);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowRgb(int y,
-                                          const uint8_t* r,
-                                          const uint8_t* g,
-                                          const uint8_t* b)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
-        uint8_t red = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (red << 16) |
-                                 (green << 8) |
-                                 (blue);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowRgb(int y,
-                                          const uint16_t* r,
-                                          const uint16_t* g,
-                                          const uint16_t* b)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
-        uint8_t red = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (red << 16) |
-                                 (green << 8) |
-                                 (blue);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowRgb(int y,
-                                          const uint32_t* r,
-                                          const uint32_t* g,
-                                          const uint32_t* b)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
-        uint8_t red = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (red << 16) |
-                                 (green << 8) |
-                                 (blue);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowRgb(int y,
-                                          const float* r,
-                                          const float* g,
-                                          const float* b)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
-        uint8_t red = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (red << 16) |
-                                 (green << 8) |
-                                 (blue);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::rowRgb(int y,
-                                          const double* r,
-                                          const double* g,
-                                          const double* b)
-{
-    int rowOffset = y * _width;
-    for (int x = 0, dataIdx = 0; x < _width; x++, dataIdx += _stride)
-    {
-        uint16_t tmp = ELS::PixUtils::convertRangeToHist(r[dataIdx]);
-        uint8_t red = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
-
-        tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
-
-        _qiData[rowOffset + x] = (0xff << 24) |
-                                 (red << 16) |
-                                 (green << 8) |
-                                 (blue);
-    }
-}
-
-void ImageWidget::ToQImageVisitor::done()
-{
-    _qi.reset(new QImage((const uchar*)_qiData.get(), _width, _height, QImage::Format_ARGB32));
-}
+//     double mBal = 0.5;
+//     double sClip = 0.0;
+//     double hClip = 1.0;
+//     double sExp = 0.0;
+//     double hExp = 1.0;
+//     for (uint16_t i = 0; i < _numHistogramPoints; i++)
+//     {
+//         // Only calculate points that are in the image
+//         if (_histogramData[i] != 0)
+//         {
+//             if (_isColor)
+//             {
+//                 int chanOffset[3] = {
+//                     0,
+//                     _numHistogramPoints,
+//                     _numHistogramPoints * 2};
+//                 for (int chan = 0; chan < 3; chan++)
+//                 {
+//                     _stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp, chan);
+//                     _stfLUT[chanOffset[chan] + i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
+//                                                                                                 mBal,
+//                                                                                                 sClip,
+//                                                                                                 hClip,
+//                                                                                                 sExp,
+//                                                                                                 hExp) *
+//                                                               ELS::PixUtils::g_u8Max);
+//                 }
+//             }
+//             else
+//             {
+//                 _stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp);
+//                 _stfLUT[i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
+//                                                                          mBal,
+//                                                                          sClip,
+//                                                                          hClip,
+//                                                                          sExp,
+//                                                                          hExp) *
+//                                        ELS::PixUtils::g_u8Max);
+//             }
+//         }
+//     }
+// }

@@ -16,7 +16,7 @@ public:
 
     void setHistogramData(bool isColor,
                           int numPoints,
-                          std::shared_ptr<uint32_t[]> data);
+                          std::shared_ptr<const uint32_t[]> data);
 
 protected:
     virtual void paintEvent(QPaintEvent* event) override;
@@ -24,6 +24,6 @@ protected:
 private:
     bool _isColor;
     int _numPoints;
-    std::shared_ptr<uint32_t[]> _data;
+    std::shared_ptr<const uint32_t[]> _data;
     QImage* _histImage;
 };
