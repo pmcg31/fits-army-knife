@@ -123,7 +123,6 @@ namespace ELS
                              isColor,
                              width,
                              height,
-                             pixelCount,
                              pixels);
     }
 
@@ -132,14 +131,12 @@ namespace ELS
                          bool isColor,
                          int width,
                          int height,
-                         int64_t pixelCount,
                          void* pixels)
         : _sampleFormat(sampleFormat),
           _format(format),
           _isColor(isColor),
           _width(width),
           _height(height),
-          _pixelCount(pixelCount),
           _pixels(pixels)
     {
     }

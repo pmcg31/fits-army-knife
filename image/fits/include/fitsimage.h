@@ -1,10 +1,11 @@
 #pragma once
 
+#include <fitsio.h>
+#include <inttypes.h>
+
 #include "image.h"
 #include "pixelvisitor.h"
 #include "rastertypes.h"
-#include <fitsio.h>
-#include <inttypes.h>
 
 namespace ELS
 {
@@ -33,7 +34,6 @@ namespace ELS
                   bool isColor,
                   int width,
                   int height,
-                  int64_t pixelCount,
                   void* pixels);
 
         template <typename PixelT>
@@ -51,7 +51,6 @@ namespace ELS
         bool _isColor;
         int _width;
         int _height;
-        int64_t _pixelCount;
         void* _pixels;
     };
 

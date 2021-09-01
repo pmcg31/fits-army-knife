@@ -3,6 +3,7 @@
     {
       "name": "Linux",
       "includePath": [
+        "${env:PCLINCDIR}",
         "${workspaceFolder}/gui/include",
         "${workspaceFolder}/image/raster/include",
         "${workspaceFolder}/image/fits/include",

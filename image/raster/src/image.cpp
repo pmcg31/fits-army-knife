@@ -5,6 +5,7 @@
 #include "imageloadexception.h"
 #include "image.h"
 #include "fitsimage.h"
+#include "xisfimage.h"
 
 namespace ELS
 {
@@ -46,7 +47,7 @@ namespace ELS
         case FT_FITS:
             return FITSImage::load(filename);
         case FT_XISF:
-            throw new ImageLoadException("XISF support not quite here yet!");
+            return XISFImage::load(filename);
         case FT_UNKNOWN:
         default:
             throw new ImageLoadException("Could not determine image type from filename extension");
@@ -68,9 +69,9 @@ namespace ELS
             }
             break;
         case FT_XISF:
-            if (error != 0)
+            if (checkMagic(filename, &g_xisfMagic, error))
             {
-                sprintf(error, "XISF support coming soon!");
+                return FT_XISF;
             }
             break;
         case FT_UNKNOWN:

@@ -29,6 +29,8 @@ SOURCES += \
     image/fits/src/fitsexception.cpp \
     image/fits/src/fitsimage.cpp \
     image/fits/src/fitstantrum.cpp \
+    image/xisf/src/xisfexception.cpp \
+    image/xisf/src/xisfimage.cpp \
     image/raster/src/imageloadexception.cpp \
     image/raster/src/image.cpp \
     image/raster/src/pixelvisitortypemismatch.cpp \
@@ -46,6 +48,8 @@ HEADERS += \
     image/fits/include/fitstantrum.h \
     image/fits/include/fitsimage.h \
     $$PCL_INCLUDE_DIR/pcl/XISF.h \
+    image/xisf/include/xisfexception.h \
+    image/xisf/include/xisfimage.h \
     image/raster/include/imageloadexception.h \
     image/raster/include/image.h \
     image/raster/include/rastertypes.h \
