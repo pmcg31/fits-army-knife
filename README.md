@@ -2,16 +2,17 @@
   FITS Army Knife
 </h1>
 
-Contains a FITS file viewer implemented using the cftisio library and Qt. Qt should enable cross-platform support, but I have only built and run on linux so far.
+Contains a FITS/XISF file viewer implemented using the cftisio library, PixInsight Class Library (PCL) and Qt. Qt should enable cross-platform support, but I have only built and run on linux so far.
 
 It is unlikely I would have achieved success without [this code example](https://github.com/richmit/ex-CFITSIO/blob/master/fits2tga.c). The
 [cfitsio documention](https://heasarc.gsfc.nasa.gov/docs/software/fitsio/c/c_user/cfitsio.html) does not really make things obvious. So, thank you Mitch Richling!
 
-There are times when I would just like to quickly take a look at a FITS image, and I have not yet found a simple tool for this. This project
-will become such a tool.
+There are times when I would just like to quickly take a look at a FITS or XISF image, and I have not yet found a simple tool for this. This project will become such a tool.
 
 Current features:
 
+- FITS support
+- XISF support
 - Zoom with scroll wheel
   - Image position under mouse pointer is maintained (i.e., zoom what is pointed at)
   - Buttons for 1:1 and zoom-to-fit
@@ -43,15 +44,29 @@ Those are the key ones, and some nice to haves:
 
 ## Dependencies
 
-You will need Qt5 and the cfitsio library. On debian based linux systems:
+You will need Qt5, the cfitsio library, and the PixInsight Class Library (PCL). On debian based linux systems:
 
 `sudo apt install qt5-default` for Qt
 
 `sudo apt install libcfitsio-dev` for cfitsio
 
-You will also need some FITS files to test with.
+PCL must be downloaded from [GitLab](https://gitlab.com/pixinsight/PCL/) and built from source.
+
+You will also need some FITS/XISF files to test with.
 
 ## Building
+
+**Please note that this project only builds under Linux for now**
+
+Define environment variables needed by PCL. These are:
+
+- `PCLDIR` - Set to the directory where you extracted PCL
+- `PCLINCDIR` - `${PCLDIR}/include`
+- `PCLSRCDIR` - `${PCLDIR}/src`
+- `PCLBINDIR` - `${PCLDIR}/bin`
+- `PCLBINDIR64` - `${PCLBINDIR}`
+- `PCLLIBDIR` - `${PCLDIR}/lib/linux/x64`
+- `PCLLIBDIR64` - `${PCLLIBDIR}`
 
 Create a directory called "build" (or whatever you like, really, but build is already git ignored) in the root directory of the project.
 
@@ -61,4 +76,20 @@ You will now have a Makefile. Run `make`
 
 You should now have an executable, unless you are missing a dependency somewhere. To run:
 
-`./fits-army-knife <path-to-fits-file>`
+`./fits-army-knife <path-to-fits-or-xisf-file>`
+
+or
+
+`./fits-army-knife <path-to-dir-containing-fits-or-xisf-files>`
+
+## Building PCL
+
+Define PCL environment variables as above.
+
+Navigate to `${PCLDIR}/src/pcl/linux/g++`.
+
+`make`
+
+(The version of PCL I downloaded [2021-Aug-18] did not build for me due to references to `cuda.h`. I believe that is for accelerated NVIDIA. I removed the one file that referenced this [`CUDADevice.cpp`] from the makefile and it then built without any ill effects that I have discovered yet.)
+
+Verify that the libraries `libPCL-pxi.a` and `libRFC6234-pxi.a` exist in `${PCLLIBDIR}` and build this project as outlined in the previous section.

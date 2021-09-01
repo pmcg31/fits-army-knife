@@ -5,13 +5,11 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 CONFIG += c++17 
 
 # PixInsight Class Library
-PCL_RELEASE_DIR = $$(PCLDIR)/src/pcl/linux/g++/x64/Release
-PCL_RFC6234_RELEASE_DIR = $$(PCLDIR)/src/3rdparty/RFC6234/linux/g++/x64/Release
 PCL_INCLUDE_DIR = $$(PCLDIR)/include
 
 LIBS += \
-    $$PCL_RELEASE_DIR/libPCL-pxi.a \
-    $$PCL_RFC6234_RELEASE_DIR/libRFC6234-pxi.a \
+    $$(PCLLIBDIR)/libPCL-pxi.a \
+    $$(PCLLIBDIR)/libRFC6234-pxi.a \
     -lz \
     -llz4 \
     -llcms2 \
