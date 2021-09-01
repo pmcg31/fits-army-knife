@@ -239,7 +239,7 @@ namespace ELS
         int64_t pointCount[3] = {0, 0, 0};
         uint16_t medHist[3] = {0, 0, 0};
         bool done = false;
-        for (uint16_t i = 0; (!done) && (i < PixUtils::g_histogramPoints); i++)
+        for (int i = 0; (!done) && (i < PixUtils::g_histogramPoints); i++)
         {
             done = true;
 
@@ -301,7 +301,7 @@ namespace ELS
         {
             tmp[i] = 0;
         }
-        for (uint16_t i = 0; i < PixUtils::g_histogramPoints; i++)
+        for (int i = 0; i < PixUtils::g_histogramPoints; i++)
         {
             uint16_t val = i > medHist[0] ? i - medHist[0] : medHist[0] - i;
             tmp[val] += _histogram[i];
@@ -320,7 +320,7 @@ namespace ELS
         pointCount[1] = 0;
         pointCount[2] = 0;
         done = false;
-        for (uint16_t i = 0; (!done) && (i < PixUtils::g_histogramPoints); i++)
+        for (int i = 0; (!done) && (i < PixUtils::g_histogramPoints); i++)
         {
             done = true;
 

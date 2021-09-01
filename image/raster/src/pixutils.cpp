@@ -3,7 +3,8 @@
 namespace ELS
 {
 
-    const int PixUtils::g_histogramPoints = 65535;
+    const int PixUtils::g_histogramPoints = 65536;
+    const int PixUtils::g_histogramRangeMax = PixUtils::g_histogramPoints - 1;
 
     const double PixUtils::g_madnConstant = 1.4826;
 
@@ -241,7 +242,7 @@ namespace ELS
     /* static */
     uint16_t PixUtils::convertRangeToHist(uint8_t val)
     {
-        uint8_t factor = g_u8Max / g_histogramPoints;
+        uint8_t factor = g_u8Max / g_histogramRangeMax;
 
         uint16_t newVal = (uint16_t)(val / factor);
         if (!(newVal < g_histogramPoints))
@@ -257,7 +258,7 @@ namespace ELS
     /* static */
     uint16_t PixUtils::convertRangeToHist(uint16_t val)
     {
-        uint16_t factor = g_u16Max / g_histogramPoints;
+        uint16_t factor = g_u16Max / g_histogramRangeMax;
 
         uint16_t newVal = val / factor;
         if (!(newVal < g_histogramPoints))
@@ -273,7 +274,7 @@ namespace ELS
     /* static */
     uint16_t PixUtils::convertRangeToHist(uint32_t val)
     {
-        uint32_t factor = g_u32Max / g_histogramPoints;
+        uint32_t factor = g_u32Max / g_histogramRangeMax;
 
         uint16_t newVal = (uint16_t)(val / factor);
         if (!(newVal < g_histogramPoints))
@@ -289,7 +290,7 @@ namespace ELS
     /* static */
     uint16_t PixUtils::convertRangeToHist(float val)
     {
-        uint16_t newVal = (uint16_t)(val * g_histogramPoints);
+        uint16_t newVal = (uint16_t)(val * g_histogramRangeMax);
         if (!(newVal < g_histogramPoints))
         {
             // printf("Fixed newVal of %d to %d\n", newVal, g_histogramPoints - 1);
@@ -303,7 +304,7 @@ namespace ELS
     /* static */
     uint16_t PixUtils::convertRangeToHist(double val)
     {
-        uint16_t newVal = (uint16_t)(val * g_histogramPoints);
+        uint16_t newVal = (uint16_t)(val * g_histogramRangeMax);
         if (!(newVal < g_histogramPoints))
         {
             // printf("Fixed newVal of %d to %d\n", newVal, g_histogramPoints - 1);
@@ -317,7 +318,7 @@ namespace ELS
     /* static */
     void PixUtils::convertRangeFromHist(uint16_t hist, int8_t* val)
     {
-        uint8_t factor = g_u8Max / g_histogramPoints;
+        uint8_t factor = g_u8Max / g_histogramRangeMax;
 
         *val = (int8_t)(((int32_t)hist / factor) - g_u8Mid - 1);
     }
@@ -325,7 +326,7 @@ namespace ELS
     /* static */
     void PixUtils::convertRangeFromHist(uint16_t hist, int16_t* val)
     {
-        uint16_t factor = g_u16Max / g_histogramPoints;
+        uint16_t factor = g_u16Max / g_histogramRangeMax;
 
         *val = (int16_t)(((int32_t)hist / factor) - g_u16Mid - 1);
     }
@@ -333,7 +334,7 @@ namespace ELS
     /* static */
     void PixUtils::convertRangeFromHist(uint16_t hist, int32_t* val)
     {
-        uint32_t factor = g_u32Max / g_histogramPoints;
+        uint32_t factor = g_u32Max / g_histogramRangeMax;
 
         *val = (int32_t)(((int64_t)hist / factor) - g_u32Mid - 1);
     }
@@ -341,7 +342,7 @@ namespace ELS
     /* static */
     void PixUtils::convertRangeFromHist(uint16_t hist, uint8_t* val)
     {
-        uint8_t factor = g_u8Max / g_histogramPoints;
+        uint8_t factor = g_u8Max / g_histogramRangeMax;
 
         *val = (uint8_t)(hist / factor);
     }
@@ -349,7 +350,7 @@ namespace ELS
     /* static */
     void PixUtils::convertRangeFromHist(uint16_t hist, uint16_t* val)
     {
-        uint16_t factor = g_u16Max / g_histogramPoints;
+        uint16_t factor = g_u16Max / g_histogramRangeMax;
 
         *val = (uint16_t)(hist / factor);
     }
@@ -357,7 +358,7 @@ namespace ELS
     /* static */
     void PixUtils::convertRangeFromHist(uint16_t hist, uint32_t* val)
     {
-        uint32_t factor = g_u32Max / g_histogramPoints;
+        uint32_t factor = g_u32Max / g_histogramRangeMax;
 
         *val = (uint32_t)(hist / factor);
     }
@@ -365,13 +366,13 @@ namespace ELS
     /* static */
     void PixUtils::convertRangeFromHist(uint16_t hist, float* val)
     {
-        *val = (float)hist / g_histogramPoints;
+        *val = (float)hist / g_histogramRangeMax;
     }
 
     /* static */
     void PixUtils::convertRangeFromHist(uint16_t hist, double* val)
     {
-        *val = (double)hist / g_histogramPoints;
+        *val = (double)hist / g_histogramRangeMax;
     }
 
 }

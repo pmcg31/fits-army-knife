@@ -22,6 +22,8 @@ ImageFileListItem::ImageFileListItem(QString absolutePath,
       _median(),
       _max(),
       _numHistogramPoints(0),
+      _gOffset(0),
+      _bOffset(0),
       _histogram(),
       _stfLUT(0),
       _identityLUT(0),
@@ -246,6 +248,8 @@ void ImageFileListItem::calculateStatistics()
         }
 
         visitor.getHistogramData(&_numHistogramPoints, &_histogram);
+        _gOffset = _numHistogramPoints;
+        _bOffset = _numHistogramPoints * 2;
     }
     break;
     case ELS::SF_UINT_16:
@@ -278,6 +282,8 @@ void ImageFileListItem::calculateStatistics()
         }
 
         visitor.getHistogramData(&_numHistogramPoints, &_histogram);
+        _gOffset = _numHistogramPoints;
+        _bOffset = _numHistogramPoints * 2;
     }
     break;
     case ELS::SF_UINT_32:
@@ -310,6 +316,8 @@ void ImageFileListItem::calculateStatistics()
         }
 
         visitor.getHistogramData(&_numHistogramPoints, &_histogram);
+        _gOffset = _numHistogramPoints;
+        _bOffset = _numHistogramPoints * 2;
     }
     break;
     case ELS::SF_INT_8:
@@ -342,6 +350,8 @@ void ImageFileListItem::calculateStatistics()
         }
 
         visitor.getHistogramData(&_numHistogramPoints, &_histogram);
+        _gOffset = _numHistogramPoints;
+        _bOffset = _numHistogramPoints * 2;
     }
     break;
     case ELS::SF_INT_16:
@@ -374,6 +384,8 @@ void ImageFileListItem::calculateStatistics()
         }
 
         visitor.getHistogramData(&_numHistogramPoints, &_histogram);
+        _gOffset = _numHistogramPoints;
+        _bOffset = _numHistogramPoints * 2;
     }
     break;
     case ELS::SF_INT_32:
@@ -406,6 +418,8 @@ void ImageFileListItem::calculateStatistics()
         }
 
         visitor.getHistogramData(&_numHistogramPoints, &_histogram);
+        _gOffset = _numHistogramPoints;
+        _bOffset = _numHistogramPoints * 2;
     }
     break;
     case ELS::SF_FLOAT:
@@ -438,6 +452,8 @@ void ImageFileListItem::calculateStatistics()
         }
 
         visitor.getHistogramData(&_numHistogramPoints, &_histogram);
+        _gOffset = _numHistogramPoints;
+        _bOffset = _numHistogramPoints * 2;
     }
     break;
     case ELS::SF_DOUBLE:
@@ -470,6 +486,8 @@ void ImageFileListItem::calculateStatistics()
         }
 
         visitor.getHistogramData(&_numHistogramPoints, &_histogram);
+        _gOffset = _numHistogramPoints;
+        _bOffset = _numHistogramPoints * 2;
     }
     break;
     }
@@ -488,33 +506,39 @@ void ImageFileListItem::calculateLUTs()
     _lutInUse = _identityLUT;
 
     ELS::PixSTFParms stfIdentityParms;
-    for (uint16_t i = 0; i < _numHistogramPoints; i++)
+    for (int i = 0; i < _numHistogramPoints; i++)
     {
-        // Only calculate points that are in the image
-        if (_histogram[i] != 0)
+        if (isColor)
         {
-            if (isColor)
+            int chanOffset[3] = {
+                0,
+                _gOffset,
+                _bOffset};
+            for (int chan = 0; chan < 3; chan++)
             {
-                int chanOffset[3] = {
-                    0,
-                    _numHistogramPoints,
-                    _numHistogramPoints * 2};
-                for (int chan = 0; chan < 3; chan++)
+                // Only calculate points that are in the image
+                if (_histogram[chanOffset[chan] + i] != 0)
                 {
-                    _stfLUT[chanOffset[chan] + i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
-                                                                                                &_stfParms) *
+                    _stfLUT[chanOffset[chan] + i] = (uint8_t)(ELS::PixUtils::screenTransferFunc((uint16_t)i,
+                                                                                                &_stfParms,
+                                                                                                chan) *
                                                               ELS::PixUtils::g_u8Max);
-                    _identityLUT[chanOffset[chan] + i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
-                                                                                                     &stfIdentityParms) *
+                    _identityLUT[chanOffset[chan] + i] = (uint8_t)(ELS::PixUtils::screenTransferFunc((uint16_t)i,
+                                                                                                     &stfIdentityParms,
+                                                                                                     chan) *
                                                                    ELS::PixUtils::g_u8Max);
                 }
             }
-            else
+        }
+        else
+        {
+            // Only calculate points that are in the image
+            if (_histogram[i] != 0)
             {
-                _stfLUT[i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
+                _stfLUT[i] = (uint8_t)(ELS::PixUtils::screenTransferFunc((uint16_t)i,
                                                                          &_stfParms) *
                                        ELS::PixUtils::g_u8Max);
-                _identityLUT[i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
+                _identityLUT[i] = (uint8_t)(ELS::PixUtils::screenTransferFunc((uint16_t)i,
                                                                               &stfIdentityParms) *
                                             ELS::PixUtils::g_u8Max);
             }
@@ -533,7 +557,9 @@ ImageFileListItem::ToQImageVisitor::ToQImageVisitor(ELS::PixSTFParms stfParms,
       _stfParms(stfParms),
       _qi(),
       _lut(lut),
-      _lutPoints(lutPoints)
+      _lutPoints(lutPoints),
+      _gOffset(lutPoints),
+      _bOffset(lutPoints * 2)
 {
 }
 
@@ -711,10 +737,10 @@ void ImageFileListItem::ToQImageVisitor::rowRgb(int y,
         uint8_t red = _lut[tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
+        uint8_t green = _lut[_gOffset + tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
+        uint8_t blue = _lut[_bOffset + tmp];
 
         _qiData[rowOffset + x] = (0xff << 24) |
                                  (red << 16) |
@@ -735,10 +761,10 @@ void ImageFileListItem::ToQImageVisitor::rowRgb(int y,
         uint8_t red = _lut[tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
+        uint8_t green = _lut[_gOffset + tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
+        uint8_t blue = _lut[_bOffset + tmp];
 
         _qiData[rowOffset + x] = (0xff << 24) |
                                  (red << 16) |
@@ -759,10 +785,10 @@ void ImageFileListItem::ToQImageVisitor::rowRgb(int y,
         uint8_t red = _lut[tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
+        uint8_t green = _lut[_gOffset + tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
+        uint8_t blue = _lut[_bOffset + tmp];
 
         _qiData[rowOffset + x] = (0xff << 24) |
                                  (red << 16) |
@@ -783,10 +809,10 @@ void ImageFileListItem::ToQImageVisitor::rowRgb(int y,
         uint8_t red = _lut[tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
+        uint8_t green = _lut[_gOffset + tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
+        uint8_t blue = _lut[_bOffset + tmp];
 
         _qiData[rowOffset + x] = (0xff << 24) |
                                  (red << 16) |
@@ -807,10 +833,10 @@ void ImageFileListItem::ToQImageVisitor::rowRgb(int y,
         uint8_t red = _lut[tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
+        uint8_t green = _lut[_gOffset + tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
+        uint8_t blue = _lut[_bOffset + tmp];
 
         _qiData[rowOffset + x] = (0xff << 24) |
                                  (red << 16) |
@@ -831,10 +857,10 @@ void ImageFileListItem::ToQImageVisitor::rowRgb(int y,
         uint8_t red = _lut[tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
+        uint8_t green = _lut[_gOffset + tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
+        uint8_t blue = _lut[_bOffset + tmp];
 
         _qiData[rowOffset + x] = (0xff << 24) |
                                  (red << 16) |
@@ -855,10 +881,10 @@ void ImageFileListItem::ToQImageVisitor::rowRgb(int y,
         uint8_t red = _lut[tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
+        uint8_t green = _lut[_gOffset + tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
+        uint8_t blue = _lut[_bOffset + tmp];
 
         _qiData[rowOffset + x] = (0xff << 24) |
                                  (red << 16) |
@@ -879,10 +905,10 @@ void ImageFileListItem::ToQImageVisitor::rowRgb(int y,
         uint8_t red = _lut[tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(g[dataIdx]);
-        uint8_t green = _lut[tmp];
+        uint8_t green = _lut[_gOffset + tmp];
 
         tmp = ELS::PixUtils::convertRangeToHist(b[dataIdx]);
-        uint8_t blue = _lut[tmp];
+        uint8_t blue = _lut[_bOffset + tmp];
 
         _qiData[rowOffset + x] = (0xff << 24) |
                                  (red << 16) |
@@ -893,5 +919,5 @@ void ImageFileListItem::ToQImageVisitor::rowRgb(int y,
 
 void ImageFileListItem::ToQImageVisitor::done()
 {
-    _qi.reset(new QImage((const uchar*)_qiData.get(), _width, _height, QImage::Format_ARGB32));
+    _qi.reset(new QImage((const uchar*)_qiData.get(), _width, _height, QImage::Format_RGB32));
 }

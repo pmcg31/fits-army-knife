@@ -38,7 +38,8 @@ namespace ELS
 
         template <typename PixelT>
         static double screenTransferFunc(PixelT pixel,
-                                         PixSTFParms* stfParms);
+                                         PixSTFParms* stfParms,
+                                         int chan = 0);
 
         static uint16_t convertRangeToHist(int8_t val);
         static uint16_t convertRangeToHist(int16_t val);
@@ -60,6 +61,7 @@ namespace ELS
 
     public:
         static const int g_histogramPoints;
+        static const int g_histogramRangeMax;
 
         static const double g_madnConstant;
 
@@ -76,18 +78,19 @@ namespace ELS
     /* static */
     template <typename PixelT>
     double PixUtils::screenTransferFunc(PixelT pixel,
-                                        PixSTFParms* stfParms)
+                                        PixSTFParms* stfParms,
+                                        int chan /* = 0 */)
     {
         double tmpPix = PixUtils::clippingFunc(pixel,
-                                               stfParms->getSClip(),
-                                               stfParms->getHClip());
+                                               stfParms->getSClip(chan),
+                                               stfParms->getHClip(chan));
 
         tmpPix = PixUtils::midtonesTransferFunc(tmpPix,
-                                                stfParms->getMBal());
+                                                stfParms->getMBal(chan));
 
         return PixUtils::expansionFunc(tmpPix,
-                                       stfParms->getSExp(),
-                                       stfParms->getHExp());
+                                       stfParms->getSExp(chan),
+                                       stfParms->getHExp(chan));
     }
 
 }

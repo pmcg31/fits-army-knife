@@ -74,3 +74,6 @@ Thumbs.db
 build/*
 sample-files/*
 .vscode/settings.json
+testxisf/build/.qmake.stash
+testxisf/build/moc_predefs.h
+testxisf/build/testxisf

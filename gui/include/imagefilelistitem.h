@@ -131,6 +131,8 @@ private:
         std::shared_ptr<QImage> _qi;
         uint8_t* _lut;
         int _lutPoints;
+        int _gOffset;
+        int _bOffset;
     };
 
 private:
@@ -148,6 +150,8 @@ private:
     QString _median;
     QString _max;
     int _numHistogramPoints;
+    int _gOffset;
+    int _bOffset;
     std::shared_ptr<uint32_t[]> _histogram;
 
     uint8_t* _stfLUT;
