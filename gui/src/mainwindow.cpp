@@ -118,18 +118,10 @@ MainWindow::MainWindow(QTcpServer& server,
 
     setCentralWidget(&mainPane);
 
-    // QObject::connect(&imageWidget, &ImageWidget::fileChanged,
-    //                  this, &MainWindow::fitsFileChanged);
-    // QObject::connect(&imageWidget, &ImageWidget::fileFailed,
-    //                  this, &MainWindow::fitsFileFailed);
     QObject::connect(&imageWidget, &ImageWidget::actualZoomChanged,
                      this, &MainWindow::imageZoomChanged);
     QObject::connect(&stretchBtn, &QPushButton::toggled,
                      this, &MainWindow::stretchToggled);
-    // QObject::connect(this, &MainWindow::showStretched,
-    //                  &imageWidget, &ImageWidget::showStretched);
-    // QObject::connect(this, &MainWindow::clearStretched,
-    //                  &imageWidget, &ImageWidget::clearStretched);
     QObject::connect(&zoomFitBtn, &QPushButton::clicked,
                      this, &MainWindow::zoomFitClicked);
     QObject::connect(&zoom100Btn, &QPushButton::clicked,
@@ -149,29 +141,6 @@ MainWindow::MainWindow(QTcpServer& server,
 MainWindow::~MainWindow()
 {
 }
-
-// void MainWindow::fitsFileChanged(const char* filename)
-// {
-//     printf("File loaded: %s\n", filename);
-
-//     const ELS::Image* image = imageWidget.getImage();
-
-//     minLabel.setText(tmp);
-//     meanLabel.setText(tmp2);
-//     medLabel.setText(tmp3);
-//     maxLabel.setText(tmp4);
-
-//     histWidget.setHistogramData(isColor, numPoints, histogram);
-//     imageWidget.setHistogramData(isColor, numPoints, histogram);
-
-//     update();
-// }
-
-// void MainWindow::fitsFileFailed(const char* filename,
-//                                 const char* errText)
-// {
-//     printf("File failed [%s]: %s\n", errText, filename);
-// }
 
 void MainWindow::imageZoomChanged(float zoom)
 {
@@ -276,8 +245,6 @@ void MainWindow::readyRead()
 
             printf("Added %d files\n", newFileCount);
             fflush(stdout);
-
-            // addFilesToList(absoluteFilePaths);
         }
     }
 }
@@ -359,19 +326,3 @@ void MainWindow::syncStretch()
         stretchBtn.setIcon(offIcon);
     }
 }
-
-// void MainWindow::addFilesToList(QList<QString> absoluteFilePaths)
-// {
-//     QList<QString>::iterator i;
-//     for (i = absoluteFilePaths.begin(); i != absoluteFilePaths.end(); ++i)
-//     {
-//         QFileInfo info(*i);
-
-//         if (!fileList.contains(info))
-//         {
-//             fileList.append(info);
-//         }
-//     }
-
-//     syncFileCount();
-// }

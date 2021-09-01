@@ -473,10 +473,6 @@ void ImageFileListItem::calculateStatistics()
     }
     break;
     }
-
-    printf("%s\n", _image->getImageType());
-    printf("%s\n", _image->getSizeAndColor());
-    fflush(stdout);
 }
 
 void ImageFileListItem::calculateLUTs()

@@ -76,6 +76,10 @@ namespace ELS
             break;
         case FT_UNKNOWN:
         default:
+            if (error != 0)
+            {
+                sprintf(error, "%s: unknown file type", filename);
+            }
             break;
         }
 

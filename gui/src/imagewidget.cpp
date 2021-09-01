@@ -26,18 +26,8 @@ ImageWidget::ImageWidget(QWidget* parent)
       _sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding),
       _filename(""),
       _image(),
-      //   _cacheImage(),
-      //   _cacheImageData(),
-      //   _showStretched(false),
       _zoom(-1.0),
       _actualZoom(-1.0),
-      //   _stfParms(),
-      //   _isColor(false),
-      //   _numHistogramPoints(0),
-      //   _histogramData(),
-      //   _stfLUT(0),
-      //   _identityLUT(0),
-      //   _lutInUse(_identityLUT),
       _mouseDragLast(-1, -1),
       _source(0, 0, 0, 0),
       _target(0, 0, 0, 0),
@@ -54,25 +44,6 @@ ImageWidget::ImageWidget(QWidget* parent)
 
 ImageWidget::~ImageWidget()
 {
-    // if (_image != 0)
-    // {
-    //     delete _image;
-    //     _image = 0;
-    // }
-
-    // if (_identityLUT != 0)
-    // {
-    //     delete[] _identityLUT;
-    //     _identityLUT = 0;
-    // }
-
-    // if (_stfLUT != 0)
-    // {
-    //     delete[] _stfLUT;
-    //     _stfLUT = 0;
-    // }
-
-    // _lutInUse = 0;
 }
 
 QSize ImageWidget::sizeHint() const
@@ -85,99 +56,10 @@ QSize ImageWidget::minimumSizeHint() const
     return QSize(100, 100);
 }
 
-// const ELS::Image* ImageWidget::getImage() const
-// {
-//     return _image;
-// }
-
-// const char* ImageWidget::getFilename() const
-// {
-//     return _filename;
-// }
-
-// bool ImageWidget::getStretched() const
-// {
-//     return _showStretched;
-// }
-
 float ImageWidget::getZoom() const
 {
     return _zoom;
 }
-
-// void ImageWidget::setFile(const char* filename)
-// {
-//     if (strcmp(filename, _filename) != 0)
-//     {
-//         try
-//         {
-//             ELS::Image* tmp = ELS::Image::load(filename);
-
-//             if (_image != 0)
-//             {
-//                 delete _image;
-//             }
-
-//             if (_cacheImage != 0)
-//             {
-//                 _cacheImage.reset();
-//                 _cacheImageData.reset();
-//             }
-
-//             strcpy(_filename, filename);
-//             _image = tmp;
-
-//             emit fileChanged(_filename);
-//         }
-//         catch (ELS::ImageLoadException* e)
-//         {
-//             fprintf(stderr, "ImageLoadException: %s for file %s\n", e->getErrText(), filename);
-//             delete e;
-//         }
-//     }
-// }
-
-// void ImageWidget::showStretched(ELS::PixSTFParms stfParms)
-// {
-//     if (_showStretched != true)
-//     {
-//         _showStretched = true;
-
-//         if ((_stfLUT == 0) || (_stfParms != stfParms))
-//         {
-//             _stfParms = stfParms;
-//             calculateStfLUT();
-//         }
-//         _lutInUse = _stfLUT;
-
-//         if (_cacheImage != 0)
-//         {
-//             _cacheImage.reset();
-//             _cacheImageData.reset();
-//         }
-
-//         update();
-//     }
-// }
-
-// void ImageWidget::clearStretched()
-// {
-//     if (_showStretched != false)
-//     {
-//         _showStretched = false;
-
-//         _stfParms = ELS::PixSTFParms();
-//         _lutInUse = _identityLUT;
-
-//         if (_cacheImage != 0)
-//         {
-//             _cacheImage.reset();
-//             _cacheImageData.reset();
-//         }
-
-//         update();
-//     }
-// }
 
 void ImageWidget::setImage(std::shared_ptr<const QImage> image)
 {
@@ -209,49 +91,6 @@ void ImageWidget::setZoom(float zoom)
         _internalSetZoom(zoom);
     }
 }
-
-// void ImageWidget::setHistogramData(bool isColor,
-//                                    int numPoints,
-//                                    std::shared_ptr<uint32_t[]> data)
-// {
-//     _isColor = isColor;
-//     _numHistogramPoints = numPoints;
-//     _histogramData = data;
-
-//     int totalHistogramPoints = _numHistogramPoints;
-//     if (_isColor)
-//     {
-//         totalHistogramPoints *= 3;
-//     }
-//     _identityLUT = new uint8_t[totalHistogramPoints];
-//     _lutInUse = _identityLUT;
-
-//     ELS::PixSTFParms stfParms;
-//     for (uint16_t i = 0; i < _numHistogramPoints; i++)
-//     {
-//         if (_isColor)
-//         {
-//             int chanOffset[3] = {
-//                 0,
-//                 _numHistogramPoints,
-//                 _numHistogramPoints * 2};
-//             for (int chan = 0; chan < 3; chan++)
-//             {
-//                 _identityLUT[chanOffset[chan] + i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
-//                                                                                                  &stfParms) *
-//                                                                ELS::PixUtils::g_u8Max);
-//             }
-//         }
-//         else
-//         {
-//             _identityLUT[i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
-//                                                                           &stfParms) *
-//                                         ELS::PixUtils::g_u8Max);
-//         }
-//     }
-
-//     update();
-// }
 
 void ImageWidget::mouseMoveEvent(QMouseEvent* event)
 {
@@ -339,15 +178,6 @@ void ImageWidget::paintEvent(QPaintEvent* /* event */)
 
         int w = realWidth - (border * 2);
         int h = realHeight - (border * 2);
-
-        // if (_cacheImage == 0)
-        // {
-        //     ToQImageVisitor visitor(_stfParms, _lutInUse, _numHistogramPoints);
-        //     _image->visitPixels(&visitor);
-        //     _cacheImageData = visitor.getImageData();
-        //     _cacheImage = visitor.getImage();
-        //     // convertImage();
-        // }
 
         int imgW = _image->width();
         int imgH = _image->height();
@@ -548,60 +378,3 @@ float ImageWidget::adjustZoom(float desiredZoom,
 
     return g_validZooms[0];
 }
-
-// void ImageWidget::calculateStfLUT()
-// {
-//     if (_stfLUT != 0)
-//     {
-//         delete[] _stfLUT;
-//     }
-
-//     int totalHistogramPoints = _numHistogramPoints;
-//     if (_isColor)
-//     {
-//         totalHistogramPoints *= 3;
-//     }
-//     _stfLUT = new uint8_t[totalHistogramPoints];
-
-//     double mBal = 0.5;
-//     double sClip = 0.0;
-//     double hClip = 1.0;
-//     double sExp = 0.0;
-//     double hExp = 1.0;
-//     for (uint16_t i = 0; i < _numHistogramPoints; i++)
-//     {
-//         // Only calculate points that are in the image
-//         if (_histogramData[i] != 0)
-//         {
-//             if (_isColor)
-//             {
-//                 int chanOffset[3] = {
-//                     0,
-//                     _numHistogramPoints,
-//                     _numHistogramPoints * 2};
-//                 for (int chan = 0; chan < 3; chan++)
-//                 {
-//                     _stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp, chan);
-//                     _stfLUT[chanOffset[chan] + i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
-//                                                                                                 mBal,
-//                                                                                                 sClip,
-//                                                                                                 hClip,
-//                                                                                                 sExp,
-//                                                                                                 hExp) *
-//                                                               ELS::PixUtils::g_u8Max);
-//                 }
-//             }
-//             else
-//             {
-//                 _stfParms.getAll(&mBal, &sClip, &hClip, &sExp, &hExp);
-//                 _stfLUT[i] = (uint8_t)(ELS::PixUtils::screenTransferFunc(i,
-//                                                                          mBal,
-//                                                                          sClip,
-//                                                                          hClip,
-//                                                                          sExp,
-//                                                                          hExp) *
-//                                        ELS::PixUtils::g_u8Max);
-//             }
-//         }
-//     }
-// }
