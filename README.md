@@ -64,9 +64,7 @@ PCL must be downloaded from [GitLab](https://gitlab.com/pixinsight/PCL/) and bui
 
 You will also need some FITS/XISF files to test with.
 
-## Building
-
-**Please note that this project only builds under Linux for now**
+## Building PCL
 
 Define environment variables needed by PCL. These are:
 
@@ -77,6 +75,20 @@ Define environment variables needed by PCL. These are:
 - `PCLBINDIR64` - `${PCLBINDIR}`
 - `PCLLIBDIR` - `${PCLDIR}/lib/linux/x64`
 - `PCLLIBDIR64` - `${PCLLIBDIR}`
+
+Navigate to `${PCLDIR}/src/pcl/linux/g++`.
+
+`make`
+
+(The version of PCL I downloaded [2021-Aug-18] did not build for me due to references to `cuda.h`. I believe that is for accelerated NVIDIA. I removed the one file that referenced this [`CUDADevice.cpp`] from the makefile and it then built without any ill effects that I have discovered yet.)
+
+Verify that the libraries `libPCL-pxi.a` and `libRFC6234-pxi.a` exist in `${PCLLIBDIR}`.
+
+## Building
+
+**Please note that this project only builds under Linux for now**
+
+Define PCL environment variables as above.
 
 Create a directory called "build" (or whatever you like, really, but build is already git ignored) in the root directory of the project.
 
@@ -91,15 +103,3 @@ You should now have an executable, unless you are missing a dependency somewhere
 or
 
 `./fits-army-knife <path-to-dir-containing-fits-or-xisf-files>`
-
-## Building PCL
-
-Define PCL environment variables as above.
-
-Navigate to `${PCLDIR}/src/pcl/linux/g++`.
-
-`make`
-
-(The version of PCL I downloaded [2021-Aug-18] did not build for me due to references to `cuda.h`. I believe that is for accelerated NVIDIA. I removed the one file that referenced this [`CUDADevice.cpp`] from the makefile and it then built without any ill effects that I have discovered yet.)
-
-Verify that the libraries `libPCL-pxi.a` and `libRFC6234-pxi.a` exist in `${PCLLIBDIR}` and build this project as outlined in the previous section.
