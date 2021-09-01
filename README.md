@@ -44,11 +44,21 @@ Those are the key ones, and some nice to haves:
 
 ## Dependencies
 
-You will need Qt5, the cfitsio library, and the PixInsight Class Library (PCL). On debian based linux systems:
+You will need Qt5, the cfitsio library, and the PixInsight Class Library (PCL).
+
+On debian based linux systems:
 
 `sudo apt install qt5-default` for Qt
 
 `sudo apt install libcfitsio-dev` for cfitsio
+
+On arch linux systems:
+
+`sudo pacman -S qt5-base` for Qt
+
+`sudo pacman -S qt5-doc` for Qt documentation (optional)
+
+`sudo pacman -S cfitsio` for cfitsio
 
 PCL must be downloaded from [GitLab](https://gitlab.com/pixinsight/PCL/) and built from source.
 
